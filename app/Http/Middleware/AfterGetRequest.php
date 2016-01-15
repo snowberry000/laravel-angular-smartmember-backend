@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use PRedis;
+use SMCache;
+
+
+class AfterGetRequest
+{   
+
+    public function handle($request, Closure $next)
+    {
+        $response = $next($request);
+        if (!SMCache::shouldCache() || $_SERVER["REQUEST_METHOD"] != "GET"){
+            return $response;
+        }    	
+        $key = SMCache::getKey();
+
+        //TODO: FOr access token store for just 15 minutes, else 24 hours
+        PRedis::setex($key,30*60, json_encode($response->original));
+        return $response;
+    }
+
+   
+
+
+}

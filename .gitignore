@@ -1,0 +1,6 @@
+.DS_Store
+/public/uploads/
+.env
+.idea/
+.env~
+..env.un~
