@@ -97,42 +97,50 @@ class Facebook extends AppConfiguration{
 				//let's loop through each of the access levels the one being revoked granted, and itself too
 				foreach( $access_levels as $key => $val )
 				{
-					//we only really care about the level if it has an fb group id set
-					if( !empty( $val->facebook_group_id ) )
+					//$val is just the access level id, let's get the actual level
+					$val = AccessLevel::find( $val );
+
+					//assuming we have the actual access level now let's move forward
+					if( $val )
 					{
-						$remove_user = true;
-
-						//check to see if there are any other levels that grant access to this facebook group
-						$fb_group_levels = AccessLevel::whereFacebookGroupId( $val->facebook_group_id )
-							->select('id')
-							->get()
-							->lists('id');
-
-						//gotta check each level that grants this group
-						foreach( $fb_group_levels as $key2 => $val2 )
+						//we only really care about the level if it has an fb group id set
+						if( !empty( $val->facebook_group_id ) )
 						{
-							//now we need an array of all levels that grant this one
-							$levels_that_grant = Pass::granted_by_levels( $val2->id );
+							$remove_user = true;
 
-							//check to see if there are any other roles that grant this
-							$role = Role::whereIn( 'access_level_id', $levels_that_grant )
-								->where( 'id', '!=', $pass->id )
-								->where( function ( $query )
-								{
-									$query->whereNull( 'expired_at' )
-										->orWhere( 'expired_at', '>', Carbon::now() )
-										->orWhere( 'expired_at', '=', '0000-00-00 00:00:00' );
-								} )
-								->first();
+							//check to see if there are any other levels that grant access to this facebook group
+							$fb_group_levels = AccessLevel::whereFacebookGroupId( $val->facebook_group_id )
+								->select( 'id' )
+								->get()
+								->lists( 'id' );
 
-							//this means we found another access pass for this user that would grant this facebook group, so we don't want to revoke
-							if( $role )
-								$remove_user = false;
+							//gotta check each level that grants this group
+							foreach( $fb_group_levels as $key2 => $val2 )
+							{
+								//now we need an array of all levels that grant this one
+								$levels_that_grant = Pass::granted_by_levels( $val2 );
+
+								//check to see if there are any other roles that grant this
+								$role = Role::whereIn( 'access_level_id', $levels_that_grant )
+									->where( 'id', '!=', $pass->id )
+									->whereUserId( $pass->user_id )
+									->where( function ( $query )
+									{
+										$query->whereNull( 'expired_at' )
+											->orWhere( 'expired_at', '>', Carbon::now() )
+											->orWhere( 'expired_at', '=', '0000-00-00 00:00:00' );
+									} )
+									->first();
+
+								//this means we found another access pass for this user that would grant this facebook group, so we don't want to revoke
+								if( $role )
+									$remove_user = false;
+							}
+
+							//we should remove the user, let's do that!
+							if( $remove_user )
+								self::removeGroupMemberByFacebookGroupID( $pass->site_id, $val->facebook_group_id, $pass->user_id );
 						}
-
-						//we should remove the user, let's do that!
-						if( $remove_user )
-							self::removeGroupMemberByFacebookGroupID( $pass->site_id, $val->facebook_group_id, $pass->user_id );
 					}
 				}
 			}
