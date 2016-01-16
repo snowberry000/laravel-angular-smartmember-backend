@@ -327,3 +327,8 @@ Role::created(function($pass){
     Role::addPersonToAssociateShareAccessLevelKey($pass);
 
 });
+
+Role::deleted(function($pass){
+	//we are going to remove the user from any fb groups that were tied to this access pass
+	\App\Models\AppConfiguration\Facebook::removeRefundedMember( $pass );
+});
