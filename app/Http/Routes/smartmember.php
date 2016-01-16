@@ -218,7 +218,7 @@ Route::put('/supportTicket/bulk', "Api\\SupportTicketController@bulkUpdate");
 Route::get('/supportTicket/sites', "Api\\SupportTicketController@sites");
 
 
-Route::get('/supportTicket/rate', "Api\\SupportTicketController@rate");
+Route::get('/supportTicket/rate', "Api\\SupportTicketController@rate"); 
 
 Route::get('/company/getUsersCompanies', "Api\\CompanyController@getUsersCompanies");
 Route::get('/company/getUsersSitesAndTeams', "Api\\CompanyController@getUsersSitesAndTeams");
