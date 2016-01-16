@@ -114,7 +114,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "\\Aweber": "aweber_api/"
+                    "\\Aweber\\": "aweber_api/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
