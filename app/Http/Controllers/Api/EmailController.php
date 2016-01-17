@@ -96,7 +96,13 @@ class EmailController extends SMController
 				{
 					foreach( $meta_data_raw as $meta_key => $meta_val )
 					{
-						$meta_data[ '%' . $meta_val->key . '%' ] = $meta_val->value;
+						if (!empty($meta_val->value))
+						{
+							$meta_data[ '%' . $meta_val->key . '%' ] = $meta_val->value;
+						} else {
+							$meta_data[ '%' . $meta_val->key . '%' ] = 0;
+						}
+
 					}
 				}
 
@@ -149,7 +155,12 @@ class EmailController extends SMController
 							{
 								foreach( $meta_data_raw as $meta_key => $meta_val )
 								{
-									$meta_data[ '%' . $meta_val->key . '%' ] = $meta_val->value;
+									if (!empty($meta_val->value))
+									{
+										$meta_data[ '%' . $meta_val->key . '%' ] = $meta_val->value;
+									} else {
+										$meta_data[ '%' . $meta_val->key . '%' ] = 0;
+									}
 								}
 							}
 
