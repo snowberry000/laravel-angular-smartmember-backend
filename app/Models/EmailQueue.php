@@ -661,7 +661,7 @@ class EmailQueue extends Root
 
 					$meta_data_raw = $queue_item->user->meta( $queue_item->site_id )->get();
 
-					if( !empty( $meta_data_raw ) )
+					if( !( $meta_data_raw->isEmpty() ) )
 					{
 						foreach( $meta_data_raw as $meta_key => $meta_val )
 						{
@@ -671,7 +671,7 @@ class EmailQueue extends Root
 
 					foreach( $additional_meta as $item )
 					{
-						if( $item == '%aid%' && empty( $meta_data[ $item ] ) )
+						if( $item == '%aid%' && (empty( $meta_data[ $item ] ) || !isset($meta_data[$item]) ))
 						{
 							$substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro'][ $item ][] = 0;
 						}
@@ -699,7 +699,7 @@ class EmailQueue extends Root
 					{
 						$meta_data_raw = $queue_item->subscriber->user->meta( $queue_item->site_id )->get();
 
-						if( !empty( $meta_data_raw ) )
+						if( !( $meta_data_raw->isEmpty() ) )
 						{
 							foreach( $meta_data_raw as $meta_key => $meta_val )
 							{
@@ -710,7 +710,7 @@ class EmailQueue extends Root
 
 					foreach( $additional_meta as $item )
 					{
-						if( $item == '%aid%' && empty( $meta_data[ $item ] ) )
+						if( $item == '%aid%' && (empty( $meta_data[ $item ] ) || !isset($meta_data[$item]) ))
 						{
 							$substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro'][ $item ][] = 0;
 						}

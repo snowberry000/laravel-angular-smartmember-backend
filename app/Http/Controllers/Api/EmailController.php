@@ -91,8 +91,7 @@ class EmailController extends SMController
 				$meta_data = [ ];
 
 				$meta_data_raw = \Auth::user()->meta( $this->site->id )->get();
-
-				if( !empty( $meta_data_raw ) )
+				if( !( $meta_data_raw->isEmpty() ) )
 				{
 					foreach( $meta_data_raw as $meta_key => $meta_val )
 					{
@@ -104,12 +103,13 @@ class EmailController extends SMController
 						}
 
 					}
+				}  else {
+					$meta_data['%aid%'] = 0;
 				}
-
 				$replacements = [];
 				foreach( $additional_meta as $item )
 				{
-					$replacements[ $item ] = !empty( $meta_data[ $item ] ) ? $meta_data[ $item ] : '';
+					$replacements[ $item ] = $meta_data[ $item ];
 				}
 
 				if( !empty( $replacements ) )
@@ -118,7 +118,7 @@ class EmailController extends SMController
 		}
 
 		$email_count = 0;
-		if( \Input::has('recipient_type') && \Input::get('recipient_type') == 'segment' && \Input::has('intros') )
+		if( \Input::has('recipient_type') && \Input::get('recipient_type') == 'segment' && \Input::has('intros') && !empty(\Input::get('intros')) )
 		{
 			foreach( \Input::get('intros') as $intro )
 			{
@@ -151,7 +151,7 @@ class EmailController extends SMController
 
 							$meta_data_raw = \Auth::user()->meta( $this->site->id )->get();
 
-							if( !empty( $meta_data_raw ) )
+							if( !( $meta_data_raw->isEmpty() ) )
 							{
 								foreach( $meta_data_raw as $meta_key => $meta_val )
 								{
@@ -161,13 +161,16 @@ class EmailController extends SMController
 									} else {
 										$meta_data[ '%' . $meta_val->key . '%' ] = 0;
 									}
+
 								}
+							}  else {
+								$meta_data['%aid%'] = 0;
 							}
 
 							$replacements = [];
 							foreach( $additional_meta as $item )
 							{
-								$replacements[ $item ] = !empty( $meta_data[ $item ] ) ? $meta_data[ $item ] : '';
+								$replacements[ $item ] = $meta_data[ $item ];
 							}
 
 							if( !empty( $replacements ) )
