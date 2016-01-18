@@ -13,7 +13,6 @@ class CacheHelper
             $redis_keys = PRedis::keys($key);
             foreach ($redis_keys as $redis_key)
             {
-                \Log::info("Deleting " . $redis_key);
                 PRedis::del($redis_key);
             }
         }
