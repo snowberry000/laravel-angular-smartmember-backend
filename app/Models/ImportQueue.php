@@ -199,10 +199,10 @@ class ImportQueue extends Root
 				if( empty( $password ) )
 					$password = '';
 
-				//if( !$alreadyExists )
-				//{
+				if( !$alreadyExists )
+				{
 					SendGridEmail::sendNewUserSiteEmail($user, $site, $password );
-				//}
+				}
 
 			}
 			$queue_item->delete();
