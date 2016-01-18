@@ -79,18 +79,18 @@ class ImportQueue extends Root
 
     public function unLockQueue($site_id)
     {
-		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('import_queue_locked')->first();
+		$import_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('import_queue_locked')->get();
 
-		if( $email_queue_locked )
-			$email_queue_locked->delete();
+		foreach( $import_queue_locked as $lock_item )
+			$lock_item->forceDelete();
     }
 
     public function isQueueLocked($site_id)
     {
 		$now = Carbon::now();
-		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('email_queue_locked')->first();
-
-		if ($email_queue_locked) {
+		$import_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('import_queue_locked')->first();
+		
+		if (isset($import_queue_locked)) {
 			return true;
 		}
 
