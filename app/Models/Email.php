@@ -153,6 +153,12 @@ Email::saved(function($model){
 						else
 							$intro = EmailRecipient::create( [ 'type' => 'segment' ] );
 
+						if( empty( $intro ) )
+						{
+							//just in case the intro had an id but was deleted
+							$intro = EmailRecipient::create( [ 'type' => 'segment' ] );
+						}
+
 						$intro->type      = 'segment';
 						$intro->recipient = $intro_data[ 'type' ] . '_' . $intro_data[ 'target_id' ];
 						$intro->order     = $order;
