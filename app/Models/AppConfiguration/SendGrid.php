@@ -10,7 +10,7 @@ class SendGrid extends \SendGrid {
     	{
     		try 
     		{
-    			\Log::info($email->toWebFormat());
+    			//\Log::info($email->toWebFormat());
     		}
     		catch (Exception $e)
     		{

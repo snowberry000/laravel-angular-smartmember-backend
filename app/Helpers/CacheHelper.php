@@ -8,7 +8,6 @@ class CacheHelper
 {
     
     public static function clear($keys = []){
-        \Log::info($keys);
         foreach ($keys as $key) {
             $redis_keys = PRedis::keys($key);
             foreach ($redis_keys as $redis_key)
@@ -19,7 +18,6 @@ class CacheHelper
     }
 
     public static function reset($routes = []){
-        \Log::info($routes);
         $subdomain = DomainHelper::getSubdomain();
         $keys = [];
         foreach ($routes as $route) {
