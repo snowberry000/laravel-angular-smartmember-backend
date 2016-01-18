@@ -68,7 +68,7 @@ class PostController extends SMController
 
 				$post->comment_count = Comment::whereType( 'post' )->whereTargetId( $post->id )->count();
 			}
-
+            $posts = array_values($posts->toArray());
 			return $posts;
 		}
     }
