@@ -19,8 +19,8 @@ return [
 	),
 	
 	"sendgrid" => array(
-		"api_user" => "smllcsystem",
-		"api_pass" => "bsjeyym7hqONWwxhb7Wm"
+		"api_user" => env("SENDGRID_USERNAME"),
+		"api_pass" => env("SENDGRID_PASSWORD")
 	),
 
 	"facebook" => array(
