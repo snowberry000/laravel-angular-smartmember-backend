@@ -88,9 +88,9 @@ class ImportQueue extends Root
     public function isQueueLocked($site_id)
     {
 		$now = Carbon::now();
-		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('email_queue_locked')->first();
+		$import_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('import_queue_locked')->first();
 
-		if (isset($email_queue_locked)) {
+		if (isset($import_queue_locked) && $import_queue_locked->value > $now->timestamp) {
 			return true;
 		}
 
