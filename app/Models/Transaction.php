@@ -19,6 +19,7 @@ class Transaction extends Root
     public static $CLICKBANK = "clickbank";
     public static $WSO = "wso";
     public static $ZAXAA = "zaxaa";
+    public static $INFUSION = "infusion";
     public function site()
     {
         return $this->belongsTo('App\Models\Site');
@@ -91,9 +92,13 @@ class Transaction extends Root
             case Transaction::$WSO:
                 $data = Transaction::parseWSOData($data);
                 break;
+            case Transaction::$INFUSION:
+                $data = Transaction::parseInfusionData($data);
+                break;
             default:
                 $data = $data;
                 break;
+
 
         }
 
@@ -415,6 +420,41 @@ class Transaction extends Root
         $fields['email']            = isset($data['cust_email']) ? $data['cust_email'] : '';
         $fields['payment_method']   = strtolower(isset($data['trans_gateway']) ? $data['trans_gateway'] : '');
         $fields['price']            = isset($data['trans_amount']) ? $data['trans_amount'] : '';
+        $fields['association_hash'] = $association_hash;
+        $fields['data']             = json_encode( $data );
+        $fields['site_id']          = $site->id;
+
+        $subdomain = \Domain::getSubdomain();
+
+        if ( $subdomain )
+        {
+            $site = Site::where('subdomain', $subdomain)->first();
+            if ($site)
+            {
+                $fields['site_id'] = $site->id;
+            }
+        }
+
+        return $fields;
+    }
+
+    private static function parseInfusionData($data)
+    {
+        $association_hash = md5(microtime().rand());
+        $site = Site::whereSubdomain($data['subdomain'])->first();
+
+
+        $fields = array();
+        $fields['type']             = 'sale';
+        $fields['source']           = 'infusion';
+        $fields['user_id']          = '';
+        $fields['affiliate_id']     = '';
+        $fields['product_id']       = isset($data['access_level']) ? $data['access_level'] : '';
+        $fields['transaction_id']   = isset($data['Id']) ? $data['Id'] : '';
+        $fields['name']             = isset($data['FirstName']) ? $data['FirstName'] . $data['LastName'] : '';
+        $fields['email']            = isset($data['ccustemail']) ? $data['ccustemail'] : '';
+        $fields['payment_method']   = strtolower(isset($data['ctranspaymentmethod']) ? $data['ctranspaymentmethod'] : '');
+        $fields['price']            = isset($data['ctransamount']) ? $data['ctransamount'] : '';
         $fields['association_hash'] = $association_hash;
         $fields['data']             = json_encode( $data );
         $fields['site_id']          = $site->id;

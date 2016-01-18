@@ -159,6 +159,8 @@ class TransactionController extends SMController
         } else if ($request['type'] == 'zaxaa') {
             \Log::info('Got a zaxaa transaction');
             return Transaction::createTransaction($request, Transaction::$ZAXAA);
+        } else if ($request['type'] == 'infusion') {
+            return Transaction::createTransaction($request, Transaction::$INFUSION);
         } else if ($request['type'] == 'wso')
         {
             return Transaction::createTransaction($request, Transaction::$WSO);
