@@ -69,10 +69,73 @@ class SendGridEmail {
         self::sendEmail($email, true, $site);
     }
 
+	public static function getLoginInfo( $user, $site, $password='', $access_level_name = '' )
+	{
+		$reset_url = "http://";
+		if ($site->domain)
+			$reset_url .= $site->domain;
+		else
+			$reset_url .= $site->subdomain . ".smartmember.com";
+
+		$reset_url .="?forgot";
+		$string = '<ul style="font-size:17px;line-height:24px;margin:0 0 16px;margin-bottom:1.5rem;list-style:none;padding-left:1rem">';
+
+		if( !empty( $access_level_name ) )
+			$string .= "<li>You have been granted access to: <strong>" . $access_level_name . "</strong></li>";
+
+		$string .= "<li><strong>E-mail:</strong> $user->email</li><li><strong>Password:</strong>";
+
+		$string .= !empty( $password ) ? $password : "use your existing password";
+
+		$string .= "</li><li>forgot your password? Click here:<br><a href=\"$reset_url\">$reset_url</a></li>";
+
+		$string .= '</ul>';
+
+		return $string;
+	}
+
+	public static function getWelcomeDefaultSubject()
+	{
+		$default_subject = 'Welcome to %site_name%';
+
+		return $default_subject;
+	}
+
+	public static function getWelcomeDefaultContent()
+	{
+		$default_email_content = '<h2 style="color:#2ab27b;line-height:30px;margin-bottom:12px;margin:0 0 12px">You\'re in!</h2>
+								 	<p style="font-size:18px;line-height:24px;margin:0 0 16px;">
+								 		You\'re now a member at <strong>%site_name%</strong> - welcome!
+									</p>
+								 	<p style="font-size:20px;line-height:26px;margin:0 0 16px">
+								 		<strong>Ready to login?</strong> Below you\'ll find your login details and a link to get started.
+								 	</p>
+								 	<hr style="border:none;border-bottom:1px solid #ececec;margin:1.5rem 0;width:100%">
+								 	%login_details%';
+
+		return $default_email_content;
+	}
+
     public static function sendNewUserSiteEmail($user, $site, $password = '', $cbreceipt = false)
     {
-
         $email = new \SendGrid\Email();
+		$default_subject = self::getWelcomeDefaultSubject();
+		$default_email_content = self::getWelcomeDefaultContent();
+
+		$site_welcome_subject = $site->meta_data()->where('key', 'welcome_email_subject')->select(['value'])->first();
+		$site_welcome_subject = isset( $site_welcome_subject ) ? $site_welcome_subject->value : $default_subject;
+
+		$site_welcome_subject = str_replace( '%site_name%', $site->name, $site_welcome_subject );
+
+		$site_welcome_content = $site->meta_data()->where('key', 'welcome_email_content')->select(['value'])->first();
+		$site_welcome_content = isset( $site_welcome_content ) ? $site_welcome_content->value : $default_email_content;
+
+		$replacements = [
+			'%site_name%' => $site->name,
+			'%login_details%' => self::getLoginInfo( $user, $site, $password )
+		];
+
+		$site_welcome_content = str_replace( array_keys( $replacements ), array_values( $replacements ), $site_welcome_content );
 
         $site_logo = $site->meta_data()->where('key', 'site_logo')->select(['value'])->first();
         $header_bg_color = $site->getHeaderBackgroundColor();
@@ -107,14 +170,12 @@ class SendGridEmail {
 
 
 
-        $view = \View::make("email.user.siteregister", $data)->render();
-
 		$from = "noreply@" . ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' );
 
         $email->addTo($user->email)
             ->setFrom($from)
-            ->setSubject("Welcome to " . ( isset($site->name) ? $site->name : 'Smartmember')  )
-            ->setHtml($view);
+            ->setSubject( $site_welcome_subject )
+            ->setHtml( $site_welcome_content );
         \Log::info('Send welcome email for' . $user->email);
         self::sendEmail($email, true, $site);
     }
@@ -283,9 +344,6 @@ class SendGridEmail {
             $data[ 'user_email' ]    = $user->email;
             $data[ 'reset_url' ]     = $reset_link;
 
-            if( !empty( $pass->password ) )
-                $data[ 'user_password' ] = $pass->password;
-
             $data[ 'login_url' ]     = $login_url;
             $site_meta               = $site->meta_data()->where( 'key', 'site_logo' )->select( [ 'value' ] )->first();
             $data[ 'site_logo' ]     = isset( $site_meta ) ? $site_meta->value : '';
@@ -319,12 +377,35 @@ class SendGridEmail {
             //TODO: Add site specific credentials for sending email here.
             $email = new \SendGrid\Email();
 
+			$default_subject = self::getWelcomeDefaultSubject();
+			$default_email_content = self::getWelcomeDefaultContent();
+
+			$site_welcome_subject = $site->meta_data()->where('key', 'welcome_email_subject')->select(['value'])->first();
+			$site_welcome_subject = isset( $site_welcome_subject ) ? $site_welcome_subject->value : $default_subject;
+
+			$site_welcome_subject = str_replace( '%site_name%', $site->name, $site_welcome_subject );
+
+			$site_welcome_content = $site->meta_data()->where('key', 'welcome_email_content')->select(['value'])->first();
+			$site_welcome_content = isset( $site_welcome_content ) ? $site_welcome_content->value : $default_email_content;
+
+			$password = '';
+
+			if( !empty( $pass->password ) )
+				$password = $pass->password;
+
+			$replacements = [
+				'%site_name%' => $site->name,
+				'%login_details%' => self::getLoginInfo( $user, $site, $password, $access_level_name )
+			];
+
+			$site_welcome_content = str_replace( array_keys( $replacements ), array_values( $replacements ), $site_welcome_content );
+
 			$from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
 
             $email->addTo( $to )
                 ->setFrom( $from )
-                ->setSubject( $subject )
-                ->setHtml( $view );
+                ->setSubject( $site_welcome_subject )
+                ->setHtml( $site_welcome_content );
 
             self::sendEmail( $email, true, $site );
         }
