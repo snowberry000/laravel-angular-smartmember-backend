@@ -19,3 +19,21 @@ class Widget extends Root
 		return $this->hasMany('App\Models\WidgetMeta');
 	}
 }
+
+Widget::deleting(function($widget){
+
+    //$company->permalink = Company::setPermalink($company);
+    $routes[] = 'site_details';
+    
+    \SMCache::reset($routes);
+    return $widget;
+});
+
+Widget::saving(function($widget){
+
+    //$company->permalink = Company::setPermalink($company);
+    $routes[] = 'site_details';
+    
+    \SMCache::reset($routes);
+    return $widget;
+});
