@@ -90,7 +90,7 @@ class ImportQueue extends Root
 		$now = Carbon::now();
 		$import_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('import_queue_locked')->first();
 
-		if (isset($import_queue_locked) && $import_queue_locked->value > $now->timestamp) {
+		if (isset($import_queue_locked)) {
 			return true;
 		}
 
