@@ -40,7 +40,7 @@ class SiteMetaDataController extends SMController
         $bpage_permalink = "";
         //TODO: check if admin
         $site_id = $this->site->id;
-        foreach (Input::except('site') as $key => $input) {
+        foreach (Input::except(['site','import_queue_locked']) as $key => $input) {
             $pageMetaData = SiteMetaData::whereSiteId($site_id)->whereKey($key)->first();
             if (!$pageMetaData) {
                 $pageMetaData = new SiteMetaData();
