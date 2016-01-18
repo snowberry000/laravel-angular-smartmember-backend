@@ -60,7 +60,7 @@ class PostController extends SMController
 			{
 				if( !$post->preview_schedule )
 				{
-					if( !SMAuthenticate::checkScheduleAvailability( $post ) )
+					if( !SMAuthenticate::checkScheduleAvailability( $post ) || !SMAuthenticate::checkAccessLevel( $post ) )
 					{
 						unset( $posts[ $i ] );
 					}
