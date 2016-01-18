@@ -71,13 +71,13 @@ class ImportQueue extends Root
 		}
 	}
 
-    function lockQueue($site_id)
+    public function lockQueue($site_id)
     {
 		$now = Carbon::now();
 		SiteMetaData::create(['site_id' => $site_id, 'key' => 'import_queue_locked', 'value' => $now->timestamp + 300 ]);
     }
 
-    function unLockQueue($site_id)
+    public function unLockQueue($site_id)
     {
 		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('import_queue_locked')->first();
 
@@ -85,12 +85,12 @@ class ImportQueue extends Root
 			$email_queue_locked->delete();
     }
 
-    function isQueueLocked($site_id)
+    public function isQueueLocked($site_id)
     {
 		$now = Carbon::now();
 		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('email_queue_locked')->first();
 
-		if (isset($email_queue_locked) && $email_queue_locked->value > $now->timestamp) {
+		if (isset($email_queue_locked)) {
 			return true;
 		}
 
@@ -212,13 +212,7 @@ class ImportQueue extends Root
 	}
 
     public function processQueue($site_id, $abort_on_lock = true)
-    {   
-        if ($this->IsQueueLocked($site_id)) {
-            if ($abort_on_lock)
-                \App::abort(403, "The queue is locked right now. Please try again later");
-            else return;
-        }
-
+    {
         $this->lockQueue($site_id);
         $data = $this->queueHelper($site_id);
         $this->unLockQueue($site_id);

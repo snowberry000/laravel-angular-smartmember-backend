@@ -51,15 +51,14 @@ class ImportMemberEngine extends Command
         foreach ($sites as $site)
         {
             $queue = new ImportQueue;
-            try
-            {
-                \Log::info("Processing queue for " . $site);
-                $queue->processQueue($site, false);
-            } 
-            catch (Exception $e)
-            {
-                \Log::info("Failed to import members for site " . $site . " " . $e->getMessage());
-            }
+
+                if (!$queue->isQueueLocked($site))
+                {
+                    \Log::info("Processing queue for " . $site);
+                    $queue->processQueue($site, false);
+                }
+
+
 
             continue;
             

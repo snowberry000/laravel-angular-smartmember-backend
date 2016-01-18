@@ -25,7 +25,7 @@ class SiteMetaData extends Root
 
 	public static function clearHomepageCache( $data )
 	{
-		if( $data->key == 'homepage_url' )
+		if( $data->key == 'homepage_url' && isset($_SERVER['HTTP_HOST']) )
 		{
 			$domain = $_SERVER[ 'HTTP_HOST' ];
 			$parts = explode( ".", $domain );

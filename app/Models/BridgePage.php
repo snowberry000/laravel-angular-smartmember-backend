@@ -92,21 +92,25 @@ class BridgePage extends Root
 
 	public static function clearHomepageCache( $site_id )
 	{
-			$domain = $_SERVER[ 'HTTP_HOST' ];
-			$parts = explode( ".", $domain );
-			$tld = array_pop( $parts );
+        if (isset($_SERVER['HTTP_HOST']))
+        {
+            $domain = $_SERVER[ 'HTTP_HOST' ];
+            $parts = explode( ".", $domain );
+            $tld = array_pop( $parts );
 
-			$site = Site::find( $site_id );
-			if( $site )
-			{
-				$keys = [];
-				$keys[] = $site->subdomain . '.smartmember.' . $tld . '::*';
+            $site = Site::find( $site_id );
+            if( $site )
+            {
+                $keys = [];
+                $keys[] = $site->subdomain . '.smartmember.' . $tld . '::*';
 
-				if( !empty( $site->domain ) )
-					$keys[] = $site->domain . '::*';
+                if( !empty( $site->domain ) )
+                    $keys[] = $site->domain . '::*';
 
-				SMCache::clear($keys);
-			}
+                SMCache::clear($keys);
+            }
+        }
+
 	}
 
 	public static function clearCache( $model )
