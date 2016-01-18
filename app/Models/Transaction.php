@@ -452,9 +452,7 @@ class Transaction extends Root
         $fields['product_id']       = isset($data['access_level']) ? $data['access_level'] : '';
         $fields['transaction_id']   = isset($data['Id']) ? $data['Id'] : '';
         $fields['name']             = isset($data['FirstName']) ? $data['FirstName'] . $data['LastName'] : '';
-        $fields['email']            = isset($data['ccustemail']) ? $data['ccustemail'] : '';
-        $fields['payment_method']   = strtolower(isset($data['ctranspaymentmethod']) ? $data['ctranspaymentmethod'] : '');
-        $fields['price']            = isset($data['ctransamount']) ? $data['ctransamount'] : '';
+        $fields['email']            = isset($data['Email']) ? $data['Email'] : '';
         $fields['association_hash'] = $association_hash;
         $fields['data']             = json_encode( $data );
         $fields['site_id']          = $site->id;
