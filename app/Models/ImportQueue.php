@@ -81,11 +81,8 @@ class ImportQueue extends Root
     {
 		$import_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('import_queue_locked')->get();
 
-		if( !$import_queue_locked->isEmpty() )
-		{
-			foreach( $import_queue_locked as $lock_item )
-				$lock_item->forceDelete();
-		}
+		foreach( $import_queue_locked as $lock_item )
+			$lock_item->forceDelete();
     }
 
     public function isQueueLocked($site_id)

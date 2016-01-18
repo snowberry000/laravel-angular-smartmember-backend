@@ -486,11 +486,8 @@ class EmailQueue extends Root
     {
 		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('email_queue_locked')->get();
 
-		if( !$email_queue_locked->isEmpty() )
-		{
-			foreach( $email_queue_locked as $lock_item )
-				$lock_item->forceDelete();
-		}
+		foreach( $email_queue_locked as $lock_item )
+			$lock_item->forceDelete();
     }
 
     function isQueueLocked($site_id)
