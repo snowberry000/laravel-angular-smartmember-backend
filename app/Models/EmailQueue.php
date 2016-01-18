@@ -110,7 +110,7 @@ class EmailQueue extends Root
 
 					if( !$queue_item->info )
 					{
-						$new_emails = Role::join( 'users', 'users.id', '=', 'sites_roles.user_id' )
+						$new_emails = \App\Models\Site\Role::join( 'users', 'users.id', '=', 'sites_roles.user_id' )
 							->whereNull( 'users.deleted_at' )
 							->whereIn( 'sites_roles.site_id', $site_ids )
 							->select( 'users.email' )
