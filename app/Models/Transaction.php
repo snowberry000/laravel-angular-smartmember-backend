@@ -450,8 +450,8 @@ class Transaction extends Root
         $fields['user_id']          = '';
         $fields['affiliate_id']     = '';
         $fields['product_id']       = isset($data['access_level']) ? $data['access_level'] : '';
-        $fields['transaction_id']   = isset($data['Id']) ? $data['Id'] : '';
-        $fields['name']             = isset($data['FirstName']) ? $data['FirstName'] . $data['LastName'] : '';
+        $fields['transaction_id']   = isset($data['Id']) ? $data['Id'] . $association_hash : ''; //make transaction unique
+        $fields['name']             = isset($data['FirstName']) ? $data['FirstName'] . ' ' . $data['LastName'] : '';
         $fields['email']            = isset($data['Email']) ? $data['Email'] : '';
         $fields['association_hash'] = $association_hash;
         $fields['data']             = json_encode( $data );
