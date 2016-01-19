@@ -144,7 +144,7 @@ Route::post('/siteRole/import',"Api\\Site\\RoleController@postImport");
 Route::post('/siteRole/removeUserFromSite',"Api\\Site\\RoleController@removeUserFromSite");
 
 Route::get('/emailSubscriber/getCSV',"Api\\EmailSubscriberController@getCSV");
-Route::get('/emailSubscriber/getEmailLists',"Api\\EmailSubscriberController@getEmailLists");
+Route::get('/emailSubscriber/getUnsubscribeInfo',"Api\\EmailSubscriberController@getUnsubscribeInfo");
 Route::post('/emailList/users',"Api\\EmailListController@users");
 Route::get('/emailList/sendMailLists',"Api\\EmailListController@sendMailLists");
 Route::get('/accessLevel/sendMailAccessLevels',"Api\\AccessLevelController@sendMailAccessLevels");
