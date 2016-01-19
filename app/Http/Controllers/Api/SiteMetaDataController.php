@@ -24,8 +24,34 @@ class SiteMetaDataController extends SMController
         $site_id = $this->site->id;
         Input::merge(array('site_id' => $site_id));
         $this->model->with("menu_items");
-        $meta_data = parent::index();
-        return $meta_data;
+		$page_size = config("vars.default_page_size");
+		$query = $this->model;
+
+		if( !Input::has('bypass_paging') || !Input::get('bypass_paging') )
+			$query = $query->take($page_size);
+
+		$query = $query->orderBy('id' , 'DESC');
+		$query = $query->whereNull('deleted_at');
+		$query = $query->whereNotIn( 'key', ['import_queue_locked', 'imports_queue_locked']);
+		foreach (Input::all() as $key => $value){
+			switch($key){
+				case 'q':
+					if (Input::get('q')){
+						$query = $this->model->applySearchQuery($query,$value);
+					}
+					break;
+				case 'p':
+					$query->skip((Input::get('p')-1)*$page_size);
+					break;
+				case 'bypass_paging':
+					break;
+				case "ignore":
+					break;
+				default:
+					$query->where($key,'=',$value);
+			}
+		}
+		return $query->get();
     }
 
     public function save()
@@ -40,7 +66,7 @@ class SiteMetaDataController extends SMController
         $bpage_permalink = "";
         //TODO: check if admin
         $site_id = $this->site->id;
-        foreach (Input::except(['site','import_queue_locked']) as $key => $input) {
+        foreach (Input::except(['site','import_queue_locked', 'imports_queue_locked']) as $key => $input) {
             $pageMetaData = SiteMetaData::whereSiteId($site_id)->whereKey($key)->first();
             if (!$pageMetaData) {
                 $pageMetaData = new SiteMetaData();
