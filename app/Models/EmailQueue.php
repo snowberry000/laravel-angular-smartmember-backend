@@ -13,6 +13,7 @@ use App\Models\EmailRecipient;
 use App\Models\EmailRecipientsQueue;
 use App\Models\EmailJob;
 use App\Models\UnsubscriberSegment;
+use App\Models\Unsubscriber;
 use Auth;
 
 class EmailQueue extends Root
@@ -62,7 +63,7 @@ class EmailQueue extends Root
 					$new_emails = User::join('sites_roles as r', 'users.id', '=', 'r.user_id' )
 						->where('r.site_id', $segment_bits[1])
 						->whereNull('r.deleted_at')
-						->select(['users.email','users.id'])
+						->select(['users.email','users.id', 'users.email_hash'])
 						->take( $remaining + 1 )
 						->distinct()
 						->orderBy('id','ASC');
@@ -76,7 +77,7 @@ class EmailQueue extends Root
 					$new_emails = EmailListLedger::join('email_subscribers', 'email_subscribers.id','=','email_listledger.subscriber_id')
 						->where( 'email_listledger.list_id', $segment_bits[1] )
 						->whereNull('email_subscribers.deleted_at')
-						->select(['email_subscribers.email','email_subscribers.id'])
+						->select(['email_subscribers.email','email_subscribers.id', 'email_subscribers.hash as email_hash'])
 						->take( $remaining + 1 )
 						->distinct()
 						->orderBy('id','ASC');
@@ -90,7 +91,7 @@ class EmailQueue extends Root
 					$new_emails = User::join('sites_roles as ap', 'users.id', '=', 'ap.user_id')
 						->where('ap.access_level_id', $segment_bits[1])
 						->whereNull('ap.deleted_at')
-						->select(['users.email','users.id'])
+						->select(['users.email','users.id', 'users.email_hash'])
 						->take( $remaining + 1 )
 						->distinct()
 						->orderBy('id','ASC');
@@ -114,7 +115,7 @@ class EmailQueue extends Root
 							->whereNull( 'users.deleted_at' )
 							->whereIn( 'sites_roles.site_id', $site_ids )
 							->select( 'users.email' )
-							->select( [ 'users.email', 'users.id' ] )
+							->select( [ 'users.email', 'users.id', 'users.email_hash' ] )
 							->take( $remaining + 1 )
 							->distinct()
 							->orderBy('id','ASC');
@@ -135,7 +136,7 @@ class EmailQueue extends Root
 							->whereNull('users.email')
 							->whereNull('users.deleted_at')
 							->whereNull('sites_roles.deleted_at')
-							->select(['email_subscribers.email','email_subscribers.id'])
+							->select(['email_subscribers.email','email_subscribers.id', 'email_subscribers.hash as email_hash'])
 							->take( $remaining + 1 )
 							->distinct()
 							->orderBy('id','ASC');
@@ -155,6 +156,12 @@ class EmailQueue extends Root
 
 				foreach( $new_emails as $key=>$recipient )
 				{
+					if( empty( $recipient->email_hash ) )
+					{
+						$recipient->email_hash = md5( microtime() * rand() );
+						$recipient->save();
+					}
+
 					$counter++;
 
 					if( $counter > $remaining )
@@ -259,7 +266,9 @@ class EmailQueue extends Root
 					$tosend[ 'list_type' ]      = ( $segment_bits[ 0 ] == 'site' || $segment_bits[ 0 ] == 'level' ) || ( $segment_bits[ 0 ] == 'catch' && !$queue_item->info ) ? 'segment' : null;
 					$tosend[ 'job_id' ]         = $queue_item->email_job_id;
 					$tosend[ 'send_at' ]        = isset( $queue_item->send_at ) ? $queue_item->send_at : Carbon::now();
-					$queueEmails[]              = $tosend;
+
+					if( !self::checkIfUnsubscribed( $segment, $recipient, $tosend['list_type'], $queue_item->site_id ) )
+						$queueEmails[] = $tosend;
 				}
 			}
 
@@ -279,6 +288,30 @@ class EmailQueue extends Root
 			return self::enqueueSegment( $queue_item, $remaining );
 
 		return $remaining;
+	}
+
+	/**
+	 *
+	 * @param $segment
+	 * @param $recipient
+	 * @param $type
+	 * @return bool
+	 */
+	public static function checkIfUnsubscribed( $segment, $recipient, $type, $site_id )
+	{
+		switch( $type )
+		{
+			case 'segment':
+				$unsubscribed = UnsubscriberSegment::whereEmail( $recipient->email )->whereSiteId( $site_id )->first();
+
+				if( $unsubscribed )
+					return true;
+				break;
+			default:
+				//don't really need to check unsubscribed email subscribers, when they unsubscribed they are removed from the list they unsubscribed from.
+		}
+
+		return false;
 	}
 
     public static function enqueueEmails($email = FALSE, $job_id = FALSE)
