@@ -89,8 +89,9 @@ class Email extends Root
         }
 	}
 
-	public static function AddUnsubscribeToContent($content)
+	public static function AddUnsubscribeToContent($content, $site_id)
 	{
+		$site = Site::find( $site_id );
         $domain = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'http://my.smartmember.com';
         $parts = explode(".", $domain);
         $tld = array_pop($parts);
@@ -99,7 +100,7 @@ class Email extends Root
             $rootDomain = "smartmember.com";
         }
 
-		$app_url = 'http://my.' . $rootDomain . '/sign/unsubscribe';
+		$app_url = 'http://' . $site->subdomain . '.' . $rootDomain . '/sign/unsubscribe';
 
 		// build manually because % gets messed up the http_build_query() way
 		$app_url .= '?hash=@@@hash@@@&job_id=@@@job_id@@@&network_id=@@@network_id@@@&list_type=@@@list_type@@@';

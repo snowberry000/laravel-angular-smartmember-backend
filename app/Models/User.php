@@ -63,9 +63,20 @@ class User extends Root implements AuthenticatableContract
         return $this->hasMany('App\Models\LinkedAccount', 'user_id', 'user_id');
     }
 
-    public function getEmailHashAttribute()
+    public function getEmailHashAttribute( $value )
     {
-        return md5(trim($this->email));
+		if( empty( $value ) )
+		{
+			$email_hash = md5(trim($this->email));
+			$this->email_hash = $email_hash;
+			$this->save();
+		}
+		else
+		{
+			$email_hash = $value;
+		}
+
+        return $email_hash;
     }
 
     public function options($meta_key = null)

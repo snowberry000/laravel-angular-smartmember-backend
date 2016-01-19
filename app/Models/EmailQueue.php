@@ -154,13 +154,10 @@ class EmailQueue extends Root
 				$counter = 0;
 				$last_recipient_queued = 0;
 
-				foreach( $new_emails as $key=>$recipient )
+				foreach( $new_emails as $key => $recipient )
 				{
-					if( empty( $recipient->email_hash ) )
-					{
-						$recipient->email_hash = md5( microtime() * rand() );
-						$recipient->save();
-					}
+					$recipient->email_hash; //this makes it set the hash (via the attribute mutator) and save it if it didn't have one before
+					$recipient->hash; //this makes it set the hash (via the attribute mutator) and save it if it didn't have one before
 
 					$counter++;
 
@@ -567,7 +564,7 @@ class EmailQueue extends Root
             $content = Link::EncodeLinksInContent($content, $job_id);
 
         $content = Email::AddSignatureToContent($content, $email_id, $site_id);
-        $content = Email::AddUnsubscribeToContent( $content );
+        $content = Email::AddUnsubscribeToContent( $content, $site_id );
         $content = Open::AddPixelToContent($content);
 
         return $content;
