@@ -71,7 +71,7 @@ class RoleController extends SMController
         {
             $emails = \Input::get('emails');
 
-            $bits = preg_split('/[\ \n\,]+/', $emails );
+            $bits = preg_split('/[\n]+/', $emails );
             
             if( $bits )
             {
@@ -80,11 +80,21 @@ class RoleController extends SMController
                 foreach( $bits as $key => $value )
                 {
                     $value = trim( $value );
-
                     if( !$value )
                         continue;
+                    if (strpos($value,",") !== FALSE)
+                    {
+                        $line_parts = explode(",", $value);
+                        $line = array();
+                        $line['name'] = $line_parts[0];
+                        $line['email'] = $line_parts[1];
+                    } else {
+                        $line = array();
+                        $line['name'] = '';
+                        $line['email'] = $value;
+                    }
 
-                    $users[] = $value;
+                    $users[] = $line;
                 }
             }   
         }
