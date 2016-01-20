@@ -63,7 +63,7 @@ class EmailController extends SMController
 		$content = \Input::get('content','');
 
 		$content = $content . ( \Input::has('mail_signature') && !empty( \Input::get('mail_signature') ) ? \Input::get('mail_signature') : $mail_signature );
-		$content = Email::AddUnsubscribeToContent( $content );
+		$content = Email::AddUnsubscribeToContent( $content, $this->site->id );
 		$content = Open::AddPixelToContent($content);
 		$content = str_replace( '%subscriber_name%', !empty( \Auth::user()->first_name ) ? \Auth::user()->first_name : '[USER NAME WILL APPEAR HERE]', $content );
 
@@ -109,7 +109,10 @@ class EmailController extends SMController
 				$replacements = [];
 				foreach( $additional_meta as $item )
 				{
-					$replacements[ $item ] = $meta_data[ $item ];
+					if( !empty( $meta_data[ $item ] ) )
+						$replacements[ $item ] = $meta_data[ $item ];
+					else
+						$replacements[ $item ] = '';
 				}
 
 				if( !empty( $replacements ) )
@@ -170,7 +173,10 @@ class EmailController extends SMController
 							$replacements = [];
 							foreach( $additional_meta as $item )
 							{
-								$replacements[ $item ] = $meta_data[ $item ];
+								if( !empty( $meta_data[ $item ] ) )
+									$replacements[ $item ] = $meta_data[ $item ];
+								else
+									$replacements[ $item ] = '';
 							}
 
 							if( !empty( $replacements ) )
