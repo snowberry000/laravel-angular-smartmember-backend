@@ -33,7 +33,7 @@ class RoleController extends SMController
             Input::merge(['q'=>null]);
         }
 
-        return parent::paginateIndex();
+        return parent::paginateIndex(array('distinct' => true));
     }
 
     public function passes(){
