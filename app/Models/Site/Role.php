@@ -40,7 +40,7 @@ class Role extends Root{
                 ->orWhere('expired_at', '=', '0000-00-00 00:00:00')
                 ->orWhereNull('expired_at');
         })->get();
-
+        \Log::info($access_levels);
         foreach ($access_levels as $access_level)
         {
             $unique_access_levels = array_merge($unique_access_levels, Pass::access_levels($access_level->access_level_id));
@@ -325,10 +325,34 @@ Role::created(function($pass){
     //Company::createCompanyUsingPass($pass);
     Role::addPersonToWebinar($pass);
     Role::addPersonToAssociateShareAccessLevelKey($pass);
-
 });
+
+Role::saved(function($pass){
+    //Company::createCompanyUsingPass($pass);
+    Role::addPersonToWebinar($pass);
+    Role::addPersonToAssociateShareAccessLevelKey($pass);
+    $subdomain = \Domain::getSubdomain();
+    $user = User::find($pass->user_id);
+
+    $keys = array();
+    $keys[] = $subdomain.':_site_details' . ':'.$user->access_token;
+    $keys[] = $subdomain.':_module_home' . ':'.$user->access_token;
+    $keys[] = $subdomain.':_user_'.$pass->user_id.':'.$user->access_token;
+    \Log::info($keys);
+    \SMCache::clear($keys);
+});
+
 
 Role::deleted(function($pass){
 	//we are going to remove the user from any fb groups that were tied to this access pass
 	\App\Models\AppConfiguration\Facebook::removeRefundedMember( $pass );
+    $subdomain = \Domain::getSubdomain();
+    $user = User::find($pass->user_id);
+
+    $keys = array();
+    $keys[] = $subdomain.':_site_details' . ':'.$user->access_token;
+    $keys[] = $subdomain.':_module_home' . ':'.$user->access_token;
+    $keys[] = $subdomain.':_user_'.$pass->user_id.':'.$user->access_token;
+
+    \SMCache::clear($keys);
 });
