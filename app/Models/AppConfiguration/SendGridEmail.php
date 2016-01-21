@@ -444,7 +444,10 @@ class SendGridEmail {
 
 			$replacements = [
 				'%site_name%' => $site->name,
-				'%login_details%' => self::getLoginInfo( $user, $site, $password, $access_level_name )
+				'%login_details%' => self::getLoginInfo( $user, $site, $password, $access_level_name ),
+				'%site_url%' => $site->domain ? $site->domain . '?signin' : 'http://'.$site->subdomain . '.smartmember.com?signin',
+				'%site_subdomain%' => $site->subdomain,
+				'%login_button%' => '' //this is to get rid of it for anyone who already implemented it
 			];
 
 			$site_welcome_content = str_replace( array_keys( $replacements ), array_values( $replacements ), $site_welcome_content );
