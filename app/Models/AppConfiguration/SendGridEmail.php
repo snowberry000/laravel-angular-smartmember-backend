@@ -93,7 +93,7 @@ class SendGridEmail {
 
 		return $string;
 	}
-
+    
 	public static function getWelcomeDefaultSubject()
 	{
 		$default_subject = 'Welcome to %site_name%';
@@ -111,10 +111,37 @@ class SendGridEmail {
 								 		<strong>Ready to login?</strong> Below you\'ll find your login details and a link to get started.
 								 	</p>
 								 	<hr style="border:none;border-bottom:1px solid #ececec;margin:1.5rem 0;width:100%">
-								 	%login_details%';
+								 	%login_details%
+                                    %login_button%';
 
 		return $default_email_content;
 	}
+
+    public static function getLoginButton($site)
+    {
+        $login_button = '<div style="text-align:center;margin:2rem 0">
+                            <table cellpadding="0" cellspacing="0"
+                                style="border-collapse:collapse;background:#2ab27b;border-bottom:2px solid #1f8b5f;border-radius:4px;padding:14px 32px;display:inline-block">
+                                <tbody>
+                                    <tr>
+                                        <td style="border-collapse:collapse">
+                                                <a href="%site_url%"
+                                                style="color:white;font-weight:normal;text-decoration:none;word-break:break-word;display:inline-block;letter-spacing:1px;font-size:20px;line-height:26px"
+                                                align="center" target="_blank">
+                                                    Click here to sign in to %site_subdomain%
+                                                </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>';
+        // $login_button = '<button style="background-color : green">' .
+        //                 '<a href="%site_url%"' .
+        //                     'style="color:white;font-weight:normal;text-decoration:none;word-break:break-word;display:inline-block;letter-spacing:1px;font-size:20px;line-height:26px" align="center" target="_blank">'.
+        //                     'Click here to sign in to %site_subdomain%</a></button>';
+
+        return $login_button;
+    }
 
     public static function sendNewUserSiteEmail($user, $site, $password = '', $cbreceipt = false)
     {
@@ -132,9 +159,12 @@ class SendGridEmail {
 
 		$replacements = [
 			'%site_name%' => $site->name,
-			'%login_details%' => self::getLoginInfo( $user, $site, $password )
-		];
-
+			'%login_details%' => self::getLoginInfo( $user, $site, $password ),
+            '%login_button%' => self::getLoginButton($site),
+            '%site_url%' => $site->domain ? $site->domain . '?signin' : 'http://'.$site->subdomain . '.smartmember.com?signin',
+		    '%site_subdomain%' => $site->subdomain
+        ];
+        \Log::info($site->domain);
 		$site_welcome_content = str_replace( array_keys( $replacements ), array_values( $replacements ), $site_welcome_content );
 
         $site_logo = $site->meta_data()->where('key', 'site_logo')->select(['value'])->first();
