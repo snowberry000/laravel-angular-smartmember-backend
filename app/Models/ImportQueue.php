@@ -74,7 +74,7 @@ class ImportQueue extends Root
     public function lockQueue($site_id)
     {
 		$now = Carbon::now();
-		SiteMetaData::create(['site_id' => $site_id, 'key' => 'imports_queue_locked', 'value' => $now->timestamp + 300 ]);
+		SiteMetaData::create(['site_id' => $site_id, 'key' => 'imports_queue_locked', 'value' => $now->timestamp + 1800 ]);
     }
 
     public function unLockQueue($site_id)
@@ -90,7 +90,7 @@ class ImportQueue extends Root
 		$now = Carbon::now();
 		$imports_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('imports_queue_locked')->first();
 		
-		if ($imports_queue_locked) {
+		if ($imports_queue_locked && $imports_queue_locked->value > $now->timestamp) {
 			return true;
 		}
 

@@ -32,7 +32,7 @@ class SiteAdmin
         if( $site )
         {
 
-            $role = Role::whereSiteId($site->id)->whereIn('type',['admin','owner'])->first();
+            $role = Role::whereSiteId($site->id)->whereUserId(\Auth::id())->whereIn('type',['admin','owner'])->first();
             if( $role )
             {
                 return $next( $request );
