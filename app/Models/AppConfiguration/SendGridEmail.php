@@ -161,7 +161,7 @@ class SendGridEmail {
 			'%site_name%' => $site->name,
 			'%login_details%' => self::getLoginInfo( $user, $site, $password ),
             '%login_button%' => self::getLoginButton($site),
-            '%site_url%' => $site->domain ? $site->domain . '?signin' : 'http://'.$site->subdomain . '.smartmember.com?signin',
+            '%site_url%' => $site->domain ? $site->domain . '/sign/in/' : 'http://'.$site->subdomain . '.smartmember.com/sign/in/',
 		    '%site_subdomain%' => $site->subdomain
         ];
         \Log::info($site->domain);
@@ -173,12 +173,12 @@ class SendGridEmail {
 		$subdomain = $site->subdomain == 'sm' ? 'my' : $site->subdomain;
         if (!empty($site->domain))
         {
-            $reset_link = 'http://' . strtolower($site->domain) . '?forgot';
-            $login_url = 'http://' . strtolower($site->domain) . '?signin';
+            $reset_link = 'http://' . strtolower($site->domain) . '/sign/forgot';
+            $login_url = 'http://' . strtolower($site->domain) . '/sign/in/';
             $site_url = 'http://' . strtolower($site->domain);
         } else {
-            $reset_link = \Domain::appRoute( $subdomain, '?forgot');
-            $login_url  = \Domain::appRoute( $subdomain, "?signin");
+            $reset_link = \Domain::appRoute( $subdomain, '/sign/forgot');
+            $login_url  = \Domain::appRoute( $subdomain, "/sign/in/");
             $site_url = \Domain::appRoute($subdomain, '');
         }
 
@@ -227,9 +227,9 @@ class SendGridEmail {
         if (!empty($site->domain))
         {
             \Log::info('This is the custom domain');
-            $reset_link = 'http://' . strtolower($site->domain) .  '?reset&reset_hash=' . $user->reset_token;
+            $reset_link = 'http://' . strtolower($site->domain) .  '/sign/reset?reset_hash=' . $user->reset_token;
         } else {
-            $reset_link = \Domain::appRoute (\Domain::getSubdomain(), '?reset&reset_hash=' . $user->reset_token);
+            $reset_link = \Domain::appRoute (\Domain::getSubdomain(), '/sign/reset?reset_hash=' . $user->reset_token);
         }
 
         $data = array();
