@@ -151,7 +151,7 @@ class EmailSubscriberController extends SMController
 
         $return = [];
 
-		$site = Site::whereId( \Input::get('site_id') )->with(['meta_data' => function($query){
+		$site = Site::whereId( ( !empty( \Input::get('site_id') ) ? \Input::get('site_id') : ( $this->site ? $this->site->id : 1 ) ) )->with(['meta_data' => function($query){
 			$query->whereIn('site_meta_data.key',['site_logo']);
 		}])->first();
 
