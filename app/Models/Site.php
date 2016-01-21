@@ -322,7 +322,22 @@ class Site extends Root
 
     private function clone_downloads($site_id , $clone_id , $user_id){
         $columns = 'title , description , download_button_text , sort_order , media_item_id , access_level_type , access_level_id , embed_content , featured_image , permalink';
-        return $this->clone_table( 'download_center', $columns, $site_id, $clone_id, true, $user_id, 'creator_id' );
+        $return = $this->clone_table( 'download_center', $columns, $site_id, $clone_id, true, $user_id, 'creator_id' );
+
+		$columns = 'title, url, aws_key, type';
+		$this->clone_table( 'media_items', $columns, $site_id, $clone_id );
+
+		$clone_media_items = MediaItem::whereSiteId($site_id)->orderBy('id')->get();
+		$media_items = MediaItem::whereSiteId($clone_id)->orderBy('id')->get();
+
+		foreach ($media_items as $index => $media_item) {
+			DB::table('download_center')
+				->where('media_item_id', $media_item->id)
+				->where('site_id' , $site_id)
+				->update(['media_item_id' => $clone_media_items[$index]->id]);
+		}
+
+		return $return;
     }
 
     private function clone_posts($site_id , $clone_id , $user_id){
