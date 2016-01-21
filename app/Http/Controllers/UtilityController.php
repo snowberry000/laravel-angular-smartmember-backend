@@ -49,12 +49,13 @@ class UtilityController extends Controller
                 $return['aws_key'] = $newFile;
 
             //Store the resource in the media file
-            Media::create([
-                    "site_id" => $site->id,
-                    "type" => "image",
-                    "user_id" => $user ? $user->id : 0,
-                    "source" => $return['link']
-                ]);
+            if(!empty($site->id))
+                Media::create([
+                        "site_id" => $site->id,
+                        "type" => "image",
+                        "user_id" => $user ? $user->id : 0,
+                        "source" => $return['link']
+                    ]);
 
     	    return $return;
     	}
