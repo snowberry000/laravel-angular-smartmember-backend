@@ -472,14 +472,17 @@ class UserController extends SMController
 			}
 
 			$return = [];
-			$return['total_count'] = $query->count();
+			$query = $query->distinct()->groupBy('user_id');
+
 			if( !\Input::has('bypass_paging') || !\Input::get('bypass_paging') )
 				$query = $query->take($page_size);
 
 			if( \Input::has('p') )
 				$query->skip((\Input::get('p')-1)*$page_size);
 
-			$return['items'] = $query->get();
+			$items = $query->get();
+			$return['total_count'] = count($items);
+			$return['items'] = $items;
 			return $return;
 		}
 	}
