@@ -283,6 +283,7 @@ class User extends Root implements AuthenticatableContract
 				}
 
 				if( $grant_all )
+				{
                     $subdomains = ['dpp1' , 'dpp2' , 'dpp3' , '3c' , 'help' , 'jv' , 'sm'];
                     $chosen_access_level = 'Smart Member 2.0';
                     foreach ($subdomains as $key => $subdomain) {
