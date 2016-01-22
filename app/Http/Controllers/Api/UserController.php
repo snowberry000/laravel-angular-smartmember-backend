@@ -434,6 +434,8 @@ class UserController extends SMController
 	{
 		if( \Input::has('capability') && !empty( \Input::get('capability') ) )
 			return \Auth::user()->sitesWithCapability( \Input::get('capability') );
+		else if ( \Input::has('role') && !empty( \Input::get('role') ) )
+				return \Auth::user()->sitesWithRole( \Input::get('role') );
 		else
 			return \Auth::user()->sites;
 	}

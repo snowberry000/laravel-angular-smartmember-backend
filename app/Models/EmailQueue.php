@@ -463,7 +463,7 @@ class EmailQueue extends Root
 		}
 	}
 
-	public static function enqueueAutoResponderEmail($email, $subscriber)
+	public static function enqueueAutoResponderEmail($email, $subscriber, $override_list_type = false)
     {
         if (!$email) return;
 
@@ -473,7 +473,11 @@ class EmailQueue extends Root
         $tosend['site_id'] = $email->site_id;
         $tosend['email_id'] = $email->id;
         $tosend['subscriber_id'] = $subscriber->id;
-        $tosend['list_type'] = ! empty( $subscriber->list_type ) ? $subscriber->list_type : null;
+		if ($override_list_type)
+			$tosend['list_type'] = $override_list_type;
+		else
+        	$tosend['list_type'] = ! empty( $subscriber->list_type ) ? $subscriber->list_type : null;
+
         $tosend['send_at'] = isset($email->send_at) ? $email->send_at : Carbon::now();
         $queueEmails[] = $tosend;
 
