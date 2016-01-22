@@ -207,7 +207,7 @@ Route::post('/user/associateTransactionAccount',"Api\\UserController@associateTr
 Route::post('/user/registerTransactionAccount',"Api\\UserController@registerTransactionAccount");
 Route::post('/user/sendVerificationCode',"Api\\UserController@sendVerificationCode");
 Route::get('/user/sites',"Api\\UserController@getSites");
-
+Route::get('/user/members',"Api\\UserController@getMembers");
 Route::get('/affiliateLeaderboard/{id}', "Api\\AffiliateLeaderboardController@show");
 
 
