@@ -319,6 +319,36 @@ class Role extends Root{
             }
         }
     }
+
+	public static function removeSuperLevel( $access_level_id, $user_id )
+	{
+		$main_access_level = AccessLevel::find( $access_level_id );
+
+		if( isset( $main_access_level->site_id ) && $main_access_level->site_id == 6192 )
+		{
+			$subdomains = ['dpp1' , 'dpp2' , 'dpp3' , '3c' , 'help' , 'jv' , 'sm'];
+			$chosen_access_level = 'Smart Member 2.0';
+			foreach( $subdomains as $key => $subdomain )
+			{
+				$site = Site::whereSubdomain( $subdomain )->first();
+				if( $site && isset( $site->id ) )
+				{
+					$access_level = AccessLevel::whereSiteId( $site->id )->where( 'name' , '=' , $chosen_access_level )->first();
+
+					if( $access_level && isset( $access_level->id ) )
+					{
+						$passes = self::whereUserId( $user_id )->whereAccessLevelId( $access_level->id )->get();
+
+						if( $passes )
+						{
+							foreach( $passes as $pass )
+								$pass->delete();
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 Role::created(function($pass){
@@ -342,12 +372,41 @@ Role::saved(function($pass){
     \SMCache::clear($keys);
 });
 
+Role::saving(function($pass){
+	$updates = [
+		'access_level_id'
+	];
+
+	foreach( $pass->getDirty() as $attribute => $value )
+	{
+		if( in_array( $attribute, $updates ) )
+		{
+			$original = $pass->getOriginal( $attribute );
+			if( $original != $value )
+			{
+				switch( $attribute )
+				{
+					case 'access_level_id':
+						if( !empty( $original ) && empty( $value ) )
+						{
+							$pass->access_level_id = $original;
+							\App\Models\AppConfiguration\Facebook::removeRefundedMember( $pass );
+							Role::removeSuperLevel( $pass->access_level_id, $pass->user_id );
+							$pass->access_level_id = $value;
+						}
+						break;
+				}
+			}
+		}
+	}
+});
 
 Role::deleted(function($pass){
 	//we are going to remove the user from any fb groups that were tied to this access pass
 	\App\Models\AppConfiguration\Facebook::removeRefundedMember( $pass );
+	Role::removeSuperLevel( $pass->access_level_id, $pass->user_id );
     $subdomain = \Domain::getSubdomain();
-    $user = User::find($pass->user_id);
+    $user = User::find( $pass->user_id );
 
     $keys = array();
     $keys[] = $subdomain.':_site_details' . ':'.$user->access_token;
