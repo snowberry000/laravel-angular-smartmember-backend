@@ -24,7 +24,7 @@ class Download extends Root
 
     public function media_item()
     {
-        return $this->belongsTo('App\Models\MediaItem');
+        return $this->belongsTo('App\Models\MediaItem')->where('media_items.site_id', '=', 'download_center.site_id');
     }
 
     public function dripfeed()
