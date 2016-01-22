@@ -472,7 +472,14 @@ class UserController extends SMController
 			}
 
 			$return = [];
-			$query = $query->distinct()->groupBy('user_id');
+			if ($type == 'member')
+			{
+				$count = \DB::table('sites_roles')->select(\DB::raw(' COUNT( DISTINCT user_id ) AS num'))->whereIn('site_id', $site_ids)->first();
+				$return['total_count'] = $count->num;
+				$query = $query->distinct()->groupBy('user_id');
+			} else {
+				$return['total_count'] = $query->count();
+			}
 
 			if( !\Input::has('bypass_paging') || !\Input::get('bypass_paging') )
 				$query = $query->take($page_size);
@@ -480,9 +487,7 @@ class UserController extends SMController
 			if( \Input::has('p') )
 				$query->skip((\Input::get('p')-1)*$page_size);
 
-			$items = $query->get();
-			$return['total_count'] = count($items);
-			$return['items'] = $items;
+			$return['items'] = $query->get();
 			return $return;
 		}
 	}
