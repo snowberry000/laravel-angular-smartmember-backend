@@ -78,8 +78,6 @@ class Download extends Root
 
         $download = parent::create($download_data);
 
-        $download->media_item()->associate($media);
-
         $download->save();
         
         if ($seo){
