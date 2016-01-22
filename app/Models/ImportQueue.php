@@ -139,7 +139,22 @@ class ImportQueue extends Root
 					$pass = Role::whereUserId( $user->id )->whereSiteId( $queue_item->site_id )
 						->whereAccessLevelId( $level )->whereNull( 'deleted_at' )->first();
 
-					if(isset($access_level->site_id) && $access_level->site_id == 6192)
+					$all_the_levels = \App\Models\AccessLevel\Pass::access_levels( $level );
+
+					$sm_2_levels = [ 2684, 2694 ];
+
+					$grant_all = false;
+
+					foreach( $all_the_levels as $key => $val )
+					{
+						if( in_array( $val, $sm_2_levels ) )
+						{
+							$grant_all = true;
+							break;
+						}
+					}
+
+					if( $grant_all )
 					{
 						$subdomains = ['dpp1' , 'dpp2' , 'dpp3' , '3c' , 'help' , 'jv' , 'sm'];
 						$chosen_access_level = 'Smart Member 2.0';
