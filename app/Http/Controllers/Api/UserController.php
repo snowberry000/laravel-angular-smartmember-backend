@@ -448,7 +448,7 @@ class UserController extends SMController
 			{
 				case 'member':
 					$site_ids = \Auth::user()->sitesWithCapability('manage_members', false);
-					$query = Role::whereIn('site_id', $site_ids);
+					$query = Role::with('user')->whereIn('site_id', $site_ids);
 					break;
 				case 'subscriber':
 					$site_ids = \Auth::user()->sitesWithCapability('manage_email', false);
