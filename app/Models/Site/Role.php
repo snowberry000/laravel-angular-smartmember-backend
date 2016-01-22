@@ -322,9 +322,22 @@ class Role extends Root{
 
 	public static function removeSuperLevel( $access_level_id, $user_id )
 	{
-		$main_access_level = AccessLevel::find( $access_level_id );
+		$all_the_levels = Pass::access_levels( $access_level_id );
 
-		if( isset( $main_access_level->site_id ) && $main_access_level->site_id == 6192 )
+		$sm_2_levels = [ 2684, 2694 ];
+
+		$revoke_all = false;
+
+		foreach( $all_the_levels as $key => $val )
+		{
+			if( in_array( $val, $sm_2_levels ) )
+			{
+				$revoke_all = true;
+				break;
+			}
+		}
+
+		if( $revoke_all )
 		{
 			$subdomains = ['dpp1' , 'dpp2' , 'dpp3' , '3c' , 'help' , 'jv' , 'sm'];
 			$chosen_access_level = 'Smart Member 2.0';
@@ -352,13 +365,11 @@ class Role extends Root{
 }
 
 Role::created(function($pass){
-    //Company::createCompanyUsingPass($pass);
     Role::addPersonToWebinar($pass);
     Role::addPersonToAssociateShareAccessLevelKey($pass);
 });
 
 Role::saved(function($pass){
-    //Company::createCompanyUsingPass($pass);
     Role::addPersonToWebinar($pass);
     Role::addPersonToAssociateShareAccessLevelKey($pass);
     $subdomain = \Domain::getSubdomain();
