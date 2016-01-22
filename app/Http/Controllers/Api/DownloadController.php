@@ -111,7 +111,7 @@ class DownloadController extends SMController
     }
 
     public function show($model){
-        $model = $this->model->with("seo_settings" , 'media_item' , 'history_count',"dripfeed")->whereId($model->id)->first();
+        $model = $this->model->with(["seo_settings" , 'media_item' => function($query){ $query->whereSiteId( $this->site->id ); } , 'history_count',"dripfeed"])->whereId($model->id)->first();
         if(\App\Helpers\SMAuthenticate::set()){
             $model->user_count = DownloadHistory::whereDownloadId($model->id)->whereUserId(Auth::user()->id)->count();
         }
@@ -158,16 +158,16 @@ class DownloadController extends SMController
         $history = DownloadHistory::create(array('user_id'=> $user_id ));
         $download->history()->save($history);
         $download->save();
-        if($download->media_item && $download->media_item->aws_key==""){
+        if($download->media_item && $download->media_item->site_id == $download->site_id && $download->media_item->aws_key==""){
             $download->my_url = $download->media_item->url;
             return $download;
         }
-        if($download->media_item){
+        if($download->media_item && $download->media_item->site_id == $download->site_id){
             $download->aws_key = $download->media_item->aws_key;
             return $download;
         }
-        else
-            \App::abort('404','Download link not found');
+
+		\App::abort('404','Download link not found');
     }
 
     public function getByPermalink($id){

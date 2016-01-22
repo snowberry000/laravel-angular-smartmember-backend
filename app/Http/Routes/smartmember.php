@@ -296,4 +296,4 @@ Route::resource('siteRole','Api\Site\RoleController');
 Route::model('siteCustomRole','App\Models\Site\CustomRole');
 Route::resource('siteCustomRole','Api\Site\CustomRoleController');
 
-
+Route::get('/sendPurchaseEmail', "AppConfiguration\SendGridController@sendPurchaseEmail");

@@ -7,7 +7,7 @@ use App\Models\EmailSetting;
 use App\Models\Email;
 use App\Models\UserOptions;
 use SendGrid;
-
+use App\Models\Transaction;
 use Auth;
 
 class SendGridController extends AppConfigurationController
@@ -44,6 +44,14 @@ class SendGridController extends AppConfigurationController
 		}
 		else
 			\App::abort('408','You must be signed into a team to access email settings.');
+    }
+
+    public function sendPurchaseEmail()
+    {
+        $transaction_id = \Input::get('transaction_id');
+        $transaction = Transaction::whereTransactionId($transaction_id)->first();
+        if ($transaction)
+            $this->model->sendPurchaseEmail($transaction, false, $transaction_id);
     }
 
     public function postPreview() {

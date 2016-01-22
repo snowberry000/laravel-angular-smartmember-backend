@@ -77,6 +77,8 @@ class SendGridEmail {
 		else
 			$reset_url .= $site->subdomain . ".smartmember.com";
 
+		$login_url = $reset_url . '?signin';
+
 		$reset_url .="?forgot";
 		$string = '<ul style="font-size:17px;line-height:24px;margin:0 0 16px;margin-bottom:1.5rem;list-style:none;padding-left:1rem">';
 
@@ -90,6 +92,24 @@ class SendGridEmail {
 		$string .= "</li><li>forgot your password? Click here:<br><a href=\"$reset_url\">$reset_url</a></li>";
 
 		$string .= '</ul>';
+
+		$string .= '<hr style="border:none;border-bottom:1px solid #ececec;margin:1.5rem 0;width:100%">
+						<div style="text-align:center;margin:2rem 0">
+                            <table cellpadding="0" cellspacing="0"
+                                style="border-collapse:collapse;background:#2ab27b;border-bottom:2px solid #1f8b5f;border-radius:4px;padding:14px 32px;display:inline-block">
+                                <tbody>
+                                    <tr>
+                                        <td style="border-collapse:collapse">
+                                                <a href="' . $login_url . '"
+                                                style="color:white;font-weight:normal;text-decoration:none;word-break:break-word;display:inline-block;letter-spacing:1px;font-size:20px;line-height:26px"
+                                                align="center" target="_blank">
+                                                    Click here to sign in
+                                                </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>';
 
 		return $string;
 	}
@@ -111,8 +131,7 @@ class SendGridEmail {
 								 		<strong>Ready to login?</strong> Below you\'ll find your login details and a link to get started.
 								 	</p>
 								 	<hr style="border:none;border-bottom:1px solid #ececec;margin:1.5rem 0;width:100%">
-								 	%login_details%
-                                    %login_button%';
+								 	%login_details%';
 
 		return $default_email_content;
 	}
@@ -125,7 +144,7 @@ class SendGridEmail {
                                 <tbody>
                                     <tr>
                                         <td style="border-collapse:collapse">
-                                                <a href="%site_url%"
+                                                <a href="' . '"
                                                 style="color:white;font-weight:normal;text-decoration:none;word-break:break-word;display:inline-block;letter-spacing:1px;font-size:20px;line-height:26px"
                                                 align="center" target="_blank">
                                                     Click here to sign in to %site_subdomain%
@@ -160,9 +179,9 @@ class SendGridEmail {
 		$replacements = [
 			'%site_name%' => $site->name,
 			'%login_details%' => self::getLoginInfo( $user, $site, $password ),
-            '%login_button%' => self::getLoginButton($site),
             '%site_url%' => $site->domain ? $site->domain . '/sign/in/' : 'http://'.$site->subdomain . '.smartmember.com/sign/in/',
-		    '%site_subdomain%' => $site->subdomain
+		    '%site_subdomain%' => $site->subdomain,
+			'%login_button%' => '' //this is to get rid of it for anyone who already implemented it
         ];
         \Log::info($site->domain);
 		$site_welcome_content = str_replace( array_keys( $replacements ), array_values( $replacements ), $site_welcome_content );
@@ -425,7 +444,10 @@ class SendGridEmail {
 
 			$replacements = [
 				'%site_name%' => $site->name,
-				'%login_details%' => self::getLoginInfo( $user, $site, $password, $access_level_name )
+				'%login_details%' => self::getLoginInfo( $user, $site, $password, $access_level_name ),
+				'%site_url%' => $site->domain ? $site->domain . '?signin' : 'http://'.$site->subdomain . '.smartmember.com?signin',
+				'%site_subdomain%' => $site->subdomain,
+				'%login_button%' => '' //this is to get rid of it for anyone who already implemented it
 			];
 
 			$site_welcome_content = str_replace( array_keys( $replacements ), array_values( $replacements ), $site_welcome_content );

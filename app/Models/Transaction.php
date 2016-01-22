@@ -295,12 +295,29 @@ class Transaction extends Root
             return;
 
         $refundTransaction = Transaction::where('transaction_id', $data['transaction_id'])
-                                        ->where('type', '!=', 'rfnd')->first();
+                                        ->where('type', '!=', 'rfnd');
 
-        if( !$refundTransaction || !$refundTransaction->user_id)
+		if( !empty( $data['site_id'] ) )
+			$refundTransaction = $refundTransaction->whereSiteId( $data['site_id'] );
+
+		$refundTransaction = $refundTransaction->first();
+
+        if( !$refundTransaction || !$refundTransaction->user_id )
             return;
 
-        $access_level = $data['source'] == 'jvzoo' ? AccessLevel::where('product_id', $data['product_id'])->first() : AccessLevel::find($data['product_id']);
+		if( $data['source'] == 'jvzoo' )
+		{
+			$access_level = AccessLevel::where('product_id', $data['product_id']);
+
+			if( !empty( $data['site_id'] ) )
+				$access_level = $access_level->whereSiteId( $data['site_id'] );
+
+			$access_level = $access_level->first();
+		}
+		else
+		{
+			$access_level = AccessLevel::find($data['product_id'] );
+		}
 
         if ( !$access_level )
             return;
