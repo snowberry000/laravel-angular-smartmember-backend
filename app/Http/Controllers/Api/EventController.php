@@ -27,13 +27,13 @@ class EventController extends SMController
 			\Input::merge( ['site_id' => $this->site->id ] );
 
 		if( !\Input::has('event_name') )
-			\App::abort('422','You must provide an event name');
+			return [];
 
 		if( \Input::has('user_id') )
 			$user = User::find( \Input::get('user_id') );
 
 		if( empty( $user ) )
-			\App::abort('422','The user doesn\'t exist');
+			return [];
 
 		$model = $this->model->whereEventName( \Input::get('event_name' ) );
 
@@ -65,14 +65,14 @@ class EventController extends SMController
 		if( $this->site && $this->site->id && !\Input::has('site_id') )
 			\Input::merge( ['site_id' => $this->site->id ] );
 
-		if( !\Input::has('event_name') )
-			\App::abort('422','You must provide an event name');
+		if( !\Input::has('event_name') || empty( \Input::get('event_name') ) )
+			return [];
 
 		if( \Input::has('user_id') )
 			$user = User::find( \Input::get('user_id') );
 
 		if( empty( $user ) )
-			\App::abort('422','The user doesn\'t exist');
+			return [];
 
 		$model->update( \Input::all() );
 
