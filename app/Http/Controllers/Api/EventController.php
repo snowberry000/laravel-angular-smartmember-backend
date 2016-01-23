@@ -34,7 +34,7 @@ class EventController extends SMController
 		if( \Input::has('user_id') )
 			$user = User::find( \Input::get('user_id') );
 
-		if( empty( $user ) )
+		if( empty( $user ) && ( !\Input::has('email') || empty( \Input::get('email') ) ) )
 			return [];
 
 		$model = $this->model->whereEventName( \Input::get('event_name' ) );
@@ -77,7 +77,7 @@ class EventController extends SMController
 		if( \Input::has('user_id') )
 			$user = User::find( \Input::get('user_id') );
 
-		if( empty( $user ) )
+		if( empty( $user ) && ( !\Input::has('email') || empty( \Input::get('email') ) ) )
 			return [];
 
 		$model->update( \Input::all() );
