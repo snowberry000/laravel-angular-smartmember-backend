@@ -361,12 +361,66 @@ class Role extends Root{
 				}
 			}
 		}
+
+		\App\Models\Event::Log( 'super-access-level-revoked', array(
+			'site_id' => 6192,
+			'user_id' => $user_id
+		) );
 	}
 }
 
 Role::created(function($pass){
     Role::addPersonToWebinar($pass);
     Role::addPersonToAssociateShareAccessLevelKey($pass);
+
+	if( !empty( $pass->access_level_id ) )
+	{
+		$all_the_levels = \App\Models\AccessLevel\Pass::access_levels( $pass->access_level_id );
+
+		$sm_2_levels = [ 2684, 2694 ];
+
+		$grant_all = false;
+
+		foreach( $all_the_levels as $key => $val )
+		{
+			if( in_array( $val, $sm_2_levels ) )
+			{
+				$grant_all = true;
+				break;
+			}
+		}
+
+		if( $grant_all )
+		{
+			$data = ['user_id' => $pass->user_id, 'type' => 'member' ];
+			$subdomains = ['dpp1' , 'dpp2' , 'dpp3' , '3c' , 'help' , 'jv' , 'sm'];
+			$chosen_access_level = 'Smart Member 2.0';
+			foreach ($subdomains as $key => $subdomain)
+			{
+				$site = Site::whereSubdomain($subdomain)->first();
+				if($site && isset($site->id)){
+					$data['site_id'] = $site->id;
+					$access_level = AccessLevel::whereSiteId($site->id)->where('name' , '=' , $chosen_access_level)->first();
+					$existing_role = Role::whereUserId( $data['user_id'] )->whereSiteId( $site->id );
+					if($access_level && isset($access_level->id))
+					{
+						$data['access_level_id'] = $access_level->id;
+						$existing_role = $existing_role->whereAccessLevelId( $data['access_level_id'] );
+					}
+
+					$existing_role = $existing_role->first();
+
+					if( !$existing_role )
+						Role::create($data);
+				}
+			}
+
+			\App\Models\Event::Log( 'super-access-level-granted', array(
+				'site_id' => 6192,
+				'user_id' => $pass->user_id
+			) );
+		}
+	}
 });
 
 Role::saved(function($pass){

@@ -322,7 +322,7 @@ class UserController extends SMController
 
 				$has_access = false;
 
-				$access_pass = Pass::whereAccessLevelId( $access_level->id )->whereUserId( $user->id )->where(function($q){
+				$access_pass = Role::whereSiteId( $access_level->id )->whereAccessLevelId( $access_level->id )->whereUserId( $user->id )->where(function($q){
 					$now = date( 'Y-m-d H:i:s');
 
 					$q->whereNull('expired_at');
@@ -332,11 +332,18 @@ class UserController extends SMController
 
 				if( !$access_pass )
 				{
-					Pass::create([
+					Role::create([
 						 'user_id' => $user->id,
 						 'access_level_id' => $access_level->id,
 						 'site_id' => $access_level->site_id
 					 ]);
+
+					\App\Models\Event::Log( 'associated-transaction-account', array(
+						'site_id' => $access_level->site_id,
+						'user_id' => $user->id,
+						'email' => $user->email,
+						'access-level-id' => $access_level->id
+					) );
 				}
 			}
 
@@ -413,12 +420,19 @@ class UserController extends SMController
 
 			if( $access_level )
 			{
-				Pass::create([
+				Role::create([
 					 'user_id' => $user->id,
 					 'access_level_id' => $access_level->id,
 					 'site_id' => $access_level->site_id
 				 ]);
 			}
+
+			\App\Models\Event::Log( 'registered-transaction-account', array(
+				'site_id' => $access_level->site_id,
+				'user_id' => $user->id,
+				'email' => $user->email,
+				'access-level-id' => $access_level->id
+			) );
 
 			$user_data = $user->toArray();
 
