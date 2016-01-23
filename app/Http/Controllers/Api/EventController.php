@@ -4,6 +4,8 @@ use App\Http\Controllers\ApiController;
 use App\Models\Event;
 use App\Models\EventMetaData;
 use App\Models\User;
+use App\Helpers\SMAuthenticate;
+use Input;
 
 class EventController extends SMController
 {
@@ -13,11 +15,12 @@ class EventController extends SMController
         parent::__construct();
         $this->model = new Event();
         $this->middleware('admin',['except'=>array('index','show','store','update')]);
+        $this->middleware('auth',['except'=>array('index','show','store','update')]);
     }
 
 	public function store()
 	{
-		if( \Auth::set() && !\Input::has('user_id') )
+		if( SMAuthenticate::set() && !\Input::has('user_id') )
 			\Input::merge( ['user_id' => \Auth::user()->id ] );
 
 		if( $this->site && $this->site->id && !\Input::has('site_id') )
@@ -56,7 +59,7 @@ class EventController extends SMController
 
 	public function update( $model )
 	{
-		if( \Auth::set() && !\Input::has('user_id') )
+		if( SMAuthenticate::set() && !\Input::has('user_id') )
 			\Input::merge( ['user_id' => \Auth::user()->id ] );
 
 		if( $this->site && $this->site->id && !\Input::has('site_id') )
