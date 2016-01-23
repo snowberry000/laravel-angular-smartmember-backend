@@ -25,6 +25,8 @@ class EventController extends SMController
 
 		if( $this->site && $this->site->id && !\Input::has('site_id') )
 			\Input::merge( ['site_id' => $this->site->id ] );
+		else
+			\Input::merge( ['site_id' => 0 ] );
 
 		if( !\Input::has('event_name') )
 			return [];
@@ -39,6 +41,8 @@ class EventController extends SMController
 
 		if( \Input::has('site_id') )
 			$model = $model->whereSiteId( \Input::get('site_id') );
+		else
+			$model = $model->whereSiteId( 0 );
 
 		$model = $model->whereUserId( \Input::get('user_id') )->first();
 
@@ -64,6 +68,8 @@ class EventController extends SMController
 
 		if( $this->site && $this->site->id && !\Input::has('site_id') )
 			\Input::merge( ['site_id' => $this->site->id ] );
+		else
+			\Input::merge( ['site_id' => 0 ] );
 
 		if( !\Input::has('event_name') || empty( \Input::get('event_name') ) )
 			return [];
