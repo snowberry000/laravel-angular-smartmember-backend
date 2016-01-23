@@ -15,8 +15,76 @@ class EventController extends SMController
         parent::__construct();
         $this->model = new Event();
         $this->middleware('admin',['except'=>array('index','show','store','update')]);
-        $this->middleware('auth',['except'=>array('index','show','store','update')]);
+        $this->middleware('auth',['except'=>array('show','store','update')]);
     }
+
+	public function index( $params = [] )
+	{
+		$site_ids = \Auth::user()->sitesWithCapability( 'manage_members', false );
+
+		$page_size = config("vars.default_page_size");
+		$query = $this->model->whereIn( 'site_id', $site_ids );
+
+		$query = $query->orderBy( 'id' , 'DESC' );
+
+		foreach (Input::all() as $key => $value){
+			switch($key){
+				case 'q':
+					if (Input::get('q')){
+						$query = $this->model->applySearchQuery( $query, $value );
+					}
+					break;
+				case 'view':
+				case 'p':
+				case 'bypass_paging':
+					break;
+				default:
+					$query->where($key,'=',$value);
+			}
+		}
+
+		$return = [];
+
+		if( isset( $params['distinct'] ) && $params['distinct'] )
+			$return['total_count'] = $query->distinct()->count('user_id');
+		else
+			$return['total_count'] = $query->count();
+
+		if( !Input::has('bypass_paging') || !Input::get('bypass_paging') )
+			$query = $query->take($page_size);
+
+		if( Input::has('p') )
+			$query->skip((Input::get('p')-1)*$page_size);
+
+		$return['items'] = $query->get();
+
+		$users = [];
+
+		foreach( $return['items'] as $item )
+		{
+			if( !empty( $users[ $item->user_id ] ) )
+				$item->user = $users[ $item->user_id ];
+			elseif( !empty( $users[ $item->email ] ) )
+				$item->user = $users[ $item->email ];
+			else
+			{
+				if( !empty( $item->user_id ) )
+					$user = User::find( $item->user_id );
+				elseif( !empty( $item->email ) )
+					$user = User::whereEmail( $item->email )->first();
+
+				if( !empty( $user ) )
+				{
+					$users[ $item->user_id ] = $user;
+					$users[ $item->email ] = $user;
+
+					$item->user = $user;
+				}
+			}
+		}
+
+		return $return;
+	}
 
 	public function store()
 	{

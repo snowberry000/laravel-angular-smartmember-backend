@@ -9,6 +9,7 @@ use App\Helpers\DomainHelper;
 class Event extends Root
 {
     protected $table = "events";
+	protected $with = ['meta'];
 	public $saveable_columns = [ 'site_id', 'event_name', 'user_id', 'email', 'count', 'deleted_at', 'created_at', 'updated_at' ];
 
 	public function meta()
@@ -26,6 +27,15 @@ class Event extends Root
 	{
 		$data = Input::only( [ 'site_id', 'event_name', 'user_id', 'email', 'count' ] );
 		return parent::create( $data );
+	}
+
+	public static function applySearchQuery( $query, $value )
+	{
+		return $query->where( function ( $q ) use ( $value )
+		{
+			$q->where( 'event_name', 'like', '%' . $value . '%' );
+			$q->orwhere( 'email', 'like', '%' . $value . '%' );
+		} );
 	}
 
 	public static function Log( $event_name, $data = array() )
