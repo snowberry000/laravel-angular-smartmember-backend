@@ -91,12 +91,12 @@ class Event extends Root
 					if( !$meta_item )
 					{
 						$meta_item = EventMetaData::create([
-															   'event_id' => $model->id,
-															   'key' => $key
-														   ]);
+						   'event_id' => $model->id,
+						   'key' => $key
+					   	]);
 					}
 
-					$meta_item->value = $val;
+					$meta_item->value = is_array( $val ) || is_object( $val ) ? json_encode( $val ) : $val;
 					$meta_item->save();
 				}
 			}
@@ -132,7 +132,7 @@ Event::saved( function( $model ) {
 			    ]);
 			}
 
-			$meta_item->value = $val;
+			$meta_item->value = is_array( $val ) || is_object( $val ) ? json_encode( $val ) : $val;
 			$meta_item->save();
 		}
 	}
