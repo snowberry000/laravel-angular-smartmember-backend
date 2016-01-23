@@ -59,7 +59,7 @@ class SmartMailSegmentEngine extends Command
             } 
             catch (Exception $e)
             {
-                \Log::info("Failed to process email queue for company " . $site . " " . $e->getMessage());
+                \Log::info("Failed to process email recipient queue for site " . $site . " " . $e->getMessage());
             }
 
             continue;
