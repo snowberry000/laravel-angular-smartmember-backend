@@ -58,5 +58,5 @@ Event::saved( function( $model ) {
 	$extra_meta = $extra_meta->get();
 
 	foreach( $extra_meta as $key => $val )
-		$val->delete();
+		$val->forceDelete();
 });
