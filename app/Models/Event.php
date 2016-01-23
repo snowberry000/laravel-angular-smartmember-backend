@@ -28,10 +28,13 @@ class Event extends Root
 }
 
 Event::saved( function( $model ) {
+	$keys_used = [];
+
 	foreach( Input::all() as $key => $val )
 	{
 		if( !in_array( $key, $model->saveable_columns ) )
 		{
+			$keys_used[] = $key;
 			$meta_item = EventMetaData::whereEventId( $model->id )->whereKey( $key )->first();
 
 			if( !$meta_item )
@@ -46,4 +49,14 @@ Event::saved( function( $model ) {
 			$meta_item->save();
 		}
 	}
+
+	$extra_meta = EventMetaData::whereEventId( $model->id );
+
+	if( !empty( $keys_used ) )
+		$extra_meta = $extra_meta->whereNotIn( 'key', $keys_used );
+
+	$extra_meta = $extra_meta->get();
+
+	foreach( $extra_meta as $key => $val )
+		$val->delete();
 });
