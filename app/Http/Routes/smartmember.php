@@ -64,7 +64,9 @@ $resources = array(
     'wizard',
 	'widget',
 	'smartLink',
-    'media'
+    'media',
+	'event',
+	'eventMetaData'
 );
 
 //TODO: Don't use - in the URL. Use Camel cased syntax e.g. facebookLogin
