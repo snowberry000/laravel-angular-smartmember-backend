@@ -66,7 +66,9 @@ $resources = array(
 	'smartLink',
     'media',
 	'event',
-	'eventMetaData'
+	'eventMetaData',
+	'customAttribute',
+	'memberMeta'
 );
 
 //TODO: Don't use - in the URL. Use Camel cased syntax e.g. facebookLogin
