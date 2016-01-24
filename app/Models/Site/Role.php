@@ -362,7 +362,7 @@ class Role extends Root{
 			}
 		}
 
-		\App\Models\Event::Log( 'super-access-level-revoked', array(
+		\App\Models\Event::Log( 'refunded-sm-2-bundle', array(
 			'site_id' => 6192,
 			'user_id' => $user_id
 		) );
@@ -415,7 +415,7 @@ Role::created(function($pass){
 				}
 			}
 
-			\App\Models\Event::Log( 'super-access-level-granted', array(
+			\App\Models\Event::Log( 'received-sm-2-bundle', array(
 				'site_id' => 6192,
 				'user_id' => $pass->user_id
 			) );

@@ -299,6 +299,11 @@ class User extends Root implements AuthenticatableContract
                             SiteRole::create($data);
                         }
                     }
+
+					\App\Models\Event::Log( 'received-sm-2-bundle', array(
+						'site_id' => 6192,
+						'user_id' => $this->id
+					) );
                     // $three_c = Site::whereSubdomain('3c')->first();
                     // $help = Site::whereSubdomain('help')->first();
 
