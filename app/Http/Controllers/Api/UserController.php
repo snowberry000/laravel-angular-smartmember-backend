@@ -338,7 +338,7 @@ class UserController extends SMController
 						 'site_id' => $access_level->site_id
 					 ]);
 
-					\App\Models\Event::Log( 'associated-transaction-with-account', array(
+					\App\Models\Event::Log( 'connected-to-a-jvzoo-receipt', array(
 						'site_id' => $access_level->site_id,
 						'user_id' => $user->id,
 						'email' => $user->email,
@@ -427,7 +427,7 @@ class UserController extends SMController
 				 ]);
 			}
 
-			\App\Models\Event::Log( 'registered-account-for-transaction', array(
+			\App\Models\Event::Log( 'connected-to-a-jvzoo-receipt', array(
 				'site_id' => $access_level->site_id,
 				'user_id' => $user->id,
 				'email' => $user->email,
