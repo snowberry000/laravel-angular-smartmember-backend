@@ -100,9 +100,25 @@ class DownloadController extends SMController
     }
 
     public function store()
-    {        
-        $stored = parent::store();
-        return $stored;
+    {
+		if( \SMRole::userHasAccess( $this->site->id, 'manage_content', \Auth::user()->id ) )
+		{
+			\Input::merge( [ 'site_id' => $this->site->id ] );
+			$stored = parent::store();
+
+			\App\Models\Event::Log( 'download-created', array(
+				'site_id' => $this->site->id,
+				'user_id' => \Auth::user()->id,
+				'download-title' => $stored->title,
+				'download-id' => $stored->id
+			) );
+
+			return $stored;
+		}
+		else
+		{
+			return [];
+		}
     }
 
     public function getlist()
@@ -125,7 +141,16 @@ class DownloadController extends SMController
 
     public function update($model)
     {
-        return $model->update(\Input::except('_method' , 'access'));
+        $stored = $model->update(\Input::except('_method' , 'access'));
+
+		\App\Models\Event::Log( 'download-updated', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'download-title' => $stored->title,
+			'download-id' => $stored->id
+		) );
+
+		return $stored;
     }
 
     public function putDownloads()
@@ -143,6 +168,13 @@ class DownloadController extends SMController
 		$permalinks = Permalink::whereSiteId($model->site_id)->whereTargetId($model->id)->whereType($model->getTable())->get();
 		foreach( $permalinks as $permalink )
 			$permalink->delete();
+
+		\App\Models\Event::Log( 'download-deleted', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'download-title' => $model->title,
+			'download-id' => $model->id
+		) );
 
 		return parent::destroy($model);
 	}

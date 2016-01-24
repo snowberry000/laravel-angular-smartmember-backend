@@ -108,8 +108,16 @@ class PostController extends SMController
 
     public function store()
     {
-       $stored = parent::store();
-       return $stored;
+       	$stored = parent::store();
+
+		\App\Models\Event::Log( 'post-created', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'post-title' => $stored->title,
+			'post-id' => $stored->id
+		) );
+
+       	return $stored;
     }
 
 	public function destroy($model)
@@ -117,6 +125,13 @@ class PostController extends SMController
 		$permalinks = Permalink::whereSiteId($model->site_id)->whereTargetId($model->id)->whereType($model->getTable())->get();
 		foreach( $permalinks as $permalink )
 			$permalink->delete();
+
+		\App\Models\Event::Log( 'post-deleted', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'post-title' => $model->title,
+			'post-id' => $model->id
+		) );
 
 		return parent::destroy($model);
 	}
@@ -136,6 +151,13 @@ class PostController extends SMController
         \Log::info(array_pluck($deleteTags,'id'));
         if(sizeof($deleteTags)>0)
             $model->tags()->detach(array_pluck($deleteTags,'id'));
+
+		\App\Models\Event::Log( 'post-updated', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'post-title' => $model->title,
+			'post-id' => $model->id
+		) );
 
         return $model->update(\Input::except('_method' , 'access'));
     }
