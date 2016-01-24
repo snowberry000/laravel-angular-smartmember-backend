@@ -506,7 +506,7 @@ Site::creating(function($site){
 		\Auth::user()->save();
 	}
 
-	\App\Models\Event::Log( 'site-created', array(
+	\App\Models\Event::Log( 'created-site', array(
 		'site_id' => 0,
 		'user_id' => $site->user_id,
 		'subdomain' => $site->subdomain

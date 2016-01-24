@@ -228,7 +228,7 @@ class SendGridEmail {
         \Log::info('Send welcome email for' . $user->email);
         self::sendEmail($email, true, $site);
 
-		\App\Models\Event::Log( 'welcome-email-sent', array(
+		\App\Models\Event::Log( 'sent-welcome-email', array(
 			'user_id' => $user->id,
 			'site_id' => $site && $site->id ? $site->id : 0,
 			'email' => $user->email
@@ -276,7 +276,7 @@ class SendGridEmail {
 
         self::sendEmail($email, true, $site);
 
-		\App\Models\Event::Log( 'forgot-password-sent', array(
+		\App\Models\Event::Log( 'sent-forgot-password', array(
 			'user_id' => $user->id,
 			'site_id' => $site && $site->id ? $site->id : 0,
 			'email' => $user->email,
@@ -374,7 +374,7 @@ class SendGridEmail {
 
             self::sendEmail( $email, true, $site );
 
-			\App\Models\Event::Log( 'purchase-email-sent', array(
+			\App\Models\Event::Log( 'sent-purchase-email', array(
 				'user_id' => $user->id,
 				'site_id' => $site && $site->id ? $site->id : 0,
 				'email' => $user->email,
@@ -1123,7 +1123,7 @@ class SendGridEmail {
 
 		self::sendEmail($email, true, $site);
 
-		\App\Models\Event::Log( 'verification-code-sent', array(
+		\App\Models\Event::Log( 'sent-verification-code', array(
 			'site_id' => $site && $site->id ? $site->id : 0,
 			'user_id' => $user->id,
 			'email' => $user->email,

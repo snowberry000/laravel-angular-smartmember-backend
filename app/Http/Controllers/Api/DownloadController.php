@@ -106,7 +106,7 @@ class DownloadController extends SMController
 			\Input::merge( [ 'site_id' => $this->site->id ] );
 			$stored = parent::store();
 
-			\App\Models\Event::Log( 'download-created', array(
+			\App\Models\Event::Log( 'created-download', array(
 				'site_id' => $this->site->id,
 				'user_id' => \Auth::user()->id,
 				'download-title' => $stored->title,
@@ -143,7 +143,7 @@ class DownloadController extends SMController
     {
         $stored = $model->update(\Input::except('_method' , 'access'));
 
-		\App\Models\Event::Log( 'download-updated', array(
+		\App\Models\Event::Log( 'updated-download', array(
 			'site_id' => $this->site->id,
 			'user_id' => \Auth::user()->id,
 			'download-title' => $stored->title,
@@ -169,7 +169,7 @@ class DownloadController extends SMController
 		foreach( $permalinks as $permalink )
 			$permalink->delete();
 
-		\App\Models\Event::Log( 'download-deleted', array(
+		\App\Models\Event::Log( 'deleted-download', array(
 			'site_id' => $this->site->id,
 			'user_id' => \Auth::user()->id,
 			'download-title' => $model->title,

@@ -113,7 +113,7 @@ class LessonController extends SMController
 			if( $stored->access_level_type != 4 )
 				SiteNotice::create( $notification );
 
-			\App\Models\Event::Log( 'lesson-created', array(
+			\App\Models\Event::Log( 'created-lesson', array(
 				'site_id' => $this->site->id,
 				'user_id' => \Auth::user()->id,
 				'lesson-title' => $stored->title,
@@ -145,7 +145,7 @@ class LessonController extends SMController
 			SiteMenuItem::where( "url", "lesson/" . $model->permalink )->where( "site_id", $this->site->id )
 				->update( array( "url" => "lesson/" . \Input::get( "permalink" ) ) );
 
-			\App\Models\Event::Log( 'lesson-updated', array(
+			\App\Models\Event::Log( 'updated-lesson', array(
 				'site_id' => $this->site->id,
 				'user_id' => \Auth::user()->id,
 				'lesson-title' => $model->title,
@@ -177,7 +177,7 @@ class LessonController extends SMController
 			foreach( $permalinks as $permalink )
 				$permalink->delete();
 
-			\App\Models\Event::Log( 'lesson-deleted', array(
+			\App\Models\Event::Log( 'deleted-lesson', array(
 				'site_id' => $this->site->id,
 				'user_id' => \Auth::user()->id,
 				'lesson-title' => $model->title,

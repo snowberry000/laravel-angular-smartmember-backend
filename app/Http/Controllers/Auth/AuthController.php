@@ -234,7 +234,7 @@ class AuthController extends Controller
 
 				$user->save();
 
-				\App\Models\Event::Log( 'password-reset-using-verification', array(
+				\App\Models\Event::Log( 'reset-password-using-verification', array(
 					'site_id' => 0,
 					'user_id' => $user->id,
 					'email' => $user->email,
@@ -243,7 +243,7 @@ class AuthController extends Controller
 			}
 			elseif( Input::has('verification_code') && !empty( Input::get('verification_code') ) && !VerificationCode::VerifyCode( $user->id, Input::get('verification_code') ) )
 			{
-				\App\Models\Event::Log( 'invalid-verification-code', array(
+				\App\Models\Event::Log( 'submitted-invalid-verification-code', array(
 					'site_id' => 0,
 					'user_id' => $user->id,
 					'email' => $user->email,
@@ -382,7 +382,7 @@ class AuthController extends Controller
             $user->refreshEmailHash();
             $user->save();
 
-			\App\Models\Event::Log( 'password-reset', array(
+			\App\Models\Event::Log( 'reset-password', array(
 				'site_id' => 0,
 				'user_id' => $user->id,
 				'email' => $user->email

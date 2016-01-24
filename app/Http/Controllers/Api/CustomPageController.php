@@ -47,7 +47,7 @@ class CustomPageController extends SMController
     {
         $stored = parent::store();
 
-		\App\Models\Event::Log( 'page-created', array(
+		\App\Models\Event::Log( 'created-page', array(
 			'site_id' => $this->site->id,
 			'user_id' => \Auth::user()->id,
 			'page-title' => $stored->title,
@@ -63,7 +63,7 @@ class CustomPageController extends SMController
 		foreach( $permalinks as $permalink )
 			$permalink->delete();
 
-		\App\Models\Event::Log( 'page-deleted', array(
+		\App\Models\Event::Log( 'deleted-page', array(
 			'site_id' => $this->site->id,
 			'user_id' => \Auth::user()->id,
 			'page-title' => $model->title,
@@ -76,7 +76,7 @@ class CustomPageController extends SMController
     public function update($model){
         $stored = $model->update(\Input::except('_method' , 'access'));
 
-		\App\Models\Event::Log( 'page-updated', array(
+		\App\Models\Event::Log( 'updated-page', array(
 			'site_id' => $this->site->id,
 			'user_id' => \Auth::user()->id,
 			'page-title' => $model->title,

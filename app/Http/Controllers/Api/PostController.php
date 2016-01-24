@@ -110,7 +110,7 @@ class PostController extends SMController
     {
        	$stored = parent::store();
 
-		\App\Models\Event::Log( 'post-created', array(
+		\App\Models\Event::Log( 'created-post', array(
 			'site_id' => $this->site->id,
 			'user_id' => \Auth::user()->id,
 			'post-title' => $stored->title,
@@ -126,7 +126,7 @@ class PostController extends SMController
 		foreach( $permalinks as $permalink )
 			$permalink->delete();
 
-		\App\Models\Event::Log( 'post-deleted', array(
+		\App\Models\Event::Log( 'deleted-post', array(
 			'site_id' => $this->site->id,
 			'user_id' => \Auth::user()->id,
 			'post-title' => $model->title,
@@ -152,7 +152,7 @@ class PostController extends SMController
         if(sizeof($deleteTags)>0)
             $model->tags()->detach(array_pluck($deleteTags,'id'));
 
-		\App\Models\Event::Log( 'post-updated', array(
+		\App\Models\Event::Log( 'updated-post', array(
 			'site_id' => $this->site->id,
 			'user_id' => \Auth::user()->id,
 			'post-title' => $model->title,

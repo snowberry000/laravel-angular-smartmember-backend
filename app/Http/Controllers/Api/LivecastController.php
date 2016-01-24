@@ -28,7 +28,7 @@ class LivecastController extends SMController
     {
         $stored = parent::store();
 
-		\App\Models\Event::Log( 'livecast-created', array(
+		\App\Models\Event::Log( 'created-livecast', array(
 			'site_id' => $this->site->id,
 			'user_id' => \Auth::user()->id,
 			'livecast-title' => $stored->title,
@@ -50,7 +50,7 @@ class LivecastController extends SMController
     public function update($model){
         $stored = $model->update(\Input::except('_method' , 'access'));
 
-		\App\Models\Event::Log( 'livecast-updated', array(
+		\App\Models\Event::Log( 'updated-livecast', array(
 			'site_id' => $this->site->id,
 			'user_id' => \Auth::user()->id,
 			'livecast-title' => $stored->title,
@@ -66,7 +66,7 @@ class LivecastController extends SMController
 		foreach( $permalinks as $permalink )
 			$permalink->delete();
 
-		\App\Models\Event::Log( 'livecast-deleted', array(
+		\App\Models\Event::Log( 'deleted-livecast', array(
 			'site_id' => $this->site->id,
 			'user_id' => \Auth::user()->id,
 			'livecast-title' => $model->title,
