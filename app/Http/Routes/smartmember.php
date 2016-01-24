@@ -302,3 +302,4 @@ Route::resource('siteCustomRole','Api\Site\CustomRoleController');
 
 Route::get('/sendPurchaseEmail', "AppConfiguration\SendGridController@sendPurchaseEmail");
 Route::post('memberMeta/save', "Api\\MemberMetaController@save");
+Route::post('customAttribute/set', "Api\\CustomAttributeController@set");
