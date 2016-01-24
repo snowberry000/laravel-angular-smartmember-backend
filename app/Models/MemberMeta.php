@@ -12,19 +12,31 @@ class MemberMeta extends Root
 	{
 		return $this->belongsTo('App\Models\User', 'member_id');
 	}
-}
 
-MemberMeta::saving( function( $meta_item ) {
-	if( \Input::has('sm_customer_id') && !empty( \Input::get('sm_customer_id') ) && \Input::has('key') && !empty( \Input::get('key') ) )
+	public static function create( array $data = array(), $sm_customer = 10 )
 	{
-		$attribute = CustomAttribute::whereUserId( \Input::get('sm_customer_id') )->whereName( \Input::get('key') )->first();
+		$attribute = CustomAttribute::whereUserId( $sm_customer )
+			->whereName( $data['key'] )->first();
 
 		if( !$attribute )
-			$attribute = CustomAttribute::create(['user_id' => \Input::get('sm_customer_id'), 'name' => \Input::get('key'), 'type' => \Input::get('type', '')]);
+			$attribute = CustomAttribute::create( [ 'user_id' => $sm_customer, 'name' => $data['key'], 'type' => ( !empty( $data['type'] ) ? $data['type'] : '' ) ] );
 
-		$meta_item->custom_attribute_id = $attribute->id;
+		unset( $data['key'] );
+		$data['custom_attribute_id'] = $attribute->id;
+		$data['member_id'] = \Auth::user()->id;
 
-		if( SMAuthenticate::set() )
-			$meta_item->member_id = \Auth::user()->id;
+		$meta_item = self::whereCustomAttributeId( $data['custom_attribute_id'] )->whereMemberId( $data['member_id'] )->first();
+
+		if( $meta_item )
+		{
+			$meta_item->value = $data['value'];
+			$meta_item->save();
+
+			return $meta_item;
+		}
+		else
+		{
+			return parent::create( $data );
+		}
 	}
-} );
+}

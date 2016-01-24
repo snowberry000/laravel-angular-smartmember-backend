@@ -14,7 +14,24 @@ class MemberMetaController extends SMController
     {
         parent::__construct();
         $this->model = new MemberMeta();
-        $this->middleware('admin',['except'=>array('index','show','store','update')]);
+        $this->middleware('admin',['except'=>array('index','show','store','update','save')]);
         $this->middleware('auth',['except'=>array('show','store','update')]);
     }
+
+	public function save()
+	{
+		foreach( \Input::except(['sm_customer_id']) as $key => $val )
+		{
+			$data = [
+				'key' => $key,
+				'value' => $val
+			];
+
+			$sm_customer_id = \Input::get('sm_customer_id', 10);
+
+			$this->model->create( $data, $sm_customer_id );
+		}
+
+		return [ 'success' => true ];
+	}
 }
