@@ -1658,3 +1658,34 @@ CREATE TABLE `event_metadata` (
   KEY (`event_id`),
   KEY (`key`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+CREATE TABLE `custom_attributes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `type` varchar(255) COLLATE utf8_unicode_ci NULL,
+  `archived` boolean not null default false,
+  `shown` boolean not null default true,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`id`),
+  KEY (`user_id`),
+  KEY (`name`),
+  KEY (`type`),
+  KEY (`archived`),
+  KEY (`shown`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+CREATE TABLE `member_meta` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `member_id` bigint(20) NOT NULL,
+  `custom_attribute_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `value` text COLLATE utf8_unicode_ci NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`id`),
+  KEY (`member_id`),
+  KEY (`custom_attribute_id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;

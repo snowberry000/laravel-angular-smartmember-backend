@@ -66,8 +66,8 @@ class Event extends Root
 		{
 			$model = self::whereEventName( $important_data['event_name'] );
 
-			if( !empty( $data['site_id'] ) )
-				$model = $model->whereSiteId( $data['site_id'] );
+			if( !empty( $important_data['site_id'] ) )
+				$model = $model->whereSiteId( $important_data['site_id'] );
 			else
 				$model = $model->whereSiteId( 0 );
 

@@ -66,7 +66,9 @@ $resources = array(
 	'smartLink',
     'media',
 	'event',
-	'eventMetaData'
+	'eventMetaData',
+	'customAttribute',
+	'memberMeta'
 );
 
 //TODO: Don't use - in the URL. Use Camel cased syntax e.g. facebookLogin
@@ -299,3 +301,5 @@ Route::model('siteCustomRole','App\Models\Site\CustomRole');
 Route::resource('siteCustomRole','Api\Site\CustomRoleController');
 
 Route::get('/sendPurchaseEmail', "AppConfiguration\SendGridController@sendPurchaseEmail");
+Route::post('memberMeta/save', "Api\\MemberMetaController@save");
+Route::post('customAttribute/set', "Api\\CustomAttributeController@set");

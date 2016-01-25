@@ -170,6 +170,11 @@ class ImportQueue extends Root
 								Role::create($new_data);
 							}
 						}
+
+						\App\Models\Event::Log( 'received-sm-2-bundle', array(
+							'site_id' => 6192,
+							'user_id' => $user->id
+						) );
 					}
 
 					if( !$pass )

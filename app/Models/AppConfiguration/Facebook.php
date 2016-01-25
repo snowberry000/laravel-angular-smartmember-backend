@@ -197,7 +197,7 @@ class Facebook extends AppConfiguration{
 						"member" => $user->facebook_user_id
 					) );
 
-					\App\Models\Event::Log( 'verification-code-sent', array(
+					\App\Models\Event::Log( 'removed-from-facebook-group', array(
 						'site_id' => $site_id,
 						'user_id' => $user_id,
 						'facebook-group-id' => $group_id,

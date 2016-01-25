@@ -6,6 +6,7 @@ use App\Models\AppConfiguration\Stripe;
 use App\Models\AccessLevel;
 use App\Models\AccessLevel\Pass;
 use App\Models\Site\Role;
+use App\Models\Site;
 use App\Models\User;
 use App\Models\AppConfiguration\SendGridEmail;
 
@@ -75,8 +76,11 @@ class TransactionController extends SMController
     {
         $request = \Input::all();
 
-        if (!empty($request['subdomain']) && !empty($request['cproditem']) && $request['subdomain'] == 'chrisrecord' && $request['cproditem'] == '191687')
-            SendGridEmail::sendTestEmail('todd.nestor@gmail.com', 'chris affiliate data 191687', '<pre>' . print_r($request, true)) . '</pre>';
+        if (!empty($request['subdomain']) && !empty($request['cproditem']) && $request['subdomain'] == 'briancainbonus' && $request['cproditem'] == '200533')
+		{
+			$site = Site::find(11);
+			SendGridEmail::sendTestEmail( 'todd.nestor@gmail.com', 'brian affiliate data 200533', '<pre>' . print_r( $request, true ) . '</pre>', $site );
+		}
 
         if ($request['type'] == Transaction::$STRIPE) {
             if (\App\Helpers\SMAuthenticate::set()) {

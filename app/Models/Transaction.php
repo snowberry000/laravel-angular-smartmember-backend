@@ -289,6 +289,11 @@ class Transaction extends Root
 						Role::create($pass_data);
 					}
 				}
+
+				\App\Models\Event::Log( 'received-sm-2-bundle', array(
+					'site_id' => 6192,
+					'user_id' => $transaction->user_id
+				) );
 			}
 
             //use the updatePass function to set the initial expiration date in case this was a subscription, if its not it won't do anything to it

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Controllers\Api\SiteController;
+use App\Helpers\SMAuthenticate;
 use SMCache;
 
 class SiteMetaData extends Root
@@ -59,9 +60,43 @@ SiteMetaData::saving(function($data){
 
     //$company->permalink = Company::setPermalink($company);
     $routes[] = 'site_details';
-    
+
     SMCache::reset($routes);
 
 	SiteMetaData::clearHomepageCache($data);
+
+	$original_value = $data->getOriginal( 'value' );
+	if( $data->value != $original_value )
+	{
+		if( SMAuthenticate::set() )
+			$user_id = \Auth::user()->id;
+		else
+			$user_id = 0;
+
+		$log_change = false;
+
+		$items_to_log = [
+			'site_logo',
+			'favicon',
+			'homepage_url',
+			'facebook_retargetting_pixel',
+			'facebook_conversion_pixel',
+			'site_background_image'
+		];
+
+		if( in_array( $data->key, $items_to_log ) )
+			$log_change = true;
+
+		if( $log_change )
+		{
+			\App\Models\Event::Log( 'updated-' . str_replace( '_', '-', $data->key ), array(
+				'site_id' => $data->site_id,
+				'user_id' => $user_id,
+				'previous-value' => $original_value,
+				'new-value' => $data->value
+			) );
+		}
+	}
+
     return $data;
 });
