@@ -17,6 +17,7 @@ use App\Models\Livecast;
 use App\Models\Post;
 use App\Models\Comment;
 use App\Models\Wizard;
+use App\Models\MemberMeta;
 use Auth;
 use Input;
 use PRedis;
@@ -93,6 +94,13 @@ class SiteController extends SMController
             \Log::info('cloning sites');
             $this->model->clone_site($site->id , $clone_id , \Auth::user()->id );
         }
+
+		$total_created = MemberMeta::get( 'sites_created', \Auth::user()->id );
+
+		if( $total_created )
+			$site->sites_created = $total_created->value;
+		else
+			$site->sites_created = 0;
 		
         return $site;
     }

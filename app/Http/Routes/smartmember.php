@@ -118,6 +118,8 @@ Route::get('/lesson/getDraftedLesson',"Api\\LessonController@getDraftedLesson");
 Route::get('/lesson/single/{id}',"Api\\LessonController@single");
 Route::post('/lesson/addAll',"Api\\LessonController@addAllVideos");
 Route::put('/lesson/bulkUpdate',"Api\\LessonController@bulkUpdate");
+Route::post('/lesson/bulkUpdateAccess',"Api\\LessonController@bulkUpdateAccess");
+Route::post('/lesson/bulkDelete',"Api\\LessonController@bulkDelete");
 
 Route::get('/appConfiguration/single/{id}',"Api\\AppConfigurationController@single");
 Route::post('/appConfiguration/addAll',"Api\\AppConfigurationController@addAllVideos");
@@ -146,6 +148,7 @@ Route::get('/role/agents',"Api\\RoleController@getAgents");
 Route::post('/siteRole/import',"Api\\Site\\RoleController@postImport");
 
 Route::post('/siteRole/removeUserFromSite',"Api\\Site\\RoleController@removeUserFromSite");
+Route::post('/siteRole/removeUserFromCurrentSite',"Api\\Site\\RoleController@removeUserFromCurrentSite");
 
 Route::get('/emailSubscriber/getCSV',"Api\\EmailSubscriberController@getCSV");
 Route::get('/emailSubscriber/getUnsubscribeInfo',"Api\\EmailSubscriberController@getUnsubscribeInfo");

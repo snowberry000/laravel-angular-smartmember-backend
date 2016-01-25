@@ -5,7 +5,7 @@ use App\Helpers\SMAuthenticate;
 use App\Http\Controllers\ApiController;
 use App\Models\VimeoIntegration;
 use App\Models\AppConfiguration\Vimeo;
-
+use App\Models\MemberMeta;
 
 use App\Models\Lesson;
 use App\Models\SiteNotice;
@@ -20,7 +20,7 @@ use App\Models\Permalink;
 use Auth;
 use Input;
 use Carbon\Carbon;
-
+use SMCache;
 
 
 /*
@@ -119,6 +119,13 @@ class LessonController extends SMController
 				'lesson-title' => $stored->title,
 				'lesson-id' => $stored->id
 			) );
+
+			$total_created = MemberMeta::get( 'lessons_created', \Auth::user()->id );
+
+			if( $total_created )
+				$stored->lessons_created = $total_created->value;
+			else
+				$stored->lessons_created = 0;
 
 			return $stored;
 		}
@@ -261,6 +268,77 @@ class LessonController extends SMController
             ->update([ 'access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id]);
         return array('access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id);
     }
+
+	public function bulkUpdateAccess()
+	{
+		$lesson_ids = \Input::get('lesson_ids');
+		$access_level_type = \Input::get('access_level_type');
+		$access_level_id = \Input::get('access_level_id') ? \Input::get('access_level_id') : 0 ;
+
+		if( !empty( $lesson_ids ) && is_array( $lesson_ids ) )
+		{
+			\DB::table('lessons')
+				->whereSiteId( $this->site->id )
+				->whereIn( 'id' , $lesson_ids )
+				->update([ 'access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id]);
+
+			$lesson_key ='modules' . ':' . $this->site->id . ':*';
+
+			$keys[] = $lesson_key;
+
+			SMCache::clear($keys);
+
+			$routes[] = 'module_home';
+			SMCache::reset($routes);
+
+			return array('access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id);
+		}
+	}
+
+	public function bulkDelete()
+	{
+		$lesson_ids = \Input::get('lesson_ids');
+		$module_ids = \Input::get('module_ids');
+
+		if( !empty( $lesson_ids ) && is_array( $lesson_ids ) )
+		{
+			\DB::table('lessons')
+				->whereSiteId( $this->site->id )
+				->whereIn( 'id' , $lesson_ids )
+				->update([ 'deleted_at' => Carbon::now() ]);
+
+			\DB::table('permalinks')
+				->whereSiteId( $this->site->id )
+				->whereType('lessons')
+				->whereIn( 'target_id' , $lesson_ids )
+				->whereNull( 'deleted_at' )
+				->update([ 'deleted_at' => Carbon::now() ]);
+		}
+
+		if( !empty( $module_ids ) && is_array( $module_ids ) )
+		{
+			\DB::table('modules')
+				->whereSiteId( $this->site->id )
+				->whereIn( 'id' , $module_ids )
+				->update([ 'deleted_at' => Carbon::now() ]);
+
+			\DB::table('lessons')
+				->whereSiteId( $this->site->id )
+				->whereIn( 'module_id' , $module_ids )
+				->update([ 'module_id' => 0 ]);
+		}
+
+		$lesson_key ='modules' . ':' . $this->site->id . ':*';
+
+		$keys[] = $lesson_key;
+
+		SMCache::clear($keys);
+
+		$routes[] = 'module_home';
+		SMCache::reset($routes);
+
+		return array( 'deleted_modules' => $module_ids , 'deleted_lessons' => $lesson_ids );
+	}
 
     public function single($id){
 
