@@ -304,6 +304,7 @@ class LessonController extends SMController
 				->whereSiteId( $this->site->id )
 				->whereType('lessons')
 				->whereIn( 'target_id' , $lesson_ids )
+				->whereNull( 'deleted_at' )
 				->update([ 'deleted_at' => Carbon::now() ]);
 		}
 
