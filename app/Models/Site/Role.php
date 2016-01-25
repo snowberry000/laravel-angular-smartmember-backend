@@ -360,12 +360,12 @@ class Role extends Root{
 					}
 				}
 			}
-		}
 
-		\App\Models\Event::Log( 'refunded-sm-2-bundle', array(
-			'site_id' => 6192,
-			'user_id' => $user_id
-		) );
+			\App\Models\Event::Log( 'refunded-sm-2-bundle', array(
+				'site_id' => 6192,
+				'user_id' => $user_id
+			) );
+		}
 	}
 }
 
