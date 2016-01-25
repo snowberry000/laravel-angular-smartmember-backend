@@ -20,7 +20,7 @@ use App\Models\Permalink;
 use Auth;
 use Input;
 use Carbon\Carbon;
-
+use SMCache;
 
 
 /*
@@ -275,6 +275,15 @@ class LessonController extends SMController
 				->whereIn( 'id' , $lesson_ids )
 				->update([ 'access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id]);
 
+			$lesson_key ='modules' . ':' . $this->site->id . ':*';
+
+			$keys[] = $lesson_key;
+
+			SMCache::clear($keys);
+
+			$routes[] = 'module_home';
+			SMCache::reset($routes);
+
 			return array('access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id);
 		}
 	}
@@ -304,6 +313,15 @@ class LessonController extends SMController
 				->whereIn( 'module_id' , $module_ids )
 				->update([ 'module_id' => 0 ]);
 		}
+
+		$lesson_key ='modules' . ':' . $this->site->id . ':*';
+
+		$keys[] = $lesson_key;
+
+		SMCache::clear($keys);
+
+		$routes[] = 'module_home';
+		SMCache::reset($routes);
 
 		return array( 'deleted_modules' => $module_ids , 'deleted_lessons' => $lesson_ids );
 	}
