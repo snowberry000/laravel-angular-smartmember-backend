@@ -39,4 +39,15 @@ class MemberMeta extends Root
 			return parent::create( $data );
 		}
 	}
+
+	public static function get( $key, $user_id, $sm_customer = 10 )
+	{
+		$attribute = CustomAttribute::whereUserId( $sm_customer )
+			->whereName( $key )->first();
+
+		if( !$attribute )
+			return false;
+
+		return self::whereCustomAttributeId( $attribute->id )->whereMemberId( $user_id )->first();
+	}
 }
