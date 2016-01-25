@@ -148,6 +148,7 @@ Route::get('/role/agents',"Api\\RoleController@getAgents");
 Route::post('/siteRole/import',"Api\\Site\\RoleController@postImport");
 
 Route::post('/siteRole/removeUserFromSite',"Api\\Site\\RoleController@removeUserFromSite");
+Route::post('/siteRole/removeUserFromCurrentSite',"Api\\Site\\RoleController@removeUserFromCurrentSite");
 
 Route::get('/emailSubscriber/getCSV',"Api\\EmailSubscriberController@getCSV");
 Route::get('/emailSubscriber/getUnsubscribeInfo',"Api\\EmailSubscriberController@getUnsubscribeInfo");
