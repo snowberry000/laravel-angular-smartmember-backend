@@ -118,6 +118,7 @@ Route::get('/lesson/getDraftedLesson',"Api\\LessonController@getDraftedLesson");
 Route::get('/lesson/single/{id}',"Api\\LessonController@single");
 Route::post('/lesson/addAll',"Api\\LessonController@addAllVideos");
 Route::put('/lesson/bulkUpdate',"Api\\LessonController@bulkUpdate");
+Route::post('/lesson/bulkUpdateAccess',"Api\\LessonController@bulkUpdateAccess");
 
 Route::get('/appConfiguration/single/{id}',"Api\\AppConfigurationController@single");
 Route::post('/appConfiguration/addAll',"Api\\AppConfigurationController@addAllVideos");

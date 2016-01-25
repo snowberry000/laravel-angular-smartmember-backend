@@ -262,6 +262,22 @@ class LessonController extends SMController
         return array('access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id);
     }
 
+	public function bulkUpdateAccess() {
+		$lesson_ids = \Input::get('lesson_ids');
+		$access_level_type = \Input::get('access_level_type');
+		$access_level_id = \Input::get('access_level_id') ? \Input::get('access_level_id') : 0 ;
+		
+		if( !empty( $lesson_ids ) && is_array( $lesson_ids ) )
+		{
+			\DB::table('lessons')
+				->whereSiteId( $this->site->id )
+				->whereIn( 'id' , $lesson_ids )
+				->update([ 'access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id]);
+
+			return array('access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id);
+		}
+	}
+
     public function single($id){
 
         return $this->model->with("seo_settings")->whereId($id)->first();
