@@ -299,6 +299,12 @@ class LessonController extends SMController
 				->whereSiteId( $this->site->id )
 				->whereIn( 'id' , $lesson_ids )
 				->update([ 'deleted_at' => Carbon::now() ]);
+
+			\DB::table('permalinks')
+				->whereSiteId( $this->site->id )
+				->whereType('lessons')
+				->whereIn( 'target_id' , $lesson_ids )
+				->update([ 'deleted_at' => Carbon::now() ]);
 		}
 
 		if( !empty( $module_ids ) && is_array( $module_ids ) )
