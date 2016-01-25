@@ -15,6 +15,8 @@ use App\Models\UserRole;
 use App\Models\Transaction;
 use App\Models\AppConfiguration;
 use App\Models\LinkedAccount;
+use App\Models\CustomAttribute;
+use App\Models\MemberMeta;
 use Auth;
 
 class UserController extends SMController
@@ -502,6 +504,40 @@ class UserController extends SMController
 				$query->skip((\Input::get('p')-1)*$page_size);
 
 			$return['items'] = $query->get();
+
+			if( $type == 'member' )
+			{
+				$custom_attributes = CustomAttribute::whereUserId( 10 )->get();
+
+				$keys = [];
+
+				foreach( $custom_attributes as $attribute )
+					$keys[ $attribute->id ] = $attribute->name;
+
+				foreach( $return['items'] as $member )
+				{
+					if( !empty( $keys ) )
+					{
+						$meta = MemberMeta::whereMemberId( $member->user_id )->whereIn( 'custom_attribute_id', array_keys( $keys ) )->get();
+
+						$meta_data = [];
+
+						foreach( $meta as $key => $val )
+						{
+							$meta_data[ $keys[ $val->custom_attribute_id ] ] = $val->value;
+						}
+
+						foreach( $keys as $key => $val )
+						{
+							if( empty( $meta_data[ $val ] ) )
+								$meta_data[ $val ] = null;
+						}
+
+						$member->meta = $meta_data;
+					}
+				}
+			}
+
 			return $return;
 		}
 	}
