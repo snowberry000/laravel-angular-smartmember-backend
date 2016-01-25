@@ -335,23 +335,17 @@ class User extends Root implements AuthenticatableContract
             ->where('user_id', $this->id)
             ->first();
 
-        if (!isset($role->id))
-        {
-            $granted_levels = Grant::where('grant_id', $required_level)
-                ->select('access_level_id')
-                ->lists('access_level_id')
-                ->toArray();
+        if (!isset($role->id)) {
+            $passes = Role::whereUserId(\Auth::user()->id)->get();
+            foreach ($passes as $pass) {
+                $access_levels = Pass::access_levels($pass->access_level_id);
 
-            $granted_levels[] = $required_level;
+                if ($pass && in_array($required_level, $access_levels)) {
+                    return true;
+                }
+            }
 
-            $role = SiteRole::whereIn('access_level_id', $granted_levels)
-                ->where('user_id', $this->id)
-                ->first();
-
-            if ($role )
-                return true;
-            else
-                return false;
+            return false;
         } else {
             return true;
         }
