@@ -227,6 +227,12 @@ class SendGridEmail {
             ->setHtml( $site_welcome_content );
         \Log::info('Send welcome email for' . $user->email);
         self::sendEmail($email, true, $site);
+
+		\App\Models\Event::Log( 'sent-welcome-email', array(
+			'user_id' => $user->id,
+			'site_id' => $site && $site->id ? $site->id : 0,
+			'email' => $user->email
+		) );
     }
 
     public static function sendForgotPasswordEmail($user, $site)
@@ -269,6 +275,13 @@ class SendGridEmail {
               ->setHTML($view);
 
         self::sendEmail($email, true, $site);
+
+		\App\Models\Event::Log( 'sent-forgot-password', array(
+			'user_id' => $user->id,
+			'site_id' => $site && $site->id ? $site->id : 0,
+			'email' => $user->email,
+			'extra meta test' => 'whatever'
+		) );
     }
 
     public static function sendPurchaseEmail($transaction, $pass=false, $cbreceipt=false)
@@ -360,6 +373,15 @@ class SendGridEmail {
                 ->setHtml( $view );
 
             self::sendEmail( $email, true, $site );
+
+			\App\Models\Event::Log( 'sent-purchase-email', array(
+				'user_id' => $user->id,
+				'site_id' => $site && $site->id ? $site->id : 0,
+				'email' => $user->email,
+				'cbreceipt' => $cbreceipt,
+				'transaction_id' => $transaction->transaction_id,
+				'access-level' => !empty( $data['access_level'] ) ? $data['access_level'] : ''
+			) );
         }
     }
 
@@ -1100,6 +1122,13 @@ class SendGridEmail {
 			->setHTML($view);
 
 		self::sendEmail($email, true, $site);
+
+		\App\Models\Event::Log( 'sent-verification-code', array(
+			'site_id' => $site && $site->id ? $site->id : 0,
+			'user_id' => $user->id,
+			'email' => $user->email,
+			'verification-code' => $verification_code
+		) );
 	}
 }
 

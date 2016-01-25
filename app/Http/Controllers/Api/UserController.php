@@ -1,6 +1,7 @@
 <?php namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\ApiController;
+use App\Models\EmailSubscriber;
 use App\Models\User;
 use App\Models\UserOptions;
 use App\Models\Site\Role;
@@ -14,7 +15,6 @@ use App\Models\UserRole;
 use App\Models\Transaction;
 use App\Models\AppConfiguration;
 use App\Models\LinkedAccount;
-
 use Auth;
 
 class UserController extends SMController
@@ -322,7 +322,7 @@ class UserController extends SMController
 
 				$has_access = false;
 
-				$access_pass = Pass::whereAccessLevelId( $access_level->id )->whereUserId( $user->id )->where(function($q){
+				$access_pass = Role::whereSiteId( $access_level->id )->whereAccessLevelId( $access_level->id )->whereUserId( $user->id )->where(function($q){
 					$now = date( 'Y-m-d H:i:s');
 
 					$q->whereNull('expired_at');
@@ -332,11 +332,18 @@ class UserController extends SMController
 
 				if( !$access_pass )
 				{
-					Pass::create([
+					Role::create([
 						 'user_id' => $user->id,
 						 'access_level_id' => $access_level->id,
 						 'site_id' => $access_level->site_id
 					 ]);
+
+					\App\Models\Event::Log( 'connected-to-a-jvzoo-receipt', array(
+						'site_id' => $access_level->site_id,
+						'user_id' => $user->id,
+						'email' => $user->email,
+						'access-level-id' => $access_level->id
+					) );
 				}
 			}
 
@@ -413,12 +420,19 @@ class UserController extends SMController
 
 			if( $access_level )
 			{
-				Pass::create([
+				Role::create([
 					 'user_id' => $user->id,
 					 'access_level_id' => $access_level->id,
 					 'site_id' => $access_level->site_id
 				 ]);
 			}
+
+			\App\Models\Event::Log( 'connected-to-a-jvzoo-receipt', array(
+				'site_id' => $access_level->site_id,
+				'user_id' => $user->id,
+				'email' => $user->email,
+				'access-level-id' => $access_level->id
+			) );
 
 			$user_data = $user->toArray();
 
@@ -438,5 +452,51 @@ class UserController extends SMController
 				return \Auth::user()->sitesWithRole( \Input::get('role') );
 		else
 			return \Auth::user()->sites;
+	}
+
+	public function getMembers()
+	{
+		if (\Input::has('type') && !empty(\Input::get('type')))
+		{
+			$type = \Input::get('type');
+
+			switch ($type)
+			{
+				case 'member':
+					$site_ids = \Auth::user()->sitesWithCapability('manage_members', false);
+					$query = Role::with('user')->whereIn('site_id', $site_ids);
+					break;
+				case 'subscriber':
+					$site_ids = \Auth::user()->sitesWithCapability('manage_email', false);
+					$query = EmailSubscriber::whereIn('site_id', $site_ids);
+					break;
+			}
+
+			$page_size = config("vars.default_page_size");
+			$query = $query->orderBy('id' , 'DESC');
+			$query = $query->whereNull('deleted_at');
+			foreach (\Input::all() as $key => $value){
+				switch($key){
+					case 'view':
+					case 'p':
+					case 'bypass_paging':
+					case 'type':
+						break;
+					default:
+						$query->where($key,'=',$value);
+				}
+			}
+
+			$return = [];
+			$return['total_count'] = $query->count();
+			if( !\Input::has('bypass_paging') || !\Input::get('bypass_paging') )
+				$query = $query->take($page_size);
+
+			if( \Input::has('p') )
+				$query->skip((\Input::get('p')-1)*$page_size);
+
+			$return['items'] = $query->get();
+			return $return;
+		}
 	}
 }

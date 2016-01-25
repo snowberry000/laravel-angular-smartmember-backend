@@ -56,18 +56,18 @@ class SiteMetaDataController extends SMController
 
     public function save()
     {
-        if( Input::has('site') )
-		{
-            $site = Input::get('site');
-            $this->site->fill($site);
-            $this->site->save();
-        }
-
         $is_bridgepage = false;
         $bpage_permalink = "";
 
 		if ( \SMRole::userHasAccess( $this->site->id, 'edit_theme_options', \Auth::user()->id ) )
 		{
+			if( Input::has('site') )
+			{
+				$site = Input::get('site');
+				$this->site->fill($site);
+				$this->site->save();
+			}
+
 			$site_id = $this->site->id;
 			foreach( Input::except( [ 'site', 'import_queue_locked', 'imports_queue_locked' ] ) as $key => $input )
 			{

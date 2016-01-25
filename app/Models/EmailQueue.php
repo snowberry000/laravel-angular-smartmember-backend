@@ -47,7 +47,7 @@ class EmailQueue extends Root
 
 	public static function enqueueSegment($queue_item, $remaining)
 	{
-		$current_site = \Domain::getSite();
+		$current_site = Site::find( $queue_item->site_id );
 
 		$total_sent = 0;
 		$segment = EmailRecipient::find( $queue_item->email_recipient_id );
@@ -127,7 +127,7 @@ class EmailQueue extends Root
 					}
 					else
 					{
-						$new_emails = EmailSubscriber::where( 'email_subscribers.account_id', $segment_bits[1] )
+						$new_emails = EmailSubscriber::whereIn('email_subscribers.site_id', $site_ids)
 							->leftjoin('users','users.email','=','email_subscribers.email')
 							->leftjoin('sites_roles',function($join) use ($site_ids) {
 								$join->on('users.id','=','sites_roles.user_id');
@@ -172,6 +172,7 @@ class EmailQueue extends Root
 					{
 						$queue_item->last_recipient_queued = null;
 						$queue_item->info = 'users_queued';
+						$queuing_users = true;
 						$queue_item->save();
 						$more_remaining = true;
 					}
@@ -193,7 +194,7 @@ class EmailQueue extends Root
 						});
 					}
 
-					if( $segment_bits[ 0 ] == 'site' || $segment_bits[ 0 ] == 'level' || ( $segment_bits[ 0 ] == 'catch' && !$queue_item->info ) )
+					if( $segment_bits[ 0 ] == 'site' || $segment_bits[ 0 ] == 'level' || ( $segment_bits[ 0 ] == 'catch' && ( !$queue_item->info || !empty( $queuing_users ) ) ) )
 					{
 						$subscriber = EmailSubscriber::join( 'users as u', 'u.email', '=', 'email_subscribers.email' )
 							->where( 'u.id', $recipient->id )
@@ -260,7 +261,7 @@ class EmailQueue extends Root
 					$tosend[ 'email_id' ]       = $segment->email_id;
 					$tosend[ 'subscriber_id' ]  = $recipient->id;
 					$tosend[ 'email_recipient_id' ] = $segment->id;
-					$tosend[ 'list_type' ]      = ( $segment_bits[ 0 ] == 'site' || $segment_bits[ 0 ] == 'level' ) || ( $segment_bits[ 0 ] == 'catch' && !$queue_item->info ) ? 'segment' : null;
+					$tosend[ 'list_type' ]      = ( $segment_bits[ 0 ] == 'site' || $segment_bits[ 0 ] == 'level' ) || ( $segment_bits[ 0 ] == 'catch' && ( !$queue_item->info || !empty( $queuing_users ) ) ) ? 'segment' : null;
 					$tosend[ 'job_id' ]         = $queue_item->email_job_id;
 					$tosend[ 'send_at' ]        = isset( $queue_item->send_at ) ? $queue_item->send_at : Carbon::now();
 

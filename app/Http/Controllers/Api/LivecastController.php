@@ -28,6 +28,13 @@ class LivecastController extends SMController
     {
         $stored = parent::store();
 
+		\App\Models\Event::Log( 'created-livecast', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'livecast-title' => $stored->title,
+			'livecast-id' => $stored->id
+		) );
+
         return $stored;
     }
 
@@ -41,7 +48,16 @@ class LivecastController extends SMController
     }
 
     public function update($model){
-        return $model->update(\Input::except('_method' , 'access'));
+        $stored = $model->update(\Input::except('_method' , 'access'));
+
+		\App\Models\Event::Log( 'updated-livecast', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'livecast-title' => $stored->title,
+			'livecast-id' => $stored->id
+		) );
+
+		return $stored;
     }
 
 	public function destroy($model)
@@ -49,6 +65,13 @@ class LivecastController extends SMController
 		$permalinks = Permalink::whereSiteId($model->site_id)->whereTargetId($model->id)->whereType($model->getTable())->get();
 		foreach( $permalinks as $permalink )
 			$permalink->delete();
+
+		\App\Models\Event::Log( 'deleted-livecast', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'livecast-title' => $model->title,
+			'livecast-id' => $model->id
+		) );
 
 		return parent::destroy($model);
 	}

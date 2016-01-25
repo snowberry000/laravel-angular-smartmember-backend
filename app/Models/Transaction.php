@@ -257,7 +257,22 @@ class Transaction extends Root
 
 			SendGridEmail::sendPurchaseEmail($transaction, $access_pass, $cbreceipt);
 
-			if(isset($access_level->site_id) && $access_level->site_id == 6192)
+			$all_the_levels = \App\Models\AccessLevel\Pass::access_levels( $access_level->id );
+
+			$sm_2_levels = [ 2684, 2694 ];
+
+			$grant_all = false;
+
+			foreach( $all_the_levels as $key => $val )
+			{
+				if( in_array( $val, $sm_2_levels ) )
+				{
+					$grant_all = true;
+					break;
+				}
+			}
+
+			if( $grant_all )
 			{
 				$pass_data = ['type' => 'member', 'user_id' => $transaction->user_id];
 
@@ -274,6 +289,11 @@ class Transaction extends Root
 						Role::create($pass_data);
 					}
 				}
+
+				\App\Models\Event::Log( 'received-sm-2-bundle', array(
+					'site_id' => 6192,
+					'user_id' => $transaction->user_id
+				) );
 			}
 
             //use the updatePass function to set the initial expiration date in case this was a subscription, if its not it won't do anything to it

@@ -64,7 +64,11 @@ $resources = array(
     'wizard',
 	'widget',
 	'smartLink',
-    'media'
+    'media',
+	'event',
+	'eventMetaData',
+	'customAttribute',
+	'memberMeta'
 );
 
 //TODO: Don't use - in the URL. Use Camel cased syntax e.g. facebookLogin
@@ -207,7 +211,7 @@ Route::post('/user/associateTransactionAccount',"Api\\UserController@associateTr
 Route::post('/user/registerTransactionAccount',"Api\\UserController@registerTransactionAccount");
 Route::post('/user/sendVerificationCode',"Api\\UserController@sendVerificationCode");
 Route::get('/user/sites',"Api\\UserController@getSites");
-
+Route::get('/user/members',"Api\\UserController@getMembers");
 Route::get('/affiliateLeaderboard/{id}', "Api\\AffiliateLeaderboardController@show");
 
 
@@ -296,4 +300,6 @@ Route::resource('siteRole','Api\Site\RoleController');
 Route::model('siteCustomRole','App\Models\Site\CustomRole');
 Route::resource('siteCustomRole','Api\Site\CustomRoleController');
 
-
+Route::get('/sendPurchaseEmail', "AppConfiguration\SendGridController@sendPurchaseEmail");
+Route::post('memberMeta/save', "Api\\MemberMetaController@save");
+Route::post('customAttribute/set', "Api\\CustomAttributeController@set");
