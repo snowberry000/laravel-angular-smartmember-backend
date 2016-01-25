@@ -262,11 +262,12 @@ class LessonController extends SMController
         return array('access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id);
     }
 
-	public function bulkUpdateAccess() {
+	public function bulkUpdateAccess()
+	{
 		$lesson_ids = \Input::get('lesson_ids');
 		$access_level_type = \Input::get('access_level_type');
 		$access_level_id = \Input::get('access_level_id') ? \Input::get('access_level_id') : 0 ;
-		
+
 		if( !empty( $lesson_ids ) && is_array( $lesson_ids ) )
 		{
 			\DB::table('lessons')
@@ -276,6 +277,35 @@ class LessonController extends SMController
 
 			return array('access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id);
 		}
+	}
+
+	public function bulkDelete()
+	{
+		$lesson_ids = \Input::get('lesson_ids');
+		$module_ids = \Input::get('module_ids');
+
+		if( !empty( $lesson_ids ) && is_array( $lesson_ids ) )
+		{
+			\DB::table('lessons')
+				->whereSiteId( $this->site->id )
+				->whereIn( 'id' , $lesson_ids )
+				->update([ 'deleted_at' => Carbon::now() ]);
+		}
+
+		if( !empty( $module_ids ) && is_array( $module_ids ) )
+		{
+			\DB::table('modules')
+				->whereSiteId( $this->site->id )
+				->whereIn( 'id' , $module_ids )
+				->update([ 'deleted_at' => Carbon::now() ]);
+
+			\DB::table('lessons')
+				->whereSiteId( $this->site->id )
+				->whereIn( 'module_id' , $module_ids )
+				->update([ 'module_id' => 0 ]);
+		}
+
+		return array( 'deleted_modules' => $module_ids , 'deleted_lessons' => $lesson_ids );
 	}
 
     public function single($id){
