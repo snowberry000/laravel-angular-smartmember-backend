@@ -5,7 +5,7 @@ use App\Helpers\SMAuthenticate;
 use App\Http\Controllers\ApiController;
 use App\Models\VimeoIntegration;
 use App\Models\AppConfiguration\Vimeo;
-
+use App\Models\MemberMeta;
 
 use App\Models\Lesson;
 use App\Models\SiteNotice;
@@ -119,6 +119,13 @@ class LessonController extends SMController
 				'lesson-title' => $stored->title,
 				'lesson-id' => $stored->id
 			) );
+
+			$total_created = MemberMeta::get( 'lessons_created', \Auth::user()->id );
+
+			if( $total_created )
+				$stored->lessons_created = $total_created->value;
+			else
+				$stored->lessons_created = 0;
 
 			return $stored;
 		}
