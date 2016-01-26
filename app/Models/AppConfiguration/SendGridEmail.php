@@ -1006,7 +1006,7 @@ class SendGridEmail {
                 $view = \View::make( "email.support.agent_new", [
                     'name' => $agent[ 'name' ],
                     'ticket_id' => $ticket->id,
-                    'ticket_link' => 'http://my.smartmember.com/admin/team/helpdesk/ticket/' . $ticket->id,
+                    'ticket_link' => 'http://my.smartmember.com/admin/support/ticket/' . $ticket->id,
                     'site_logo' => isset( $site_logo ) ? $site_logo->value : '',
                     'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : '',
                     'subdomain' => $site ? $site->subdomain : '',
@@ -1043,7 +1043,7 @@ class SendGridEmail {
         $view = \View::make("email.support.all_agent", [
                 'name' => '',
                 'ticket_id' => $ticket->id, 
-                'ticket_link' => 'http://my.smartmember.com/admin/team/helpdesk/ticket/' . $ticket->id,
+                'ticket_link' => 'http://my.smartmember.com/admin/support/ticket/' . $ticket->id,
                 'site_logo' => isset($site_logo) ? $site_logo->value : '',
                 'subdomain' => $site->subdomain,
                 'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : '',
@@ -1072,7 +1072,7 @@ class SendGridEmail {
         $view = \View::make("email.support.agent_reply", [
                 'name' =>  $user['name'],
                 'ticket_id' => $ticket->id, 
-                'ticket_link' => 'http://my.smartmember.com/admin/team/helpdesk/ticket/' . $ticket->id,
+                'ticket_link' => 'http://my.smartmember.com/admin/support/ticket/' . $ticket->id,
                 'site_logo' => isset($site_logo) ? $site_logo->value : '',
                 'subdomain' => $site->subdomain,
                 'ticket'=>$ticket,
