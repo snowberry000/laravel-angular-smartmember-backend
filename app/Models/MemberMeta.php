@@ -22,6 +22,8 @@ class MemberMeta extends Root
 
 		if( !$attribute )
 			$attribute = CustomAttribute::create( [ 'user_id' => $sm_customer, 'name' => $data['key'], 'type' => ( !empty( $data['type'] ) ? $data['type'] : $type ) ] );
+		else
+			$attribute->UpdateType( $type );
 
 		unset( $data['key'] );
 		$data['custom_attribute_id'] = $attribute->id;
