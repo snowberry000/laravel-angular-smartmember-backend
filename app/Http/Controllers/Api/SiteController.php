@@ -77,6 +77,16 @@ class SiteController extends SMController
             \App::abort(403, "Failed to create site, please contact support");
         }
 
+        $subdomain = Input::get('subdomain');
+
+        if(isset($subdomain) && $subdomain && !empty($subdomain)){
+            $exists = Site::whereSubdomain($subdomain)->first();
+
+            if($exists && isset($exists->id)){
+                \App::abort(403, "This subdomain already exists. Please choose a different one");
+            }
+        }
+        
         $site = parent::store();
 
 		$clone_id = \Input::get('clone_id');
