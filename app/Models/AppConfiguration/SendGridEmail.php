@@ -77,9 +77,9 @@ class SendGridEmail {
 		else
 			$reset_url .= $site->subdomain . ".smartmember.com";
 
-		$login_url = $reset_url . '?signin';
+		$login_url = $reset_url . '/sign/in/';
 
-		$reset_url .="?forgot";
+		$reset_url .="/sign/forgot";
 		$string = '<ul style="font-size:17px;line-height:24px;margin:0 0 16px;margin-bottom:1.5rem;list-style:none;padding-left:1rem">';
 
 		if( !empty( $access_level_name ) )
@@ -252,9 +252,9 @@ class SendGridEmail {
         if (!empty($site->domain))
         {
             \Log::info('This is the custom domain');
-            $reset_link = 'http://' . strtolower($site->domain) .  '/sign/reset?reset_hash=' . $user->reset_token;
+            $reset_link = 'http://' . strtolower($site->domain) .  '/sign/reset/' . $user->reset_token;
         } else {
-            $reset_link = \Domain::appRoute (\Domain::getSubdomain(), '/sign/reset?reset_hash=' . $user->reset_token);
+            $reset_link = \Domain::appRoute (\Domain::getSubdomain(), '/sign/reset/' . $user->reset_token);
         }
 
         $data = array();
@@ -467,7 +467,7 @@ class SendGridEmail {
 			$replacements = [
 				'%site_name%' => $site->name,
 				'%login_details%' => self::getLoginInfo( $user, $site, $password, $access_level_name ),
-				'%site_url%' => $site->domain ? $site->domain . '?signin' : 'http://'.$site->subdomain . '.smartmember.com?signin',
+				'%site_url%' => $site->domain ? $site->domain . '/sign/in/' : 'http://'.$site->subdomain . '.smartmember.com/sign/in/',
 				'%site_subdomain%' => $site->subdomain,
 				'%login_button%' => '' //this is to get rid of it for anyone who already implemented it
 			];
