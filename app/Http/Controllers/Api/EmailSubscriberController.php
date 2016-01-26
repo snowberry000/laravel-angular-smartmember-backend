@@ -215,6 +215,9 @@ class EmailSubscriberController extends SMController
 
 		$site_id = \Input::get('site_id', 0);
 
+		if( !$site_id && $this->site && $this->site->id )
+			$site_id = $this->site->id;
+
         $list_type = \Input::get("list_type", 'user');
         $hash = \Input::get('hash', 'doesntexist');//set it to something we don't use by default, it will look for the e-mail address instead then
 

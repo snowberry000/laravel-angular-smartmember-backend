@@ -1,6 +1,7 @@
 <?php namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\ApiController;
+use App\Models\EmailSubscriber;
 use App\Models\User;
 use App\Models\UserOptions;
 use App\Models\Site\Role;
@@ -14,7 +15,8 @@ use App\Models\UserRole;
 use App\Models\Transaction;
 use App\Models\AppConfiguration;
 use App\Models\LinkedAccount;
-
+use App\Models\CustomAttribute;
+use App\Models\MemberMeta;
 use Auth;
 
 class UserController extends SMController
@@ -322,7 +324,7 @@ class UserController extends SMController
 
 				$has_access = false;
 
-				$access_pass = Pass::whereAccessLevelId( $access_level->id )->whereUserId( $user->id )->where(function($q){
+				$access_pass = Role::whereSiteId( $access_level->id )->whereAccessLevelId( $access_level->id )->whereUserId( $user->id )->where(function($q){
 					$now = date( 'Y-m-d H:i:s');
 
 					$q->whereNull('expired_at');
@@ -332,11 +334,18 @@ class UserController extends SMController
 
 				if( !$access_pass )
 				{
-					Pass::create([
+					Role::create([
 						 'user_id' => $user->id,
 						 'access_level_id' => $access_level->id,
 						 'site_id' => $access_level->site_id
 					 ]);
+
+					\App\Models\Event::Log( 'connected-to-a-jvzoo-receipt', array(
+						'site_id' => $access_level->site_id,
+						'user_id' => $user->id,
+						'email' => $user->email,
+						'access-level-id' => $access_level->id
+					) );
 				}
 			}
 
@@ -413,12 +422,19 @@ class UserController extends SMController
 
 			if( $access_level )
 			{
-				Pass::create([
+				Role::create([
 					 'user_id' => $user->id,
 					 'access_level_id' => $access_level->id,
 					 'site_id' => $access_level->site_id
 				 ]);
 			}
+
+			\App\Models\Event::Log( 'connected-to-a-jvzoo-receipt', array(
+				'site_id' => $access_level->site_id,
+				'user_id' => $user->id,
+				'email' => $user->email,
+				'access-level-id' => $access_level->id
+			) );
 
 			$user_data = $user->toArray();
 
@@ -436,5 +452,93 @@ class UserController extends SMController
 			return \Auth::user()->sitesWithCapability( \Input::get('capability') );
 		else
 			return \Auth::user()->sites;
+	}
+
+	public function getMembers()
+	{
+		if (\Input::has('type') && !empty(\Input::get('type')))
+		{
+			$type = \Input::get('type');
+
+			switch ($type)
+			{
+				case 'member':
+					$site_ids = \Auth::user()->sitesWithCapability('manage_members', false);
+					$query = Role::with('user')->whereIn('site_id', $site_ids);
+					break;
+				case 'subscriber':
+					$site_ids = \Auth::user()->sitesWithCapability('manage_email', false);
+					$query = EmailSubscriber::whereIn('site_id', $site_ids);
+					break;
+			}
+
+			$page_size = config("vars.default_page_size");
+			$query = $query->orderBy('id' , 'DESC');
+			$query = $query->whereNull('deleted_at');
+			foreach (\Input::all() as $key => $value){
+				switch($key){
+					case 'view':
+					case 'p':
+					case 'bypass_paging':
+					case 'type':
+						break;
+					default:
+						$query->where($key,'=',$value);
+				}
+			}
+
+			$return = [];
+			if ($type == 'member')
+			{
+				$count = \DB::table('sites_roles')->select(\DB::raw(' COUNT( DISTINCT user_id ) AS num'))->whereIn('site_id', $site_ids)->first();
+				$return['total_count'] = $count->num;
+				$query = $query->distinct()->groupBy('user_id');
+			} else {
+				$return['total_count'] = $query->count();
+			}
+
+			if( !\Input::has('bypass_paging') || !\Input::get('bypass_paging') )
+				$query = $query->take($page_size);
+
+			if( \Input::has('p') )
+				$query->skip((\Input::get('p')-1)*$page_size);
+
+			$return['items'] = $query->get();
+
+			if( $type == 'member' )
+			{
+				$custom_attributes = CustomAttribute::whereUserId( 10 )->get();
+
+				$keys = [];
+
+				foreach( $custom_attributes as $attribute )
+					$keys[ $attribute->id ] = $attribute->name;
+
+				foreach( $return['items'] as $member )
+				{
+					if( !empty( $keys ) )
+					{
+						$meta = MemberMeta::whereMemberId( $member->user_id )->whereIn( 'custom_attribute_id', array_keys( $keys ) )->get();
+
+						$meta_data = [];
+
+						foreach( $meta as $key => $val )
+						{
+							$meta_data[ $keys[ $val->custom_attribute_id ] ] = $val->value;
+						}
+
+						foreach( $keys as $key => $val )
+						{
+							if( empty( $meta_data[ $val ] ) )
+								$meta_data[ $val ] = null;
+						}
+
+						$member->meta = $meta_data;
+					}
+				}
+			}
+
+			return $return;
+		}
 	}
 }

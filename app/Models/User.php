@@ -267,7 +267,23 @@ class User extends Root implements AuthenticatableContract
                 $data = array("access_level_id" => $access_level->id, 'type' => 'member', "user_id" => $this->id, 'site_id' =>$access_level->site_id);
                 $pass = SiteRole::create($data);
 
-                if(isset($access_level->site_id) && $access_level->site_id == 6192){
+				$all_the_levels = \App\Models\AccessLevel\Pass::access_levels( $access_level->id );
+
+				$sm_2_levels = [ 2684, 2694 ];
+
+				$grant_all = false;
+
+				foreach( $all_the_levels as $key => $val )
+				{
+					if( in_array( $val, $sm_2_levels ) )
+					{
+						$grant_all = true;
+						break;
+					}
+				}
+
+				if( $grant_all )
+				{
                     $subdomains = ['dpp1' , 'dpp2' , 'dpp3' , '3c' , 'help' , 'jv' , 'sm'];
                     $chosen_access_level = 'Smart Member 2.0';
                     foreach ($subdomains as $key => $subdomain) {
@@ -283,6 +299,11 @@ class User extends Root implements AuthenticatableContract
                             SiteRole::create($data);
                         }
                     }
+
+					\App\Models\Event::Log( 'received-sm-2-bundle', array(
+						'site_id' => 6192,
+						'user_id' => $this->id
+					) );
                     // $three_c = Site::whereSubdomain('3c')->first();
                     // $help = Site::whereSubdomain('help')->first();
 
@@ -314,23 +335,17 @@ class User extends Root implements AuthenticatableContract
             ->where('user_id', $this->id)
             ->first();
 
-        if (!isset($role->id))
-        {
-            $granted_levels = Grant::where('grant_id', $required_level)
-                ->select('access_level_id')
-                ->lists('access_level_id')
-                ->toArray();
+        if (!isset($role->id)) {
+            $passes = Role::whereUserId(\Auth::user()->id)->get();
+            foreach ($passes as $pass) {
+                $access_levels = Pass::access_levels($pass->access_level_id);
 
-            $granted_levels[] = $required_level;
+                if ($pass && in_array($required_level, $access_levels)) {
+                    return true;
+                }
+            }
 
-            $role = SiteRole::whereIn('access_level_id', $granted_levels)
-                ->where('user_id', $this->id)
-                ->first();
-
-            if ($role )
-                return true;
-            else
-                return false;
+            return false;
         } else {
             return true;
         }

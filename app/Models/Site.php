@@ -505,6 +505,12 @@ Site::creating(function($site){
 		\Auth::user()->setup_wizard_complete = 1;
 		\Auth::user()->save();
 	}
+
+	\App\Models\Event::Log( 'created-site', array(
+		'site_id' => 0,
+		'user_id' => $site->user_id,
+		'subdomain' => $site->subdomain
+	) );
 });
 
 Site::saving(function($site){

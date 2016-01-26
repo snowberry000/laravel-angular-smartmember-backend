@@ -64,7 +64,11 @@ $resources = array(
     'wizard',
 	'widget',
 	'smartLink',
-    'media'
+    'media',
+	'event',
+	'eventMetaData',
+	'customAttribute',
+	'memberMeta'
 );
 
 //TODO: Don't use - in the URL. Use Camel cased syntax e.g. facebookLogin
@@ -114,6 +118,8 @@ Route::get('/lesson/getDraftedLesson',"Api\\LessonController@getDraftedLesson");
 Route::get('/lesson/single/{id}',"Api\\LessonController@single");
 Route::post('/lesson/addAll',"Api\\LessonController@addAllVideos");
 Route::put('/lesson/bulkUpdate',"Api\\LessonController@bulkUpdate");
+Route::post('/lesson/bulkUpdateAccess',"Api\\LessonController@bulkUpdateAccess");
+Route::post('/lesson/bulkDelete',"Api\\LessonController@bulkDelete");
 
 Route::get('/appConfiguration/single/{id}',"Api\\AppConfigurationController@single");
 Route::post('/appConfiguration/addAll',"Api\\AppConfigurationController@addAllVideos");
@@ -142,6 +148,7 @@ Route::get('/role/agents',"Api\\RoleController@getAgents");
 Route::post('/siteRole/import',"Api\\Site\\RoleController@postImport");
 
 Route::post('/siteRole/removeUserFromSite',"Api\\Site\\RoleController@removeUserFromSite");
+Route::post('/siteRole/removeUserFromCurrentSite',"Api\\Site\\RoleController@removeUserFromCurrentSite");
 
 Route::get('/emailSubscriber/getCSV',"Api\\EmailSubscriberController@getCSV");
 Route::get('/emailSubscriber/getUnsubscribeInfo',"Api\\EmailSubscriberController@getUnsubscribeInfo");
@@ -207,7 +214,7 @@ Route::post('/user/associateTransactionAccount',"Api\\UserController@associateTr
 Route::post('/user/registerTransactionAccount',"Api\\UserController@registerTransactionAccount");
 Route::post('/user/sendVerificationCode',"Api\\UserController@sendVerificationCode");
 Route::get('/user/sites',"Api\\UserController@getSites");
-
+Route::get('/user/members',"Api\\UserController@getMembers");
 Route::get('/affiliateLeaderboard/{id}', "Api\\AffiliateLeaderboardController@show");
 
 
@@ -297,3 +304,5 @@ Route::model('siteCustomRole','App\Models\Site\CustomRole');
 Route::resource('siteCustomRole','Api\Site\CustomRoleController');
 
 Route::get('/sendPurchaseEmail', "AppConfiguration\SendGridController@sendPurchaseEmail");
+Route::post('memberMeta/save', "Api\\MemberMetaController@save");
+Route::post('customAttribute/set', "Api\\CustomAttributeController@set");

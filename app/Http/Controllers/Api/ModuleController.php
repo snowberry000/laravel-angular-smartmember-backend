@@ -241,7 +241,7 @@ class ModuleController extends SMController
         $next = 0;
 
         foreach ($input as $key => $val ) {
-            if($val["lesson"]!=null)
+            if( !empty( $val["lesson"] ) )
             {
                 $lesson = Lesson::find($val["lesson"]);
                 $lesson->sort_order = $key + 1;

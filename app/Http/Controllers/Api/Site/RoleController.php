@@ -14,6 +14,9 @@ class RoleController extends SMController
 {
     public function __construct(){
         parent::__construct();
+
+		$this->middleware( 'admin', ['only' => array( 'removeUserFromCurrentSite' ) ] );
+
         $this->model = new Role();
     }
 
@@ -102,6 +105,7 @@ class RoleController extends SMController
 
     public function removeUserFromSite(){
         $response = [];
+
         $roles = $this->model->where('type','!=','owner')->whereSiteId(\Input::get('site_id'))->whereUserId(\Input::get('user_id'))->whereNull('deleted_at')->get();
         foreach ($roles as $key => $value) {
             $response [] = $value;
@@ -109,6 +113,17 @@ class RoleController extends SMController
         }
         return $response;
     }
+
+	public function removeUserFromCurrentSite(){
+		$response = [];
+
+		$roles = $this->model->where('type','!=','owner')->whereSiteId( $this->site->id )->whereUserId(\Input::get('user_id'))->whereNull('deleted_at')->get();
+		foreach ($roles as $key => $value) {
+			$response [] = $value;
+			$value->delete();
+		}
+		return $response;
+	}
 
     public function getCSV()
     {
