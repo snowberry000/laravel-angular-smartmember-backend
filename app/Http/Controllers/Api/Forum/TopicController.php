@@ -25,15 +25,38 @@ class TopicController extends SMController
 
     	$permalink = Input::get('permalink');
     	$query = Topic::with(['user','replies.user','category']);
-    	$topic = $query->wherePermalink($permalink)->first();
+    	$topic = $query->wherePermalink($permalink)->whereSiteId($this->site->id)->first();
+        if ($topic)
+        {
+            if ($topic->total_views && !empty($topic->total_views))
+                $topic->total_views++;
+            else
+                $topic->total_views = 0;
 
-        $topic->total_views++;
-        $topic->save();
+            $topic->save();
 
-        return $topic;
+            return $topic;
+        } else {
+            $query2 = Topic::with(['user','replies.user','category']);
+            $topic2 = $query2->wherePermalink($permalink)->first();
+
+            if ($topic2) {
+                if ($topic2->total_views && !empty($topic2->total_views))
+                    $topic2->total_views++;
+                else
+                    $topic2->total_views = 0;
+
+                $topic2->save();
+
+                return $topic2;
+            } else {
+                \App::abort('404','Topic not found');
+            }
+        }
     }
 
     public function store(){
+        \Input::merge(['site_id' => $this->site->id]);
         $topic = parent::store();
         $data = $topic->toArray();
         $data["user"] = $topic->user;
