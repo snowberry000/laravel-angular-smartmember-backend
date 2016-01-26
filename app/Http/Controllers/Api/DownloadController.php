@@ -198,6 +198,8 @@ class DownloadController extends SMController
             $download->aws_key = $download->media_item->aws_key;
             return $download;
         }
+        if (!empty($download->download_link))
+            return $download;
 
 		\App::abort('404','Download link not found');
     }
