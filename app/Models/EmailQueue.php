@@ -784,7 +784,7 @@ class EmailQueue extends Root
 					$emails_already_pulled[ $key ] = $email;
 
 					$email->content = $this->injectTrackingIntoContent( $email->content, $site_id,
-																		$email->id, $queue[ $key ][ $key2 ][ 0 ][ 'job_id' ], $subscriber_id = '', $do_click_tracking = false );
+																		$email->id, $queue[ $key ][ $key2 ][ 0 ][ 'job_id' ], $subscriber_id = '', $do_click_tracking = true );
 				}
 
 				$intro = !empty( $intros_already_pulled[ $key2 ] ) ? $intros_already_pulled[ $key2 ] : [];
