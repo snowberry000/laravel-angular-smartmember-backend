@@ -4,6 +4,7 @@ use App\Http\Controllers\ApiController;
 use App\Models\Email;
 use App\Models\EmailQueue;
 use App\Models\EmailHistory;
+use App\Models\AppConfiguration;
 use App\Models\Click;
 use App\Models\Open;
 use App\Models\Link;
@@ -55,48 +56,41 @@ class EmailJobController extends SMController
 			$query = $query->skip((\Input::get('p')-1)*$page_size);
 
         $email_jobs = $query->get();
-        $email_setting = EmailSetting::whereSiteId($this->site->id)->first();
+		$email_integration = AppConfiguration::whereType('sendgrid')->whereSiteId( $this->site->id )->first();
 
 		if( count( $email_jobs ) > 0 )
 		{
 			foreach ($email_jobs as $email_job)
 			{
-				$email_job->sent_count = EmailHistory::whereJobId($email_job->id)->count();
-				$email_job->open_count = Open::whereJobId($email_job->id)->count();
-				$email_job->click_count = Click::leftJoin('links', 'clicks.link_id', '=' , 'links.id')->where('links.job_id','=',$email_job->id)->count();
-				$email_job->unsubscriber_count = Unsubscriber::whereJobId($email_job->id)->count();
-				$queue_items = EmailQueue::whereJobId($email_job->id)->whereNull('deleted_at')->count();
-				if ($queue_items == 0)
+				$email_job->sent_count         = EmailHistory::whereJobId( $email_job->id )->count();
+				$email_job->open_count         = Open::whereJobId( $email_job->id )->count();
+				$email_job->click_count        = Click::leftJoin( 'links', 'clicks.link_id', '=', 'links.id' )
+					->where( 'links.job_id', '=', $email_job->id )->count();
+				$email_job->unsubscriber_count = Unsubscriber::whereJobId( $email_job->id )->count();
+				$queue_items                   = EmailQueue::whereJobId( $email_job->id )->whereNull( 'deleted_at' )
+					->count();
+				if( $queue_items == 0 )
 				{
 					$email_job->status = 'Sent Successfully';
-				} 
-				else 
+				}
+				else
 				{
 					$send_at = strtotime( $email_job->send_at );
 					if( $send_at > time() )
 					{
-						$email_job->status = 'Send to ' . $queue_items . ' subscribers on: ' ;//. date( 'M j, Y', $send_at ) . ' at ' . date( 'g:i:s A' , $send_at);
-						$email_job->send_date_at=$send_at;
-                        $email_job->admin_tools = true;
+						$email_job->status       = 'Send to ' . $queue_items . ' subscribers on: ';//. date( 'M j, Y', $send_at ) . ' at ' . date( 'g:i:s A' , $send_at);
+						$email_job->send_date_at = $send_at;
+						$email_job->admin_tools  = true;
 					}
 					else
 						$email_job->status = 'Sent ' . $email_job->sent_count . '/' . $queue_items . ' emails';
 				}
-                if( !isset( $email_setting )&&empty( $email_setting )&&$email_job->status!="Sent Successfully" )
-                {
-                    $email_job->sendgrid_account_check = true;
-                }
-                elseif( ($email_setting->username == '' || $email_setting->password == '')&&$email_job->status!="Sent Successfully" )
-                {
-                    $email_job->sendgrid_account_check = true;
-                }
-                elseif( ($email_setting->full_name == '' || $email_setting->sending_address == '')&&$email_job->status!="Sent Successfully" )
-                {
-                    $email_job->sendgrid_setting_check = true;
-                }
-			}
 
-			
+				if( empty( $email_integration ) || empty( $email_integration->password ) || empty( $email_integration->username ) && $email_job->status != "Sent Successfully" )
+				{
+					$email_job->sendgrid_account_check = true;
+				}
+			}
 		}
 
 		$return['items'] = $email_jobs;
