@@ -128,7 +128,7 @@ class RoleController extends SMController
     public function getCSV()
     {
         $site_id = $this->site->id;
-        $query = $this->model->with(["user"]);
+        $query = $this->model->with(["user","accessLevel"]);
         $query = $query->orderBy('id' , 'DESC')->whereNull('deleted_at')->whereSiteId($site_id);
         $roles = $query->get();
 
@@ -136,7 +136,10 @@ class RoleController extends SMController
 
         foreach ($roles as $role) 
         {
-            $arrayCSV [] = array($role->user['first_name']." ".$role->user['last_name'],$role->user['email'],$role['type'],$role['created_at']::parse()->format('d/m/Y'));
+            if($role->accessLevel)
+                $arrayCSV [] = array($role->user['first_name']." ".$role->user['last_name'],$role->user['email'],$role['type'],$role->accessLevel['name'],$role['created_at']::parse()->format('d/m/Y'));
+            else
+                $arrayCSV [] = array($role->user['first_name']." ".$role->user['last_name'],$role->user['email'],$role['type'],'',$role['created_at']::parse()->format('d/m/Y'));
         }
 
         $this->outputCSV($arrayCSV);
