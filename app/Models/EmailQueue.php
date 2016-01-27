@@ -127,8 +127,12 @@ class EmailQueue extends Root
 					}
 					else
 					{
-						$new_emails = EmailSubscriber::whereIn('email_subscribers.site_id', $site_ids)
-							->leftjoin('users','users.email','=','email_subscribers.email')
+						if( !empty( $queue_item->sending_user_id ) )
+							$new_emails = EmailSubscriber::where('email_subscribers.account_id', $queue_item->sending_user_id );
+						else
+							$new_emails = EmailSubscriber::where('email_subscribers.site_id', $queue_item->site_id );
+
+						$new_emails = $new_emails->leftjoin('users','users.email','=','email_subscribers.email')
 							->leftjoin('sites_roles',function($join) use ($site_ids) {
 								$join->on('users.id','=','sites_roles.user_id');
 								$join->whereIn('sites_roles.site_id',$site_ids);
@@ -181,12 +185,12 @@ class EmailQueue extends Root
 
 					$already_queued = EmailQueue::whereEmailId( $segment->email_id );
 
-					if( $segment->email_job_id )
+					if( $queue_item->email_job_id )
 					{
-						$already_queued = $already_queued->withTrashed()->where(function($q) use ($segment) {
-							$q->where(function($q2) use ($segment)
+						$already_queued = $already_queued->withTrashed()->where(function($q) use ($queue_item) {
+							$q->where(function($q2) use ($queue_item)
 							{
-								$q2->whereJobId( $segment->email_job_id );
+								$q2->whereJobId( $queue_item->email_job_id );
 							});
 							$q->orwhere(function($q2){
 								$q2->whereNull('deleted_at');
@@ -356,6 +360,7 @@ class EmailQueue extends Root
 					$queued_segment->email_recipient_id 	= $segment->id;
 					$queued_segment->email_job_id 			= $email_job->id;
 					$queued_segment->send_at 				= isset( $email_job->send_at ) ? $email_job->send_at : Carbon::now();
+					$queued_segment->sending_user_id		= \Auth::user()->id;
 					$queued_segment->save();
 				}
 				break;

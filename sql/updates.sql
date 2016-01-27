@@ -64,3 +64,5 @@ CREATE TABLE `member_meta` (
   KEY (`member_id`),
   KEY (`custom_attribute_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+ALTER TABLE  `email_recipients_queue` ADD  `sending_user_id` BIGINT NULL AFTER  `info` ;
