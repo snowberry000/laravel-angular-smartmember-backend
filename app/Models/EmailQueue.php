@@ -200,28 +200,25 @@ class EmailQueue extends Root
 
 					if( $segment_bits[ 0 ] == 'site' || $segment_bits[ 0 ] == 'level' || ( $segment_bits[ 0 ] == 'catch' && ( !$queue_item->info || !empty( $queuing_users ) ) ) )
 					{
-						$subscriber = EmailSubscriber::join( 'users as u', 'u.email', '=', 'email_subscribers.email' )
-							->where( 'u.id', $recipient->id )
-							->select( 'email_subscribers.id' )
-							->first();
+						$subscribers = EmailSubscriber::whereEmail( $recipient->email )->select('id')->get()->lists('id');
 
-						$already_queued = $already_queued->where( function ( $q2 ) use ( $recipient, $subscriber )
+						$already_queued = $already_queued->where( function ( $q2 ) use ( $recipient, $subscribers )
 						{
 							$q2->where( function ( $q ) use ( $recipient )
 							{
 								$q->whereListType( 'segment' );
 								$q->whereSubscriberId( $recipient->id );
 							} );
-							if( $subscriber )
+							if( $subscribers && count( $subscribers ) > 0 )
 							{
-								$q2->orwhere( function ( $q ) use ( $subscriber )
+								$q2->orwhere( function ( $q ) use ( $subscribers )
 								{
 									$q->where( function ( $query )
 									{
 										$query->whereNull( 'list_type' );
 										$query->orwhere( 'list_type', '' );
 									} );
-									$q->whereSubscriberId( $subscriber->id );
+									$q->whereIn( 'subscriber_id', $subscribers );
 								} );
 							}
 						} );
@@ -233,7 +230,9 @@ class EmailQueue extends Root
 							->select( 'u.id' )
 							->first();
 
-						$already_queued = $already_queued->where( function ( $q2 ) use ( $recipient, $user )
+						$all_subscribers = EmailSubscriber::whereEmail( $recipient->email )->select('id')->get()->lists('id');
+
+						$already_queued = $already_queued->where( function ( $q2 ) use ( $all_subscribers, $user )
 						{
 							if( $user )
 							{
@@ -243,14 +242,14 @@ class EmailQueue extends Root
 									$q->whereSubscriberId( $user->id );
 								} );
 							}
-							$q2->orwhere( function ( $q ) use ( $recipient )
+							$q2->orwhere( function ( $q ) use ( $all_subscribers )
 							{
 								$q->where( function ( $query )
 								{
 									$query->whereNull( 'list_type' );
 									$query->orwhere( 'list_type', '' );
 								} );
-								$q->whereSubscriberId( $recipient->id );
+								$q->whereIn( 'subscriber_id', $all_subscribers );
 							} );
 						} );
 					}
