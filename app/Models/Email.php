@@ -103,7 +103,7 @@ class Email extends Root
 		$app_url = 'http://' . $site->subdomain . '.' . $rootDomain . '/sign/unsubscribe';
 
 		// build manually because % gets messed up the http_build_query() way
-		$app_url .= '?hash=@@@hash@@@&job_id=@@@job_id@@@&network_id=@@@network_id@@@&list_type=@@@list_type@@@';
+		$app_url .= '?hash=@@@hash@@@&job_id=@@@job_id@@@&network_id=@@@network_id@@@&list_type=@@@list_type@@@&segment_id=@@@segment_id@@@';
 
 		$text = 'To manage your email communication preferences, ';
 		$text .= '<a href="' . $app_url . '">click here</a>.';
