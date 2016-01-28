@@ -148,6 +148,23 @@ class EmailJobController extends SMController
 
 	public function show( $model )
 	{
+		$model = $this->model->whereId( $model->id )->with(['email','email.recipients'])->first();
 
+		$model->sent_count         = EmailHistory::whereJobId( $model->id )->count();
+		$model->open_count         = Open::whereJobId( $model->id )->count();
+		$model->unique_open_count  = Open::whereJobId( $model->id )->select('identifier')->groupby('identifier')->distinct()->get()->count();
+
+		$model->click_count        = Click::leftJoin( 'links', 'clicks.link_id', '=', 'links.id' )
+			->where( 'links.job_id', '=', $model->id )->count();
+
+		$model->unique_click_count        = Click::leftJoin( 'links', 'clicks.link_id', '=', 'links.id' )
+			->where( 'links.job_id', '=', $model->id )->select('clicks.identifier')->groupby('clicks.identifier')->distinct()->get()->count();
+
+		$model->unsubscriber_count = Unsubscriber::whereJobId( $model->id )->count();
+
+		foreach( $model->email->recipients as $recipient )
+			$recipient->fillInData( $model->id );
+
+		return $model;
 	}
 }
