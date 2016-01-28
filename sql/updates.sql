@@ -66,3 +66,5 @@ CREATE TABLE `member_meta` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 ALTER TABLE  `email_recipients_queue` ADD  `sending_user_id` BIGINT NULL AFTER  `info` ;
+
+ALTER TABLE  `sites_menu_items` ADD  `open_in_new_tab` BOOLEAN NULL AFTER  `custom_icon` ;
