@@ -6,6 +6,8 @@ use App\Models\EmailQueue;
 use App\Models\EmailHistory;
 use App\Models\AppConfiguration;
 use App\Models\Click;
+use App\Models\EmailRecipient;
+use App\Models\EmailRecipientsQueue;
 use App\Models\Open;
 use App\Models\Link;
 use App\Models\EmailSetting;
@@ -148,7 +150,11 @@ class EmailJobController extends SMController
 
 	public function show( $model )
 	{
-		$model = $this->model->whereId( $model->id )->with(['email','email.recipients'])->first();
+		$model = $this->model->whereId( $model->id )->with(['email'])->first();
+
+		$recipient_ids = EmailRecipientsQueue::withTrashed()->whereEmailJobId( $model->id )->select('email_recipient_id')->get()->lists('email_recipient_id');
+
+		$model->email->recipients = EmailRecipient::withTrashed()->whereIn( 'id', $recipient_ids )->get();
 
 		$model->sent_count         = EmailHistory::whereJobId( $model->id )->count();
 		$model->open_count         = Open::whereJobId( $model->id )->count();
