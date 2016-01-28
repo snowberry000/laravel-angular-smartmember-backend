@@ -563,14 +563,14 @@ class EmailQueue extends Root
 			$email_queue_locked->delete();
 	}
 
-    function injectTrackingIntoContent($content, $site_id, $email_id = '', $job_id = '', $subscriber_id = '', $do_click_tracking = true)
+    function injectTrackingIntoContent( $content, $site_id, $email_id = '', $job_id = '', $subscriber_id = '', $do_click_tracking = true, $segment_id = 0 )
     {
         if ($do_click_tracking)
             $content = Link::EncodeLinksInContent($content, $job_id);
 
         $content = Email::AddSignatureToContent($content, $email_id, $site_id);
         $content = Email::AddUnsubscribeToContent( $content, $site_id );
-        $content = Open::AddPixelToContent($content);
+        $content = Open::AddPixelToContent($content, $segment_id);
 
         return $content;
     }
@@ -761,6 +761,7 @@ class EmailQueue extends Root
             $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%email_id%'][] = $queue_item->email_id;
             $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%job_id%'][] = $queue_item->job_id;
             $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%network_id%'][] = $site_id;
+            $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%segment_id%'][] = $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro';
         }
 
         $total_email_sent = 0;
@@ -788,7 +789,7 @@ class EmailQueue extends Root
 					$emails_already_pulled[ $key ] = $email;
 
 					$email->content = $this->injectTrackingIntoContent( $email->content, $site_id,
-																		$email->id, $queue[ $key ][ $key2 ][ 0 ][ 'job_id' ], $subscriber_id = '', $do_click_tracking = true );
+																		$email->id, $queue[ $key ][ $key2 ][ 0 ][ 'job_id' ], $subscriber_id = '', $do_click_tracking = true, $key2 );
 				}
 
 				$intro = !empty( $intros_already_pulled[ $key2 ] ) ? $intros_already_pulled[ $key2 ] : [];

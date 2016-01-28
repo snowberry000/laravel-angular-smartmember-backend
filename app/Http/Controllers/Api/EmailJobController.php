@@ -145,4 +145,9 @@ class EmailJobController extends SMController
 
         return array('success'=>1);
     }
+
+	public function show( $model )
+	{
+
+	}
 }
