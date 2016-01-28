@@ -738,8 +738,8 @@ class SendGridEmail {
 
 		$from_address = !empty( $theEmail->original_email->mail_sending_address ) ? $theEmail->original_email->mail_sending_address : ( !empty( $emailSetting ) ? $emailSetting->sending_address : '' );
 		$reply_address = !empty( $theEmail->original_email->mail_reply_address ) ? $theEmail->original_email->mail_reply_address : ( !empty( $emailSetting ) && !empty( $emailSetting->replyto_address ) ? $emailSetting->replyto_address : $from_address );
-		$from_name = !empty( $theEmail->original_email->mail_name ) ? $theEmail->original_email->mail_name : ( !empty( $emailSetting ) ? $emailSetting->full_name : $from_address );
-
+		$from_name = !empty( $theEmail->original_email->mail_name ) ? $theEmail->original_email->mail_name : ( !empty( $emailSetting ) && !empty( $emailSetting->full_name ) ? $emailSetting->full_name : $from_address );
+		
 		if( empty( $from_address ) || empty( $reply_address ) || empty( $from_name ) )
 			\App::abort(403, "Make sure you have a from address, reply address, and from name set.");
 
