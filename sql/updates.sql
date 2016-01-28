@@ -69,14 +69,10 @@ ALTER TABLE  `email_recipients_queue` ADD  `sending_user_id` BIGINT NULL AFTER  
 
 ALTER TABLE  `sites_menu_items` ADD  `open_in_new_tab` BOOLEAN NULL AFTER  `custom_icon` ;
 
-ALTER TABLE  `links` ADD  `segment_id` BIGINT NULL AFTER  `job_id` ;
-
 ALTER TABLE  `opens` ADD  `segment_id` BIGINT NULL AFTER  `job_id` ;
 
 ALTER TABLE  `clicks` ADD  `identifier` VARCHAR( 255 ) NULL AFTER  `ip` ;
 
 ALTER TABLE  `opens` ADD  `identifier` VARCHAR( 255 ) NULL AFTER  `ip` ;
-
-ALTER TABLE  `links` DROP  `segment_id` ;
 
 ALTER TABLE  `clicks` ADD  `segment_id` BIGINT NULL AFTER  `ip` ;
