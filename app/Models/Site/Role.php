@@ -490,8 +490,10 @@ Role::saved(function($pass){
 
     $keys = array();
     $keys[] = $subdomain.':_site_details' . ':'.$user->access_token;
+	$keys[] = 'my:_site_details' . ':'.$user->access_token;
     $keys[] = $subdomain.':_module_home' . ':'.$user->access_token;
     $keys[] = $subdomain.':_user_'.$pass->user_id.':'.$user->access_token;
+	$keys[] = 'my:_user_'.$pass->user_id.':'.$user->access_token;
     \Log::info($keys);
     \SMCache::clear($keys);
 });
