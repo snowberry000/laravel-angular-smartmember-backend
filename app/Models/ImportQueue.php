@@ -139,6 +139,8 @@ class ImportQueue extends Root
 					$pass = Role::whereUserId( $user->id )->whereSiteId( $queue_item->site_id )
 						->whereAccessLevelId( $level )->whereNull( 'deleted_at' )->first();
 
+					Role::GrantSuperLevel( $level, $user->id );
+
 					if( !$pass )
 					{
 						$pass              = Role::create( [ 'access_level_id' => $level,
