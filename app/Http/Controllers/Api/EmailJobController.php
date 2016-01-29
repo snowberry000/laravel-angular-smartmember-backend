@@ -71,21 +71,33 @@ class EmailJobController extends SMController
 				$email_job->unsubscriber_count = Unsubscriber::whereJobId( $email_job->id )->count();
 				$queue_items                   = EmailQueue::whereJobId( $email_job->id )->whereNull( 'deleted_at' )
 					->count();
-				if( $queue_items == 0 )
+
+				$recipient_queue_items = EmailRecipientsQueue::whereEmailJobId( $email_job->id )->get();
+
+				if( $queue_items == 0 && count( $recipient_queue_items ) == 0 )
 				{
 					$email_job->status = 'Sent Successfully';
 				}
 				else
 				{
-					$send_at = strtotime( $email_job->send_at );
-					if( $send_at > time() )
+					if( count( $recipient_queue_items ) > 0 )
 					{
-						$email_job->status       = 'Send to ' . $queue_items . ' subscribers on: ';//. date( 'M j, Y', $send_at ) . ' at ' . date( 'g:i:s A' , $send_at);
-						$email_job->send_date_at = $send_at;
-						$email_job->admin_tools  = true;
+						$all_recipient_queue_items = EmailRecipientsQueue::withTrashed()->whereEmailJobId( $email_job->id )->count();
+
+						$email_job->status = "Queued " . ( $all_recipient_queue_items - count( $recipient_queue_items ) ) . " of " . $all_recipient_queue_items . " segments.";
 					}
 					else
-						$email_job->status = 'Sent ' . $email_job->sent_count . '/' . $queue_items . ' emails';
+					{
+						$send_at = strtotime( $email_job->send_at );
+						if( $send_at > time() )
+						{
+							$email_job->status       = 'Send to ' . $queue_items . ' subscribers on: ';//. date( 'M j, Y', $send_at ) . ' at ' . date( 'g:i:s A' , $send_at);
+							$email_job->send_date_at = $send_at;
+							$email_job->admin_tools  = true;
+						}
+						else
+							$email_job->status = 'Sent ' . $email_job->sent_count . '/' . $queue_items . ' emails';
+					}
 				}
 
 				if( empty( $email_integration ) || empty( $email_integration->password ) || empty( $email_integration->username ) && $email_job->status != "Sent Successfully" )
