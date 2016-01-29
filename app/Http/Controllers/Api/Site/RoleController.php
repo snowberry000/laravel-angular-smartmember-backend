@@ -129,20 +129,27 @@ class RoleController extends SMController
     {
         $site_id = $this->site->id;
         $query = $this->model->with(["user","accessLevel"]);
-        $query = $query->orderBy('id' , 'DESC')->whereNull('deleted_at')->whereSiteId($site_id);
+        $query = $query->orderBy('id','desc')->whereNull('deleted_at')->whereSiteId($site_id);
         $roles = $query->get();
+        //$roles = array_unique($roles );
 
         $arrayCSV = array();
 
-        foreach ($roles as $role) 
-        {
-            if($role->accessLevel)
-                $arrayCSV [] = array($role->user['first_name']." ".$role->user['last_name'],$role->user['email'],$role['type'],$role->accessLevel['name'],$role['created_at']::parse()->format('d/m/Y'));
-            else
-                $arrayCSV [] = array($role->user['first_name']." ".$role->user['last_name'],$role->user['email'],$role['type'],'',$role['created_at']::parse()->format('d/m/Y'));
+        foreach ($roles as $role) {
+            $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] [] =  $role->accessLevel['name'];
+            $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] = array_unique($arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel']);
+            //$arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel']  =  $role['created_at']::parse()->format('d/m/Y'));
         }
 
-        $this->outputCSV($arrayCSV);
+
+        $output = array(); 
+
+        foreach ($arrayCSV as $key => $value) {
+            $tempArr = explode("!@~&", $key);
+            $tempValue = rtrim(implode(',', $value), ',');
+            $output [] = array($tempArr[0],$tempArr[1],$tempArr[2],$tempValue);   
+        }
+        $this->outputCSV($output);
     }
 
     
