@@ -123,8 +123,8 @@ class ModuleController extends SMController
         $sort_order = $page_meta->getItem( 'default_module_sort_order' );
 
         $default_module = new Module(array('id'=>0,'site_id'=>$this->site->id,'sort_order'=>$sort_order,'title'=>'','access_level'=>0, 'lessons' => $unassigned_lessons ) );
-
-        $modules->add( $default_module );
+        if (!$module_id)
+            $modules->add( $default_module );
 
         $count = 0;
         $modules_length = count( $modules );
