@@ -570,7 +570,7 @@ class EmailQueue extends Root
 
         $content = Email::AddSignatureToContent($content, $email_id, $site_id);
         $content = Email::AddUnsubscribeToContent( $content, $site_id );
-        $content = Open::AddPixelToContent($content, $segment_id);
+        $content = Open::AddPixelToContent($content);
 
         return $content;
     }
