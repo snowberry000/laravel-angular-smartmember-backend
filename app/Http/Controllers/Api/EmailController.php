@@ -267,10 +267,23 @@ class EmailController extends SMController
 
 		foreach( $email_lists as $list )
 		{
+			$subscriber_count = EmailListLedger::join('email_subscribers', 'email_subscribers.id','=','email_listledger.subscriber_id')
+				->where('email_listledger.list_id', $list->id)
+				->select('email_listledger.subscriber_id')
+				->distinct()
+				->get()
+				->count();
+
+			if( intval( $list->total_subscribers ) != $subscriber_count )
+			{
+				$list->total_subscribers = $subscriber_count;
+				$list->save();
+			}
+
 			$segments[] = array(
 				'type' => 'list',
 				'name' => $list->name,
-				'count' => intval( $list->total_subscribers ),
+				'count' => $subscriber_count,
 				'target_id' => $list->id
 			);
 		}
@@ -280,7 +293,14 @@ class EmailController extends SMController
 			->where( 'sites_roles.site_id', $this->site->id )
 			->select('sites_roles.user_id')
 			->distinct()
+			->get()
 			->count();
+
+		if( intval( $this->site->total_members ) != $count )
+		{
+			$this->site->total_members = $count;
+			$this->site->save();
+		}
 
 		$segments[] = array(
 			'type' => 'site',
