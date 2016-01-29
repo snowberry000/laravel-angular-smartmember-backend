@@ -96,7 +96,10 @@ class EmailJobController extends SMController
 							$email_job->admin_tools  = true;
 						}
 						else
-							$email_job->status = 'Sent ' . $email_job->sent_count . '/' . $queue_items . ' emails';
+						{
+							$total_recipient_count = EmailQueue::whereJobId( $email_job->id )->withTrashed()->count();
+							$email_job->status = 'Sent ' . $email_job->sent_count . '/' . $total_recipient_count . ' emails';
+						}
 					}
 				}
 
