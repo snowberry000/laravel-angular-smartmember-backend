@@ -7,7 +7,7 @@ class Open extends Root
 {
     protected $table = "opens";
 
-    public static function AddPixelToContent($content, $segment_id)
+    public static function AddPixelToContent($content)
     {
         $asset_url = \Config::get('app.url') . '/trackOpen';
 
