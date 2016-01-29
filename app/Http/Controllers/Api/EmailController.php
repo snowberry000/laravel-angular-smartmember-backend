@@ -464,8 +464,16 @@ class EmailController extends SMController
 						$user_id = \Auth::user()->id;
 
 						$extra_emails = EmailSubscriber::where( function( $q) use ($user_id, $list_ids, $site_id) {
-								$q->whereIn('email_listledger.list_id', $list_ids );
-								$q->orwhere('email_subscribers.account_id', $user_id );
+								if( !empty( $list_ids ) )
+								{
+									$q->whereIn( 'email_listledger.list_id', $list_ids );
+									$q->orwhere( 'email_subscribers.account_id', $user_id );
+								}
+								else
+								{
+									$q->where( 'email_subscribers.account_id', $user_id );
+								}
+
 								$q->orwhere('email_subscribers.site_id', $site_id );
 							} )
 							->leftjoin( 'email_listledger', 'email_listledger.subscriber_id', '=', 'email_subscribers.id')

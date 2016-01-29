@@ -113,6 +113,7 @@ class EmailQueue extends Root
 					{
 						$new_emails = \App\Models\Site\Role::join( 'users', 'users.id', '=', 'sites_roles.user_id' )
 							->whereNull( 'users.deleted_at' )
+							->whereNull( 'sites_roles.deleted_at' )
 							->whereIn( 'sites_roles.site_id', $site_ids )
 							->select( 'users.email' )
 							->select( [ 'users.email', 'users.id', 'users.email_hash' ] )
@@ -128,18 +129,50 @@ class EmailQueue extends Root
 					else
 					{
 						if( !empty( $queue_item->sending_user_id ) )
-							$new_emails = EmailSubscriber::where('email_subscribers.account_id', $queue_item->sending_user_id );
+						{
+							$sending_user_id = $queue_item->sending_user_id;
+							$site_id = $current_site->id;
+
+							$email_lists = EmailList::whereAccountId( $sending_user_id )->get();
+
+							$list_ids = [];
+
+							foreach( $email_lists as $list )
+								$list_ids[] = $list->id;
+
+							$new_emails = EmailSubscriber::where( function( $q ) use ( $sending_user_id, $site_id, $list_ids ){
+								if( !empty( $list_ids ) )
+								{
+									$q->whereIn( 'email_listledger.list_id', $list_ids );
+									$q->orwhere( 'email_subscribers.account_id', $sending_user_id );
+								}
+								else
+								{
+									$q->where( 'email_subscribers.account_id', $sending_user_id );
+								}
+
+								$q->orwhere('email_subscribers.site_id', $site_id);
+							} );
+						}
 						else
 							$new_emails = EmailSubscriber::where('email_subscribers.site_id', $queue_item->site_id );
 
 						$new_emails = $new_emails->leftjoin('users','users.email','=','email_subscribers.email')
+							->leftjoin( 'email_listledger', 'email_listledger.subscriber_id', '=', 'email_subscribers.id')
 							->leftjoin('sites_roles',function($join) use ($site_ids) {
 								$join->on('users.id','=','sites_roles.user_id');
 								$join->whereIn('sites_roles.site_id',$site_ids);
 							})
-							->whereNull('users.email')
+							->where( function($q){
+								$q->whereNull( 'users.email' );
+								$q->orwhere(function($query){
+									$query->whereNull( 'sites_roles.id');
+								});
+							})
 							->whereNull('users.deleted_at')
 							->whereNull('sites_roles.deleted_at')
+							->whereNull('email_subscribers.deleted_at')
+							->whereNull('email_listledger.deleted_at')
 							->select(['email_subscribers.email','email_subscribers.id', 'email_subscribers.hash as email_hash'])
 							->take( $remaining + 1 )
 							->distinct()
