@@ -257,45 +257,6 @@ class Transaction extends Root
 
 			SendGridEmail::sendPurchaseEmail($transaction, $access_pass, $cbreceipt);
 
-			$all_the_levels = \App\Models\AccessLevel\Pass::access_levels( $access_level->id );
-
-			$sm_2_levels = [ 2684, 2694 ];
-
-			$grant_all = false;
-
-			foreach( $all_the_levels as $key => $val )
-			{
-				if( in_array( $val, $sm_2_levels ) )
-				{
-					$grant_all = true;
-					break;
-				}
-			}
-
-			if( $grant_all )
-			{
-				$pass_data = ['type' => 'member', 'user_id' => $transaction->user_id];
-
-				$subdomains = ['dpp1' , 'dpp2' , 'dpp3' , '3c' , 'help' , 'jv' , 'sm'];
-				$chosen_access_level = 'Smart Member 2.0';
-				foreach ($subdomains as $key => $subdomain) {
-					$site = Site::whereSubdomain($subdomain)->first();
-					if($site && isset($site->id)){
-						$pass_data['site_id'] = $site->id;
-						$access_level = AccessLevel::whereSiteId($site->id)->where('name' , '=' , $chosen_access_level)->first();
-						if($access_level && isset($access_level->id)){
-							$pass_data['access_level_id'] = $access_level->id;
-						}
-						Role::create($pass_data);
-					}
-				}
-
-				\App\Models\Event::Log( 'received-sm-2-bundle', array(
-					'site_id' => 6192,
-					'user_id' => $transaction->user_id
-				) );
-			}
-
             //use the updatePass function to set the initial expiration date in case this was a subscription, if its not it won't do anything to it
             Role::updatePass( $access_pass, ( !empty( $data['expired_at'] ) ? $data['expired_at'] : false ) );
         }

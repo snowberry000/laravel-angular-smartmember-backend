@@ -263,60 +263,11 @@ class User extends Root implements AuthenticatableContract
                     $transaction->save();
                 }
 
-            } else {
+            }
+			else
+			{
                 $data = array("access_level_id" => $access_level->id, 'type' => 'member', "user_id" => $this->id, 'site_id' =>$access_level->site_id);
                 $pass = SiteRole::create($data);
-
-				$all_the_levels = \App\Models\AccessLevel\Pass::access_levels( $access_level->id );
-
-				$sm_2_levels = [ 2684, 2694 ];
-
-				$grant_all = false;
-
-				foreach( $all_the_levels as $key => $val )
-				{
-					if( in_array( $val, $sm_2_levels ) )
-					{
-						$grant_all = true;
-						break;
-					}
-				}
-
-				if( $grant_all )
-				{
-                    $subdomains = ['dpp1' , 'dpp2' , 'dpp3' , '3c' , 'help' , 'jv' , 'sm'];
-                    $chosen_access_level = 'Smart Member 2.0';
-                    foreach ($subdomains as $key => $subdomain) {
-                        $site = Site::whereSubdomain($subdomain)->first();
-                        if($site && isset($site->id)){
-                            $data['site_id'] = $site->id;
-                            \Log::info($site->id);
-                            $access_level = AccessLevel::whereSiteId($site->id)->where('name' , '=' , $chosen_access_level)->first();
-                            if($access_level && isset($access_level->id)){
-                                \Log::info($access_level->id);
-                                $data['access_level_id'] = $access_level->id;
-                            }
-                            SiteRole::create($data);
-                        }
-                    }
-
-					\App\Models\Event::Log( 'received-sm-2-bundle', array(
-						'site_id' => 6192,
-						'user_id' => $this->id
-					) );
-                    // $three_c = Site::whereSubdomain('3c')->first();
-                    // $help = Site::whereSubdomain('help')->first();
-
-                    // if($three_c && isset($three_c->id)){
-                    //     $data['site_id'] = $three_c->id;
-                    //     SiteRole::create($data);
-                    // }
-
-                    // if($help && isset($help->id)){
-                    //     $data['site_id'] = $help->id;
-                    //     SiteRole::create($data);
-                    // }
-                }
             }
         }
 
