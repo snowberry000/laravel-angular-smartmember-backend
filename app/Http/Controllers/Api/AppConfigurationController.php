@@ -4,6 +4,7 @@ use App\Models\Site;
 use App\Models\AppConfiguration;
 use App\Models\ConnectedAccount;
 use App\Models\AppConfiguration\SendGridEmail;
+use App\Models\AppConfiguration\Youzign;
 use App\Models\AccessLevel;
 use Auth;
 use Input;
@@ -29,7 +30,7 @@ class AppConfigurationController extends SMController
 
 		$accounts = $this->model->where(function($query) use ( $site_id ){
 			$query->where('site_id', $site_id );
-		})->with(['site','account','meta_data'])->whereIn('type',['facebook_group','stripe','sendgrid','paypal','vimeo','intercom'])->get();
+		})->with(['site','account','meta_data'])->whereIn('type',['facebook_group','stripe','sendgrid','paypal','vimeo','intercom','youzign'])->get();
 
 		return $accounts;
     }
@@ -53,6 +54,13 @@ class AppConfigurationController extends SMController
 			$check = SendGridEmail::checkCredentials($stored->username, $stored->password );
 			if (!$check)
 				$stored->status = 'bad_credentials';
+		}
+
+		if ($stored->type == 'youzign')
+		{
+			$stored->access_token = \Input::get('access_token');
+			$stored->save();
+			$stored->status = YouZign::importAssets($stored->remote_id, $stored->access_token, $this->site->id);
 		}
 
         return $stored;
