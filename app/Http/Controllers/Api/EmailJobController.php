@@ -96,7 +96,10 @@ class EmailJobController extends SMController
 							$email_job->admin_tools  = true;
 						}
 						else
-							$email_job->status = 'Sent ' . $email_job->sent_count . '/' . $queue_items . ' emails';
+						{
+							$total_recipient_count = EmailQueue::whereJobId( $email_job->id )->withTrashed()->count();
+							$email_job->status = 'Sent ' . $email_job->sent_count . '/' . $total_recipient_count . ' emails';
+						}
 					}
 				}
 
@@ -166,6 +169,11 @@ class EmailJobController extends SMController
 
 		$recipient_ids = EmailRecipientsQueue::withTrashed()->whereEmailJobId( $model->id )->select('email_recipient_id')->get()->lists('email_recipient_id');
 
+		$recipients_order = [];
+
+		foreach( $recipient_ids as $recipient_id )
+			$recipients_order[] = $recipient_id;
+
 		$model->email->recipients = EmailRecipient::withTrashed()->whereIn( 'id', $recipient_ids )->get();
 
 		$model->sent_count         = EmailHistory::whereJobId( $model->id )->count();
@@ -180,8 +188,32 @@ class EmailJobController extends SMController
 
 		$model->unsubscriber_count = Unsubscriber::whereJobId( $model->id )->count();
 
+		$final_recipients = [];
+
 		foreach( $model->email->recipients as $recipient )
+		{
 			$recipient->fillInData( $model->id );
+
+			$final_recipients[] = $recipient;
+		}
+
+		if( !empty( $final_recipients ) )
+		{
+			usort( $final_recipients, function ( $a, $b ) use ( $recipients_order )
+			{
+				$a_order = array_search( $a->id, $recipients_order );
+				$b_order = array_search( $b->id, $recipients_order );
+
+				if( $a_order > $b_order )
+					return 1;
+				if( $a_order < $b_order )
+					return -1;
+				else
+					return 0;
+			} );
+
+			$model->email->recipients = $final_recipients;
+		}
 
 		return $model;
 	}
