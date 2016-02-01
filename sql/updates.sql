@@ -76,3 +76,5 @@ ALTER TABLE  `clicks` ADD  `identifier` VARCHAR( 255 ) NULL AFTER  `ip` ;
 ALTER TABLE  `opens` ADD  `identifier` VARCHAR( 255 ) NULL AFTER  `ip` ;
 
 ALTER TABLE  `clicks` ADD  `segment_id` BIGINT NULL AFTER  `ip` ;
+
+ALTER TABLE  `support_tickets` ADD  `escalated_site_id` BIGINT NULL AFTER  `site_id` ;

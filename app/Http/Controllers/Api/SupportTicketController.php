@@ -50,16 +50,21 @@ class SupportTicketController extends SMController
 		}
 
 		if( !empty( $site_ids ) )
-        	$query = $query->whereIn( 'site_id', $site_ids );
-		else
-			$query = $query->whereSiteId( $this->site->id );
+            $query = $query->where(function($query2) use ($site_ids) {
+                $query2->whereIn('site_id', $site_ids)
+                    ->orWhereIn('escalated_site_id', $site_ids);
+            });
+		else {
+            $query = $query->where(function($query2) {
+                $query2->whereSiteId($this->site->id)->orWhere('escalated_site_id', $this->site->id);
+                });
+            }
 
             $p = \Input::get('p');
             if($p!=null)
             {
                 $response['count'] = $query->whereParentId(0)->count();
                 $response['tickets'] = $query->skip((Input::get('p')-1)*config("vars.default_page_size"))->with(array('agent'))->orderBy('updated_at' , 'DESC')->whereParentId(0)->get();
-
                 foreach ($response['tickets'] as $key => $value) {
                    // $response['tickets'][$key]['lastReply']=SupportTicket::whereParentId($value->id)->orderBy('updated_at' , 'DESC')->first(['updated_at','created_at']);
 
