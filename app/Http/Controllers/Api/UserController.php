@@ -35,12 +35,23 @@ class UserController extends SMController
 		{
 			$site_id = $this->site->id;
 
+			$access_level = \Input::get('access_level_id', false );
+
+			if( $access_level )
+				\Input::merge(['access_level_id' => null]);
+
 			$this->model = User::with( [ 'role' => function( $q ) use( $site_id ) {
 								$q->whereSiteId( $site_id );
 							}, 'role.accessLevel' ] )
-							->whereHas('role', function($query) use ($site_id) {
+							->whereHas('role', function($query) use ($site_id, $access_level) {
 								$query->whereSiteId( $site_id );
-							});
+
+								if( $access_level )
+									$query->whereAccessLevelId( $access_level );
+							})
+							->orderBy('last_name', 'asc')
+							->orderBy('first_name', 'asc')
+							->orderBy('email', 'asc');
 
 			if( \Input::has('q') && !empty( \Input::get('q') ) )
 			{
