@@ -83,6 +83,7 @@ Route::get('/directoryByPermalink/{permalink}',"Api\\DirectoryController@byPerma
 Route::get('/directory/category',"Api\\DirectoryController@categories");
 
 
+Route::get('ticketCount', "Api\\SiteController@getTicketcount");
 Route::get('latestOfEverything', "Api\\SiteController@getLatestOfAllContent");
 Route::post('updateSiteHash', "Api\\SiteController@updateSiteHash");
 

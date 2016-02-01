@@ -252,6 +252,10 @@ class SiteController extends SMController
 
     }
 
+    public function getTicketcount (){
+        return SupportTicket::getUnreadSupportTickets( $this->site );
+    }
+
     public function getLatestOfAllContent()
     {
         $lessons = Lesson::whereSiteId($this->site->id)
