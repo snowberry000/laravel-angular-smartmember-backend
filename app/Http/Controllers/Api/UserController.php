@@ -37,7 +37,16 @@ class UserController extends SMController
 
 			$this->model = User::with( [ 'role' => function( $q ) use( $site_id ) {
 								$q->whereSiteId( $site_id );
-							}, 'role.accessLevel' ] );
+							}, 'role.accessLevel' ] )
+							->whereHas('role', function($query) use ($site_id) {
+								$query->whereSiteId( $site_id );
+							});
+
+			if( \Input::has('q') && !empty( \Input::get('q') ) )
+			{
+				$this->model = User::applySearchQuery( $this->model, \Input::get( 'q' ) );
+				\Input::merge(['q' => null ]);
+			}
 
 			return parent::paginateIndex();
 		}

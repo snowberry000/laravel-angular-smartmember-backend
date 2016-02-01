@@ -34,8 +34,9 @@ class User extends Root implements AuthenticatableContract
         return $this->belongsToMany("App\Models\Site",'sites_roles','user_id','site_id');
     }
 
-    public function role(){
-        return $this->hasMany("App\Models\Site\Role", 'user_id', 'id');
+    public function role()
+	{
+        return $this->hasMany("App\\Models\\Site\\Role");
     }
 
     public function emailSettings()
@@ -62,6 +63,11 @@ class User extends Root implements AuthenticatableContract
     {
         return $this->hasMany('App\Models\LinkedAccount', 'user_id', 'user_id');
     }
+
+	public static function applySearchQuery($query , $value)
+	{
+		return $query->where('first_name','like','%' . $value . "%")->orWhere('last_name','like','%' . $value . "%")->orWhere('email','like','%' . $value . "%");
+	}
 
     public function getEmailHashAttribute( $value )
     {
