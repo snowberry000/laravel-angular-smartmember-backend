@@ -33,7 +33,13 @@ class UserController extends SMController
     public function index(){
 		if ( \SMRole::userHasAccess( $this->site->id, 'manage_members', \Auth::user()->id ) )
 		{
+			$site_id = $this->site->id;
 
+			$this->model = User::with( [ 'role' => function( $q ) use( $site_id ) {
+								$q->whereSiteId( $site_id );
+							}, 'role.accessLevel' ] );
+
+			return parent::paginateIndex();
 		}
 
     	\App::abort('401',"You don't have access to this resource");
