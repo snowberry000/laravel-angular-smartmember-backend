@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\SMController;
 use App\Models\Site\Role;
 use App\Models\Site\CustomRole;
 use App\Models\Site;
+use App\Models\AccessLevel;
 use App\Models\User;
 use App\Models\ImportQueue;
 
@@ -45,7 +46,10 @@ class RoleController extends SMController
 
         if (Input::get('q')){
             $users = User::where('first_name','like','%' . Input::get('q') . "%")->orWhere('last_name','like','%' . Input::get('q') . "%")->orWhere('email','like','%' . Input::get('q') . "%")->select(array('id'))->get();
-            $this->model->whereIn('user_id' , $users);
+            $access_levels = AccessLevel::where('name' , 'like' , '%' . Input::get('q') . "%")->whereSiteId($this->site->id)->select(array('id'))->get();
+            $this->model->where(function($q) use ($users , $access_levels){
+                $q->whereIn('user_id' , $users)->orWhereIn('access_level_id' , $access_levels->lists('id'));
+            });
             Input::merge(['q'=>null]);
         }
 
