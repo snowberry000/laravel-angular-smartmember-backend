@@ -76,7 +76,7 @@ class UtilityController extends Controller
     }
 
     public function anyDownload(){
-        $file_name = Input::get("file");
+        $original_file_name = $file_name = Input::get("file");
         $aws_key = Input::get("aws_key");
 
         if( strpos( $file_name, 's3.amazonaws.com/imbmediab/' ) !== false )
@@ -84,14 +84,16 @@ class UtilityController extends Controller
             $file_name_bits = explode( 's3.amazonaws.com/imbmediab/', $file_name );
 
             $aws_key = $file_name_bits[1];
-            unset( $file_name );
+
+			unset( $file_name );
         }
         elseif( strpos( $file_name, 'imbmediab.s3.amazonaws.com/' ) !== false )
         {
             $file_name_bits = explode( 'imbmediab.s3.amazonaws.com/', $file_name );
 
             $aws_key = $file_name_bits[1];
-            unset( $file_name );
+
+			unset( $file_name );
         }
 
         if( !empty( $file_name ) ) {
@@ -109,8 +111,8 @@ class UtilityController extends Controller
             $request = $s3->getAdapter()->getClient()->createPresignedRequest($command, '+10 minutes');
             $file = (string)$request->getUri();
 
-            header( 'Location: ' . $file );
-            exit;
+			$file = file_get_contents( $file );//just grab the contents ourselves so we can process it properly like we do if aws_key isn't set.
+			$file_name = $original_file_name;
         }
 
         if( !empty( $file ) ) {
