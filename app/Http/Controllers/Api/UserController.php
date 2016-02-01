@@ -31,6 +31,37 @@ class UserController extends SMController
     }
 
     public function index(){
+		if ( \SMRole::userHasAccess( $this->site->id, 'manage_members', \Auth::user()->id ) )
+		{
+			$site_id = $this->site->id;
+
+			$access_level = \Input::get('access_level_id', false );
+
+			if( $access_level )
+				\Input::merge(['access_level_id' => null]);
+
+			$this->model = User::with( [ 'role' => function( $q ) use( $site_id ) {
+								$q->whereSiteId( $site_id );
+							}, 'role.accessLevel' ] )
+							->whereHas('role', function($query) use ($site_id, $access_level) {
+								$query->whereSiteId( $site_id );
+
+								if( $access_level )
+									$query->whereAccessLevelId( $access_level );
+							})
+							->orderBy('last_name', 'asc')
+							->orderBy('first_name', 'asc')
+							->orderBy('email', 'asc');
+
+			if( \Input::has('q') && !empty( \Input::get('q') ) )
+			{
+				$this->model = User::applySearchQuery( $this->model, \Input::get( 'q' ) );
+				\Input::merge(['q' => null ]);
+			}
+
+			return parent::paginateIndex();
+		}
+
     	\App::abort('401',"You don't have access to this resource");
     }
 
