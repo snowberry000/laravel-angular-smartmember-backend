@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
+use App\Models\AccessLevel as AL;
 use App\Helpers\SMAuthenticate;
 
 
@@ -30,7 +31,16 @@ class AccessLevel
             return $model;
         }
         else {
-            $hide_attr = array();
+			$hide_attr = array();
+
+			if( $model->access_level_type == 2 && !empty( $model->access_level_id ) )
+			{
+				$access_level = AL::find( $model->access_level_id );
+
+				if( $access_level && $access_level->hide_unowned_content )
+					$hide_attr[] = 'title';
+			}
+
             if (!$model->transcript_content_public) {
                 $hide_attr[] = 'transcript_content';
             }
