@@ -529,6 +529,7 @@ Role::saving(function($pass){
 
 Role::deleted(function($pass){
 	//we are going to remove the user from any fb groups that were tied to this access pass
+    // return $pass;
 	\App\Models\AppConfiguration\Facebook::removeRefundedMember( $pass );
 	Role::removeSuperLevel( $pass->access_level_id, $pass->user_id );
     $subdomain = \Domain::getSubdomain();
@@ -540,6 +541,17 @@ Role::deleted(function($pass){
     $keys[] = $subdomain.':_module_home' . ':'.$user->access_token;
     $keys[] = $subdomain.':_user_'.$pass->user_id.':'.$user->access_token;
     $keys[] = 'my:_user_'.$pass->user_id.':'.$user->access_token;
+
+    $count = Role::whereUserId($pass->user_id)->whereSiteId($pass->site_id)->whereNull('deleted_at')->count();
+    //-- \Log::info($count);
+    if($count == 0)
+    {
+        $site = Site::find($pass->site_id);
+        if(isset($site->id)){
+            $site->total_members = $site->total_members - 1;
+            $site->save();
+        }
+    }
 
     \SMCache::clear($keys);
 });
