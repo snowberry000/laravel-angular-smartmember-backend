@@ -71,19 +71,12 @@ class Download extends Root
         }
         unset($download_data["dripfeed_settings"]);
         
-         if (isset($download_data["media_item"])){
-            $media = $download_data["media_item"];
-            $media['site_id'] = $site_id;
+		if (isset($download_data["media_item"]))
             unset($download_data["media_item"]);
-        }
-        if($media)
-            $media = MediaItem::create($media);
 
         unset($download_data['permalink']);
 
         $download = parent::create($download_data);
-
-        $download->media_item()->associate($media);
 
         $download->save();
         
@@ -118,13 +111,10 @@ class Download extends Root
             unset($download_data["seo_settings"]);
         }
 
-        if (isset($download_data["media_item"])){
-            $media = $download_data["media_item"];
-            $this->media_item()->update($media);
-            unset($download_data["media_item"]);
-        }
+        if( isset( $download_data["media_item"] ) )
+            unset( $download_data["media_item"] );
 
-        if (isset($download_data['dripfeed_settings']) && !empty($download_data['dripfeed_settings']))
+        if(isset($download_data['dripfeed_settings']) && !empty($download_data['dripfeed_settings']))
         {
             $dripfeed = $download_data['dripfeed_settings'];
             DripFeed::set($this, $dripfeed);

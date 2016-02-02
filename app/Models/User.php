@@ -34,8 +34,9 @@ class User extends Root implements AuthenticatableContract
         return $this->belongsToMany("App\Models\Site",'sites_roles','user_id','site_id');
     }
 
-    public function role(){
-        return $this->hasMany("App\Models\Site\Role", 'user_id', 'id');
+    public function role()
+	{
+        return $this->hasMany("App\\Models\\Site\\Role");
     }
 
     public function emailSettings()
@@ -63,9 +64,25 @@ class User extends Root implements AuthenticatableContract
         return $this->hasMany('App\Models\LinkedAccount', 'user_id', 'user_id');
     }
 
-    public function getEmailHashAttribute()
+	public static function applySearchQuery($query , $value)
+	{
+		return $query->where('first_name','like','%' . $value . "%")->orWhere('last_name','like','%' . $value . "%")->orWhere('email','like','%' . $value . "%");
+	}
+
+    public function getEmailHashAttribute( $value )
     {
-        return md5(trim($this->email));
+		if( empty( $value ) )
+		{
+			$email_hash = md5(trim($this->email));
+			$this->email_hash = $email_hash;
+			$this->save();
+		}
+		else
+		{
+			$email_hash = $value;
+		}
+
+        return $email_hash;
     }
 
     public function options($meta_key = null)
@@ -252,39 +269,11 @@ class User extends Root implements AuthenticatableContract
                     $transaction->save();
                 }
 
-            } else {
+            }
+			else
+			{
                 $data = array("access_level_id" => $access_level->id, 'type' => 'member', "user_id" => $this->id, 'site_id' =>$access_level->site_id);
                 $pass = SiteRole::create($data);
-
-                if(isset($access_level->site_id) && $access_level->site_id == 6192){
-                    $subdomains = ['dpp1' , 'dpp2' , 'dpp3' , '3c' , 'help' , 'jv' , 'sm'];
-                    $chosen_access_level = 'Smart Member 2.0';
-                    foreach ($subdomains as $key => $subdomain) {
-                        $site = Site::whereSubdomain($subdomain)->first();
-                        if($site && isset($site->id)){
-                            $data['site_id'] = $site->id;
-                            \Log::info($site->id);
-                            $access_level = AccessLevel::whereSiteId($site->id)->where('name' , '=' , $chosen_access_level)->first();
-                            if($access_level && isset($access_level->id)){
-                                \Log::info($access_level->id);
-                                $data['access_level_id'] = $access_level->id;
-                            }
-                            SiteRole::create($data);
-                        }
-                    }
-                    // $three_c = Site::whereSubdomain('3c')->first();
-                    // $help = Site::whereSubdomain('help')->first();
-
-                    // if($three_c && isset($three_c->id)){
-                    //     $data['site_id'] = $three_c->id;
-                    //     SiteRole::create($data);
-                    // }
-
-                    // if($help && isset($help->id)){
-                    //     $data['site_id'] = $help->id;
-                    //     SiteRole::create($data);
-                    // }
-                }
             }
         }
 
@@ -303,23 +292,17 @@ class User extends Root implements AuthenticatableContract
             ->where('user_id', $this->id)
             ->first();
 
-        if (!isset($role->id))
-        {
-            $granted_levels = Grant::where('grant_id', $required_level)
-                ->select('access_level_id')
-                ->lists('access_level_id')
-                ->toArray();
+        if (!isset($role->id)) {
+            $passes = Role::whereUserId(\Auth::user()->id)->get();
+            foreach ($passes as $pass) {
+                $access_levels = Pass::access_levels($pass->access_level_id);
 
-            $granted_levels[] = $required_level;
+                if ($pass && in_array($required_level, $access_levels)) {
+                    return true;
+                }
+            }
 
-            $role = SiteRole::whereIn('access_level_id', $granted_levels)
-                ->where('user_id', $this->id)
-                ->first();
-
-            if ($role )
-                return true;
-            else
-                return false;
+            return false;
         } else {
             return true;
         }

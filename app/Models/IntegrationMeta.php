@@ -18,8 +18,8 @@ class IntegrationMeta extends Root
                 if (!$meta) {
                     $meta = new IntegrationMeta();
                 }
-                $meta->key = $value['key'];
-                $meta->value = $value['value'];
+                $meta->key = $key;
+                $meta->value = $value;
                 $meta->integration_id = $model->id;
                 $meta->save();
             }

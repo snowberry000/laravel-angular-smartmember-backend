@@ -1,8 +1,11 @@
 <?php namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\ApiController;
+use App\Models\EmailRecipientsQueue;
+use App\Models\EmailRecipient;
 use App\Models\EmailSubscriber;
 use App\Models\EmailList;
+use App\Models\EmailListLedger;
 use App\Models\EmailJob;
 use App\Models\Company;
 use App\Models\AppConfiguration\SendGridEmail;
@@ -28,7 +31,7 @@ class EmailSubscriberController extends SMController
     {
         parent::__construct();
         $this->model = new EmailSubscriber();
-        $this->middleware("auth", ['except' => array('postSubscribe', 'formSubscribe','unsubscribe','turnOptInToMember')]);
+        $this->middleware("auth", ['except' => array('postSubscribe', 'formSubscribe','unsubscribe','turnOptInToMember','getUnsubscribeInfo')]);
     }
 
     public function show($model){
@@ -139,48 +142,71 @@ class EmailSubscriberController extends SMController
         return array('record'=>$record,'total'=>1);
     }
 
-    public function getEmailLists()
+    public function getUnsubscribeInfo()
     {
         $emailList = [];
 
         $list_type = \Input::get('list_type', 'user');
         $hash = \Input::get('hash');
 
-        $subscriber = FALSE;
+        $return = [];
+
+		$site = Site::whereId( ( !empty( \Input::get('site_id') ) ? \Input::get('site_id') : ( $this->site ? $this->site->id : 1 ) ) )->with(['meta_data' => function($query){
+			$query->whereIn('site_meta_data.key',['site_logo']);
+		}])->first();
+
+		if( $site )
+		{
+			$return['site'] = $site;
+		}
+
         if ($list_type == 'segment')
         {
             $subscriber = User::where('email_hash', $hash)->first();
+
+			if( $subscriber )
+				$return['subscriber'] = $subscriber;
         }
         else
         {
             $subscriber = EmailSubscriber::where('hash', $hash)->first();
+
+			if( $subscriber )
+				$return['subscriber'] = $subscriber;
+
+			$recipient_ids = EmailRecipientsQueue::whereEmailJobId( \Input::get('job_id') )->withTrashed()->get()->lists(['email_recipient_id']);
+
+			if( $recipient_ids && count( $recipient_ids ) > 0 )
+			{
+				$recipients = EmailRecipient::whereIn('id', $recipient_ids )->get();
+
+				if( $recipients )
+				{
+					$email_list_ids = [];
+
+					foreach( $recipients as $key => $val )
+					{
+						$recipient_bits = explode( '_', $val->recipient );
+
+						if( $recipient_bits[0] == 'list' )
+						{
+							if( !empty( $recipient_bits[1] ) )
+								$email_list_ids[] = $recipient_bits[1];
+						}
+					}
+
+					if( !empty( $email_list_ids ) )
+					{
+						$subscribed_list_ids = EmailListLedger::whereIn( 'list_id', $email_list_ids )->whereSubscriberId( $subscriber->id )->get()->lists(['list_id']);
+
+						if( $subscribed_list_ids && count( $subscribed_list_ids ) > 0 )
+							$return[ 'email_lists' ] = EmailList::whereIn( 'id', $subscribed_list_ids )->get();
+					}
+				}
+			}
         }
 
-        if ($subscriber && $subscriber->emailList)
-            $emailList[] = $subscriber->emailList;
-
-        if ($list_type != 'segment')
-        {
-			$account_id = \Auth::user()->id;
-            $segmentList = EmailList::whereListType($list_type)->whereAccountId($account_id)->get();
-            $sites = [$this->site->id];
-            foreach ($segmentList as $list)
-            {
-                $segmentTool = new SegmentTool($list->segment_query, $sites);
-                $users = $segmentTool->getUsers();
-                if (in_array($subscriber->email, $users))
-                {
-
-                    $unsub = UnsubscriberSegment::where('email', $subscriber->email)
-                                                ->where('list_id', $list->id)->first();
-                    if ( ! $unsub)
-                        $emailList[] = $list;
-                }
-
-            }
-        }
-
-        return array('site_name' => $this->site->name, 'data' => $emailList);
+        return $return;
     }
 
     public function unsubscribe()
@@ -189,23 +215,42 @@ class EmailSubscriberController extends SMController
 
 		$site_id = \Input::get('site_id', 0);
 
+		if( !$site_id && $this->site && $this->site->id )
+			$site_id = $this->site->id;
+
         $list_type = \Input::get("list_type", 'user');
-        $hash = \Input::get('hash');
+        $hash = \Input::get('hash', 'doesntexist');//set it to something we don't use by default, it will look for the e-mail address instead then
 
         if ($list_type == 'segment')
         {
             $subscriber = User::where('email_hash', $hash)->first();
 
+			if( !$subscriber )
+			{
+				if( \Input::has('email_address') )
+				{
+					$subscriber = User::whereEmail( \Input::get('email_address') )->first();
+				}
+			}
+
 			if( $subscriber )
 			{
 				UnsubscriberSegment::insert(
 					[ 'email' => $subscriber->email,
-					  'company_id' => $site_id ] );
+					  'site_id' => $site_id ] );
 			}
         }
         else
         {
             $subscriber = EmailSubscriber::where('hash', $hash)->first();
+
+			if( !$subscriber )
+			{
+				if( \Input::has('email_address') )
+				{
+					$subscriber = EmailSubscriber::whereEmail( \Input::get('email_address') )->first();
+				}
+			}
 
 			if( $subscriber )
 			{
@@ -213,6 +258,22 @@ class EmailSubscriberController extends SMController
 					[ 'subscriber_id' => $subscriber->id,
 					  'job_id' => $job_id,
 					  'company_id' => $site_id ] );
+			}
+
+			if( \Input::has('lists') && !empty( \Input::get('lists') ) )
+			{
+				foreach( \Input::get('lists') as $key => $val )
+				{
+					$subscriber_entry = EmailListLedger::whereListId( $val['id'] )->whereSubscriberId( $subscriber->id )->get();
+
+					if( $subscriber_entry && count( $subscriber_entry ) > 0 )
+					{
+						foreach( $subscriber_entry as $key2 => $val2 )
+						{
+							$val2->delete();
+						}
+					}
+				}
 			}
         }
 

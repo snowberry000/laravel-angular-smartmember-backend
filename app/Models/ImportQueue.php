@@ -75,7 +75,7 @@ class ImportQueue extends Root
     public function lockQueue($site_id)
     {
 		$now = Carbon::now();
-		SiteMetaData::create(['site_id' => $site_id, 'key' => 'imports_queue_locked', 'value' => $now->timestamp + 300 ]);
+		SiteMetaData::create(['site_id' => $site_id, 'key' => 'imports_queue_locked', 'value' => $now->timestamp + 1800 ]);
     }
 
     public function unLockQueue($site_id)
@@ -91,7 +91,7 @@ class ImportQueue extends Root
 		$now = Carbon::now();
 		$imports_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('imports_queue_locked')->first();
 		
-		if ($imports_queue_locked) {
+		if ($imports_queue_locked && $imports_queue_locked->value > $now->timestamp) {
 			return true;
 		}
 
@@ -171,23 +171,7 @@ class ImportQueue extends Root
 					$pass = Role::whereUserId( $user->id )->whereSiteId( $queue_item->site_id )
 						->whereAccessLevelId( $level )->whereNull( 'deleted_at' )->first();
 
-					if(isset($access_level->site_id) && $access_level->site_id == 6192)
-					{
-						$subdomains = ['dpp1' , 'dpp2' , 'dpp3' , '3c' , 'help' , 'jv' , 'sm'];
-						$chosen_access_level = 'Smart Member 2.0';
-						$new_data = ['user_id' => $user->id, 'type' => 'member' ];
-						foreach ($subdomains as $key => $subdomain) {
-							$new_site = Site::whereSubdomain($subdomain)->first();
-							if($new_site && isset($new_site->id)){
-								$new_data['site_id'] = $new_site->id;
-								$new_access_level = AccessLevel::whereSiteId($new_site->id)->where('name' , '=' , $chosen_access_level)->first();
-								if($new_access_level && isset($new_access_level->id)){
-									$new_data['access_level_id'] = $new_access_level->id;
-								}
-								Role::create($new_data);
-							}
-						}
-					}
+					Role::GrantSuperLevel( $level, $user->id );
 
 					if( !$pass )
 					{

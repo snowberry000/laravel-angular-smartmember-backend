@@ -257,25 +257,6 @@ class Transaction extends Root
 
 			SendGridEmail::sendPurchaseEmail($transaction, $access_pass, $cbreceipt);
 
-			if(isset($access_level->site_id) && $access_level->site_id == 6192)
-			{
-				$pass_data = ['type' => 'member', 'user_id' => $transaction->user_id];
-
-				$subdomains = ['dpp1' , 'dpp2' , 'dpp3' , '3c' , 'help' , 'jv' , 'sm'];
-				$chosen_access_level = 'Smart Member 2.0';
-				foreach ($subdomains as $key => $subdomain) {
-					$site = Site::whereSubdomain($subdomain)->first();
-					if($site && isset($site->id)){
-						$pass_data['site_id'] = $site->id;
-						$access_level = AccessLevel::whereSiteId($site->id)->where('name' , '=' , $chosen_access_level)->first();
-						if($access_level && isset($access_level->id)){
-							$pass_data['access_level_id'] = $access_level->id;
-						}
-						Role::create($pass_data);
-					}
-				}
-			}
-
             //use the updatePass function to set the initial expiration date in case this was a subscription, if its not it won't do anything to it
             Role::updatePass( $access_pass, ( !empty( $data['expired_at'] ) ? $data['expired_at'] : false ) );
         }
@@ -295,12 +276,29 @@ class Transaction extends Root
             return;
 
         $refundTransaction = Transaction::where('transaction_id', $data['transaction_id'])
-                                        ->where('type', '!=', 'rfnd')->first();
+                                        ->where('type', '!=', 'rfnd');
 
-        if( !$refundTransaction || !$refundTransaction->user_id)
+		if( !empty( $data['site_id'] ) )
+			$refundTransaction = $refundTransaction->whereSiteId( $data['site_id'] );
+
+		$refundTransaction = $refundTransaction->first();
+
+        if( !$refundTransaction || !$refundTransaction->user_id )
             return;
 
-        $access_level = $data['source'] == 'jvzoo' ? AccessLevel::where('product_id', $data['product_id'])->first() : AccessLevel::find($data['product_id']);
+		if( $data['source'] == 'jvzoo' )
+		{
+			$access_level = AccessLevel::where('product_id', $data['product_id']);
+
+			if( !empty( $data['site_id'] ) )
+				$access_level = $access_level->whereSiteId( $data['site_id'] );
+
+			$access_level = $access_level->first();
+		}
+		else
+		{
+			$access_level = AccessLevel::find($data['product_id'] );
+		}
 
         if ( !$access_level )
             return;

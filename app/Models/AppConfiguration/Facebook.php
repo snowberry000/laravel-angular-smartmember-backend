@@ -197,6 +197,13 @@ class Facebook extends AppConfiguration{
 						"member" => $user->facebook_user_id
 					) );
 
+					\App\Models\Event::Log( 'removed-from-facebook-group', array(
+						'site_id' => $site_id,
+						'user_id' => $user_id,
+						'facebook-group-id' => $group_id,
+						'user-facebook-id' => $user->facebook_user_id
+					) );
+
 					//now let's get the user's fb_group_joined meta so we can remove this group from it
 					$user_meta = UserOptions::whereUserId( $user_id )
 						->whereMetaKey( 'fb_group_joined' )

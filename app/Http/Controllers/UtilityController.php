@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Input;
 use App\Models\Permalink;
 use App\Models\Media;
+use App\Models\MediaItem;
 use Log;
 use Domain;
 
@@ -49,12 +50,22 @@ class UtilityController extends Controller
                 $return['aws_key'] = $newFile;
 
             //Store the resource in the media file
-            Media::create([
-                    "site_id" => $site->id,
-                    "type" => "image",
-                    "user_id" => $user ? $user->id : 0,
-                    "source" => $return['link']
-                ]);
+            if(!empty($site->id))
+			{
+				Media::create( [
+				   "site_id" => $site->id,
+				   "type" => "image",
+				   "user_id" => $user ? $user->id : 0,
+				   "source" => $return[ 'link' ]
+			   	] );
+
+				$media_item = MediaItem::create( [
+				   "site_id" => $site->id,
+				   "url" => $return[ 'link' ]
+			   	] );
+
+				$return['media_item_id'] = $media_item->id;
+			}
 
     	    return $return;
     	}

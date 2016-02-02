@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\SMController;
 use App\Models\Site\Role;
 use App\Models\Site\CustomRole;
 use App\Models\Site;
+use App\Models\AccessLevel;
 use App\Models\User;
 use App\Models\ImportQueue;
 
@@ -14,6 +15,9 @@ class RoleController extends SMController
 {
     public function __construct(){
         parent::__construct();
+
+		$this->middleware( 'admin', ['only' => array( 'removeUserFromCurrentSite' ) ] );
+
         $this->model = new Role();
     }
 
@@ -33,7 +37,7 @@ class RoleController extends SMController
             Input::merge(['q'=>null]);
         }
 
-        return parent::paginateIndex();
+        return parent::paginateIndex(array('distinct' => true));
     }
 
     public function passes(){
@@ -42,7 +46,10 @@ class RoleController extends SMController
 
         if (Input::get('q')){
             $users = User::where('first_name','like','%' . Input::get('q') . "%")->orWhere('last_name','like','%' . Input::get('q') . "%")->orWhere('email','like','%' . Input::get('q') . "%")->select(array('id'))->get();
-            $this->model->whereIn('user_id' , $users);
+            $access_levels = AccessLevel::where('name' , 'like' , '%' . Input::get('q') . "%")->whereSiteId($this->site->id)->select(array('id'))->get();
+            $this->model->where(function($q) use ($users , $access_levels){
+                $q->whereIn('user_id' , $users)->orWhereIn('access_level_id' , $access_levels->lists('id'));
+            });
             Input::merge(['q'=>null]);
         }
 
@@ -112,6 +119,7 @@ class RoleController extends SMController
 
     public function removeUserFromSite(){
         $response = [];
+
         $roles = $this->model->where('type','!=','owner')->whereSiteId(\Input::get('site_id'))->whereUserId(\Input::get('user_id'))->whereNull('deleted_at')->get();
         foreach ($roles as $key => $value) {
             $response [] = $value;
@@ -120,21 +128,42 @@ class RoleController extends SMController
         return $response;
     }
 
+	public function removeUserFromCurrentSite(){
+		$response = [];
+
+		$roles = $this->model->where('type','!=','owner')->whereSiteId( $this->site->id )->whereUserId(\Input::get('user_id'))->whereNull('deleted_at')->get();
+		foreach ($roles as $key => $value) {
+			$response [] = $value;
+			$value->delete();
+		}
+		return $response;
+	}
+
     public function getCSV()
     {
         $site_id = $this->site->id;
-        $query = $this->model->with(["user"]);
-        $query = $query->orderBy('id' , 'DESC')->whereNull('deleted_at')->whereSiteId($site_id);
+        $query = $this->model->with(["user","accessLevel"]);
+        $query = $query->orderBy('id','desc')->whereNull('deleted_at')->whereSiteId($site_id);
         $roles = $query->get();
+        //$roles = array_unique($roles );
 
         $arrayCSV = array();
 
-        foreach ($roles as $role) 
-        {
-            $arrayCSV [] = array($role->user['first_name']." ".$role->user['last_name'],$role->user['email'],$role['type'],$role['created_at']::parse()->format('d/m/Y'));
+        foreach ($roles as $role) {
+            $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] [] =  $role->accessLevel['name'];
+            $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] = array_unique($arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel']);
+            //$arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel']  =  $role['created_at']::parse()->format('d/m/Y'));
         }
 
-        $this->outputCSV($arrayCSV);
+
+        $output = array(); 
+
+        foreach ($arrayCSV as $key => $value) {
+            $tempArr = explode("!@~&", $key);
+            $tempValue = rtrim(implode(',', $value), ',');
+            $output [] = array($tempArr[0],$tempArr[1],$tempArr[2],$tempValue);   
+        }
+        $this->outputCSV($output);
     }
 
     

@@ -63,7 +63,7 @@ class EmailController extends SMController
 		$content = \Input::get('content','');
 
 		$content = $content . ( \Input::has('mail_signature') && !empty( \Input::get('mail_signature') ) ? \Input::get('mail_signature') : $mail_signature );
-		$content = Email::AddUnsubscribeToContent( $content );
+		$content = Email::AddUnsubscribeToContent( $content, $this->site->id );
 		$content = Open::AddPixelToContent($content);
 		$content = str_replace( '%subscriber_name%', !empty( \Auth::user()->first_name ) ? \Auth::user()->first_name : '[USER NAME WILL APPEAR HERE]', $content );
 
@@ -109,7 +109,10 @@ class EmailController extends SMController
 				$replacements = [];
 				foreach( $additional_meta as $item )
 				{
-					$replacements[ $item ] = $meta_data[ $item ];
+					if( !empty( $meta_data[ $item ] ) )
+						$replacements[ $item ] = $meta_data[ $item ];
+					else
+						$replacements[ $item ] = '';
 				}
 
 				if( !empty( $replacements ) )
@@ -170,7 +173,10 @@ class EmailController extends SMController
 							$replacements = [];
 							foreach( $additional_meta as $item )
 							{
-								$replacements[ $item ] = $meta_data[ $item ];
+								if( !empty( $meta_data[ $item ] ) )
+									$replacements[ $item ] = $meta_data[ $item ];
+								else
+									$replacements[ $item ] = '';
 							}
 
 							if( !empty( $replacements ) )
@@ -261,10 +267,23 @@ class EmailController extends SMController
 
 		foreach( $email_lists as $list )
 		{
+			$subscriber_count = EmailListLedger::join('email_subscribers', 'email_subscribers.id','=','email_listledger.subscriber_id')
+				->where('email_listledger.list_id', $list->id)
+				->select('email_listledger.subscriber_id')
+				->distinct()
+				->get()
+				->count();
+
+			if( intval( $list->total_subscribers ) != $subscriber_count )
+			{
+				$list->total_subscribers = $subscriber_count;
+				$list->save();
+			}
+
 			$segments[] = array(
 				'type' => 'list',
 				'name' => $list->name,
-				'count' => intval( $list->total_subscribers ),
+				'count' => $subscriber_count,
 				'target_id' => $list->id
 			);
 		}
@@ -274,7 +293,14 @@ class EmailController extends SMController
 			->where( 'sites_roles.site_id', $this->site->id )
 			->select('sites_roles.user_id')
 			->distinct()
+			->get()
 			->count();
+
+		if( intval( $this->site->total_members ) != $count )
+		{
+			$this->site->total_members = $count;
+			$this->site->save();
+		}
 
 		$segments[] = array(
 			'type' => 'site',
@@ -319,16 +345,39 @@ class EmailController extends SMController
 
 			$total_available += $user_count[0]->total_count;
 
-			$total_available += EmailSubscriber::where( 'email_subscribers.account_id', \Auth::user()->id )
+			$email_lists = $list_controller->sendMailLists();
+
+			$list_ids = [];
+
+			foreach( $email_lists as $list )
+				$list_ids[] = $list->id;
+
+			$user_id = \Auth::user()->id;
+
+			$site_id = $this->site->id;
+
+			$total_available += EmailSubscriber::where( function( $q) use ($user_id, $list_ids, $site_id) {
+					$q->whereIn('email_listledger.list_id', $list_ids );
+					$q->orwhere('email_subscribers.account_id', $user_id );
+					$q->orwhere('email_subscribers.site_id', $site_id );
+				} )
+				->leftjoin( 'email_listledger', 'email_listledger.subscriber_id', '=', 'email_subscribers.id')
 				->leftjoin( 'users', 'users.email', '=', 'email_subscribers.email' )
 				->leftjoin( 'sites_roles', function ( $join ) use ( $site_ids )
 				{
 					$join->on( 'users.id', '=', 'sites_roles.user_id' );
 					$join->whereIn( 'sites_roles.site_id', $site_ids );
 				} )
-				->whereNull( 'users.email' )
+				->where(function($q){
+					$q->whereNull( 'users.email' );
+					$q->orwhere(function($query){
+						$query->whereNull( 'sites_roles.id');
+					});
+				})
 				->whereNull( 'users.deleted_at' )
 				->whereNull( 'sites_roles.deleted_at' )
+				->whereNull( 'email_listledger.deleted_at' )
+				->whereNull( 'email_subscribers.deleted_at' )
 				->select( 'email_subscribers.id' )
 				->distinct()
 				->count();
@@ -379,6 +428,8 @@ class EmailController extends SMController
 					case 'list':
 						$new_emails = EmailListLedger::join('email_subscribers', 'email_subscribers.id','=','email_listledger.subscriber_id')
 							->where( 'email_listledger.list_id', $segment['target_id'] )
+							->whereNull( 'email_subscribers.deleted_at')
+							->whereNull( 'email_listledger.deleted_at')
 							->select('email')
 							->distinct()
 							->lists('email')
@@ -403,15 +454,45 @@ class EmailController extends SMController
 							->lists('users.email')
 							->toArray();
 
-						$extra_emails = EmailSubscriber::where( 'email_subscribers.account_id', \Auth::user()->id )
-							->leftjoin('users','users.email','=','email_subscribers.email')
-							->leftjoin('sites_roles',function($join) use ($site_id) {
-								$join->on('users.id','=','sites_roles.user_id');
-								$join->where('sites_roles.site_id','=',$site_id);
+						$email_lists = EmailList::whereAccountId( \Auth::user()->id )->get();
+
+						$list_ids = [];
+
+						foreach( $email_lists as $list )
+							$list_ids[] = $list->id;
+
+						$user_id = \Auth::user()->id;
+
+						$extra_emails = EmailSubscriber::where( function( $q) use ($user_id, $list_ids, $site_id) {
+								if( !empty( $list_ids ) )
+								{
+									$q->whereIn( 'email_listledger.list_id', $list_ids );
+									$q->orwhere( 'email_subscribers.account_id', $user_id );
+								}
+								else
+								{
+									$q->where( 'email_subscribers.account_id', $user_id );
+								}
+
+								$q->orwhere('email_subscribers.site_id', $site_id );
+							} )
+							->leftjoin( 'email_listledger', 'email_listledger.subscriber_id', '=', 'email_subscribers.id')
+							->leftjoin( 'users', 'users.email', '=', 'email_subscribers.email' )
+							->leftjoin( 'sites_roles', function ( $join ) use ( $site_id )
+							{
+								$join->on( 'users.id', '=', 'sites_roles.user_id' );
+								$join->where( 'sites_roles.site_id', '=', $site_id );
+							} )
+							->where(function($q){
+								$q->whereNull( 'users.email' );
+								$q->orwhere(function($query){
+									$query->whereNull( 'sites_roles.id');
+								});
 							})
-							->whereNull('users.email')
-							->whereNull('users.deleted_at')
-							->whereNull('sites_roles.deleted_at')
+							->whereNull( 'users.deleted_at' )
+							->whereNull( 'sites_roles.deleted_at' )
+							->whereNull('email_subscribers.deleted_at')
+							->whereNull('email_listledger.deleted_at')
 							->select('email_subscribers.email')
 							->distinct()
 							->lists('email_subscribers.email')

@@ -40,6 +40,21 @@ class EmailSubscriber extends Root
 		return $hash;
 	}
 
+	public function getHashAttribute( $value )
+	{
+		if( empty( $value ) )
+		{
+			$hash = md5(trim($this->email));
+			$this->hash = $hash;
+			$this->save();
+		}
+		else
+		{
+			$hash = $value;
+		}
+		return $hash;
+	}
+
 	public static function create(array $data = array())
 	{
 		$lists = [];

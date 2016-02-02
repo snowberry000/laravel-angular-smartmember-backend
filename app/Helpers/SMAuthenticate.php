@@ -157,11 +157,17 @@ class SMAuthenticate
         return 0;
     }
 
+    public static function validateDate($date)
+    {
+        $d = \DateTime::createFromFormat('Y-m-d', $date);
+        return $d && $d->format('Y-m-d') == $date;
+    }
+
     public static function checkScheduleAvailability($model)
     {
         $availability = true;
         $logged_in = SMAuthenticate::set();
-        if (!$model->published_date || $model->published_date == null || $model->published_date == '0000-00-00 00:00:00')
+        if (!$model->published_date || $model->published_date == null || $model->published_date == '0000-00-00 00:00:00' || !self::validateDate($model->published_date))
             return true;
 
         if ($logged_in)
@@ -319,6 +325,10 @@ class SMAuthenticate
         if($model->access_level_type <= 1)
             return SMAuthenticate::checkScheduleAvailability($model);
 
+        // if(isset($model->show_content_publicly) && $model->show_content_publicly){
+        //     return SMAuthenticate::checkDripAvailability($model) && SMAuthenticate::checkScheduleAvailability($model);
+        // }
+
         if(!$logged_in && $model->access_level_type > 1){
             return false;
         }
@@ -346,7 +356,6 @@ class SMAuthenticate
                 if (!empty($pass->access_level_id))
                 {
                     $access_levels = Pass::access_levels( $pass->access_level_id );
-
                     if($pass && in_array( $model->access_level_id, $access_levels ) && SMAuthenticate::checkDripAvailability($model) && SMAuthenticate::checkScheduleAvailability($model))
                         return true;
                 }

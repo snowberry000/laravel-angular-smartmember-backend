@@ -27,6 +27,8 @@ class OpenController extends SMController
         $job_id = (\Input::has('job_id')) ? \Input::get('job_id') : '';
         $subscriber_id = (\Input::has('subscriber_id')) ? \Input::get('subscriber_id') : '';
         $site_id = (\Input::has('network_id')) ? \Input::get('network_id') : '';
+		$segment_id = (\Input::has('segment_id')) ? \Input::get('segment_id') : null;
+		$list_type = \Input::get('list_type', 'subscriber');
 
         if (!$job_id || !$subscriber_id)
             \App::abort(403, "Email ID or Subscriber ID is empty. Please try again");
@@ -36,6 +38,8 @@ class OpenController extends SMController
         $fields['subscriber_id'] = $subscriber_id;
         $fields['job_id'] = $job_id;
         $fields['site_id'] = $site_id;
+        $fields['segment_id'] = $segment_id;
+        $fields['identifier'] = $list_type . '_' . $subscriber_id; //sole purpose of this is so we can count unique opens by doing a "distinct" query
 
         Open::insert($fields);
         //return $fields;

@@ -49,7 +49,7 @@ class ApiController extends Controller
         return $query->get();
     }
 
-	public function paginateIndex(){
+	public function paginateIndex($params = []){
 		$page_size = config("vars.default_page_size");
 		$query = $this->model;
 
@@ -67,14 +67,17 @@ class ApiController extends Controller
 				case 'bypass_paging':
 					break;
 				default:
-					$query->where($key,'=',$value);
+					if( !empty( $value ) )
+						$query->where($key,'=',$value);
 			}
 		}
 
 		$return = [];
 
-		$return['total_count'] = $query->count();
-
+        if(isset($params['distinct']) && $params['distinct'])
+		  $return['total_count'] = $query->distinct()->count('user_id');
+        else
+            $return['total_count'] = $query->count();
 		if( !Input::has('bypass_paging') || !Input::get('bypass_paging') )
 			$query = $query->take($page_size);
 

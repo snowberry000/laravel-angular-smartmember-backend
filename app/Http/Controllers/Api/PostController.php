@@ -30,7 +30,18 @@ class PostController extends SMController
     public function index(){
         if( \Input::has('view') && \Input::get('view') == 'admin' )
 		{
-			return parent::paginateIndex();
+			$posts = parent::paginateIndex();
+
+            foreach ($posts['items'] as $i => $post) {
+                if($post->access_level_type==4){
+                    if (!\App\Helpers\SMAuthenticate::set() || !\SMRole::hasAccess($this->site->id,'view_private_content')){
+                        unset($posts['items'][ $i ]);
+                    }
+                }
+
+            }
+            $posts['items'] = array_values($posts['items']->toArray());
+            return $posts;
 		}
 		else
 		{
@@ -65,7 +76,6 @@ class PostController extends SMController
 						unset( $posts[ $i ] );
 					}
 				}
-
 				$post->comment_count = Comment::whereType( 'post' )->whereTargetId( $post->id )->count();
 			}
             $posts = array_values($posts->toArray());
@@ -108,8 +118,16 @@ class PostController extends SMController
 
     public function store()
     {
-       $stored = parent::store();
-       return $stored;
+       	$stored = parent::store();
+
+		\App\Models\Event::Log( 'created-post', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'post-title' => $stored->title,
+			'post-id' => $stored->id
+		) );
+
+       	return $stored;
     }
 
 	public function destroy($model)
@@ -117,6 +135,13 @@ class PostController extends SMController
 		$permalinks = Permalink::whereSiteId($model->site_id)->whereTargetId($model->id)->whereType($model->getTable())->get();
 		foreach( $permalinks as $permalink )
 			$permalink->delete();
+
+		\App\Models\Event::Log( 'deleted-post', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'post-title' => $model->title,
+			'post-id' => $model->id
+		) );
 
 		return parent::destroy($model);
 	}
@@ -136,6 +161,13 @@ class PostController extends SMController
         \Log::info(array_pluck($deleteTags,'id'));
         if(sizeof($deleteTags)>0)
             $model->tags()->detach(array_pluck($deleteTags,'id'));
+
+		\App\Models\Event::Log( 'updated-post', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'post-title' => $model->title,
+			'post-id' => $model->id
+		) );
 
         return $model->update(\Input::except('_method' , 'access'));
     }

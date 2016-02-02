@@ -35,13 +35,14 @@ class CategoryController extends SMController
         return parent::index();
     }
 
-    public function getByPermalink(){
-    
+    public function getByPermalink()
+    {
+
     	$permalink = Input::get('permalink');
     	$query = Category::with(['topics.user','topics.replies'  => function($query) {
-        $query->orderBy('created_at', 'desc'); }
+            $query->orderBy('created_at', 'desc'); }
         ]);
-    	return $query->wherePermalink($permalink)->first();
+    	return $query->wherePermalink($permalink)->whereSiteId($this->site->id)->first();
     }
 
 }

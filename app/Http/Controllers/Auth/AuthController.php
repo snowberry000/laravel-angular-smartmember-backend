@@ -233,9 +233,22 @@ class AuthController extends Controller
 					$user->first_name = Input::get('first_name');
 
 				$user->save();
+
+				\App\Models\Event::Log( 'reset-password-using-verification', array(
+					'site_id' => 0,
+					'user_id' => $user->id,
+					'email' => $user->email,
+					'verification-code' => Input::get('verification_code')
+				) );
 			}
 			elseif( Input::has('verification_code') && !empty( Input::get('verification_code') ) && !VerificationCode::VerifyCode( $user->id, Input::get('verification_code') ) )
 			{
+				\App\Models\Event::Log( 'submitted-invalid-verification-code', array(
+					'site_id' => 0,
+					'user_id' => $user->id,
+					'email' => $user->email,
+					'verification-code' => Input::get('verification_code')
+				) );
 				\App::abort( '403', 'Verification code invalid' );
 			}
 
@@ -368,8 +381,16 @@ class AuthController extends Controller
             $user->refreshToken();
             $user->refreshEmailHash();
             $user->save();
+
+			\App\Models\Event::Log( 'reset-password', array(
+				'site_id' => 0,
+				'user_id' => $user->id,
+				'email' => $user->email
+			) );
+
             return array('success'=>true);
         }
+
         \App::abort(403, "Reset token was not valid");      
     }
 

@@ -100,9 +100,25 @@ class DownloadController extends SMController
     }
 
     public function store()
-    {        
-        $stored = parent::store();
-        return $stored;
+    {
+		if( \SMRole::userHasAccess( $this->site->id, 'manage_content', \Auth::user()->id ) )
+		{
+			\Input::merge( [ 'site_id' => $this->site->id ] );
+			$stored = parent::store();
+
+			\App\Models\Event::Log( 'created-download', array(
+				'site_id' => $this->site->id,
+				'user_id' => \Auth::user()->id,
+				'download-title' => $stored->title,
+				'download-id' => $stored->id
+			) );
+
+			return $stored;
+		}
+		else
+		{
+			return [];
+		}
     }
 
     public function getlist()
@@ -111,7 +127,7 @@ class DownloadController extends SMController
     }
 
     public function show($model){
-        $model = $this->model->with("seo_settings" , 'media_item' , 'history_count',"dripfeed")->whereId($model->id)->first();
+        $model = $this->model->with(["seo_settings" , 'media_item' => function($query){ $query->whereSiteId( $this->site->id ); } , 'history_count',"dripfeed"])->whereId($model->id)->first();
         if(\App\Helpers\SMAuthenticate::set()){
             $model->user_count = DownloadHistory::whereDownloadId($model->id)->whereUserId(Auth::user()->id)->count();
         }
@@ -125,7 +141,16 @@ class DownloadController extends SMController
 
     public function update($model)
     {
-        return $model->update(\Input::except('_method' , 'access'));
+        $stored = $model->update(\Input::except('_method' , 'access'));
+
+		\App\Models\Event::Log( 'updated-download', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'download-title' => $stored->title,
+			'download-id' => $stored->id
+		) );
+
+		return $stored;
     }
 
     public function putDownloads()
@@ -144,6 +169,13 @@ class DownloadController extends SMController
 		foreach( $permalinks as $permalink )
 			$permalink->delete();
 
+		\App\Models\Event::Log( 'deleted-download', array(
+			'site_id' => $this->site->id,
+			'user_id' => \Auth::user()->id,
+			'download-title' => $model->title,
+			'download-id' => $model->id
+		) );
+
 		return parent::destroy($model);
 	}
 
@@ -158,16 +190,18 @@ class DownloadController extends SMController
         $history = DownloadHistory::create(array('user_id'=> $user_id ));
         $download->history()->save($history);
         $download->save();
-        if($download->media_item && $download->media_item->aws_key==""){
+        if($download->media_item && $download->media_item->site_id == $download->site_id && $download->media_item->aws_key==""){
             $download->my_url = $download->media_item->url;
             return $download;
         }
-        if($download->media_item){
+        if($download->media_item && $download->media_item->site_id == $download->site_id){
             $download->aws_key = $download->media_item->aws_key;
             return $download;
         }
-        else
-            \App::abort('404','Download link not found');
+        if (!empty($download->download_link))
+            return $download;
+
+		\App::abort('404','Download link not found');
     }
 
     public function getByPermalink($id){

@@ -24,6 +24,9 @@ class ClickController extends SMController
     {
         $hash = \Input::get('id');
         $url = \Input::get('refLink');
+        $list_type = \Input::get('list_type', 'subscriber');
+        $subscriber_id = \Input::get('subscriber_id', null);
+		$segment_id = (\Input::has('segment_id')) ? \Input::get('segment_id') : null;
 
         if( isset( $hash ))
         {
@@ -38,12 +41,8 @@ class ClickController extends SMController
         $fields = array();
         $fields[ 'ip' ] = DomainHelper::getRealIP();
         $fields[ 'link_id' ] = isset($link_data) ? $link_data->id : '';
-
-        //$this->ItemDebug( $url );
-        //$this->ItemDebug( $fields );
-        //$this->ItemDebug( $post_data );
-        //$this->ItemDebug( $link_data );
-        //exit;
+		$fields['identifier'] = $list_type . '_' . $subscriber_id; //sole purpose of this is so we can count unique clicks by doing a "distinct" query
+		$fields['segment_id'] = $segment_id;
 
         Click::insert($fields);
 

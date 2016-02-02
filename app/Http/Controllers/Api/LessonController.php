@@ -5,7 +5,7 @@ use App\Helpers\SMAuthenticate;
 use App\Http\Controllers\ApiController;
 use App\Models\VimeoIntegration;
 use App\Models\AppConfiguration\Vimeo;
-
+use App\Models\MemberMeta;
 
 use App\Models\Lesson;
 use App\Models\SiteNotice;
@@ -20,7 +20,7 @@ use App\Models\Permalink;
 use Auth;
 use Input;
 use Carbon\Carbon;
-
+use SMCache;
 
 
 /*
@@ -91,22 +91,48 @@ class LessonController extends SMController
 
     public function store()
     {
-        $prev_lesson =  Lesson::whereSiteId($this->site->id)->where('module_id','!=','0')->orderBy('sort_order' , 'desc')->first();
-        if($prev_lesson)
-            Input::merge(array('sort_order'=>$prev_lesson->sort_order + 1));
-        else
-            Input::merge(array('sort_order'=>1));
+		if( \SMRole::userHasAccess( $this->site->id, 'manage_content', \Auth::user()->id ) )
+		{
+			\Input::merge(['site_id' => $this->site->id ]);
+			$prev_lesson = Lesson::whereSiteId( $this->site->id )->where( 'module_id', '!=', '0' )
+				->orderBy( 'sort_order', 'desc' )->first();
+			if( $prev_lesson )
+				Input::merge( array( 'sort_order' => $prev_lesson->sort_order + 1 ) );
+			else
+				Input::merge( array( 'sort_order' => 1 ) );
 
-        $stored = parent::store();
-        $courseTitle = SiteMetaData::whereSiteId($this->site->id)->whereKey('course_title')->first();
-        
-        if($courseTitle!=null)
-            $notification=array_merge(array('title' => 'lesson alert'),array('content' => $stored->title),array('start_date' => Carbon::now()),array('end_date' => Carbon::now()->addDay()),array('site_id' => $this->site->id),array('type' => 'lesson'));
-        else
-            $notification=array_merge(array('title' => 'lesson alert'),array('start_date' => Carbon::now()),array('end_date' => Carbon::now()->addDay()),array('content' => $stored->title),array('site_id' => $this->site->id),array('type' => 'lesson'));
-        if($stored->access_level_type!=4)
-            SiteNotice::create($notification);
-        return $stored;
+			$stored      = parent::store();
+			$courseTitle = SiteMetaData::whereSiteId( $this->site->id )->whereKey( 'course_title' )->first();
+
+			if( $courseTitle != null )
+				$notification = array_merge( array( 'title' => 'lesson alert' ), array( 'content' => $stored->title ), array( 'start_date' => Carbon::now() ), array( 'end_date' => Carbon::now()
+					->addDay() ), array( 'site_id' => $this->site->id ), array( 'type' => 'lesson' ) );
+			else
+				$notification = array_merge( array( 'title' => 'lesson alert' ), array( 'start_date' => Carbon::now() ), array( 'end_date' => Carbon::now()
+					->addDay() ), array( 'content' => $stored->title ), array( 'site_id' => $this->site->id ), array( 'type' => 'lesson' ) );
+			if( $stored->access_level_type != 4 )
+				SiteNotice::create( $notification );
+
+			\App\Models\Event::Log( 'created-lesson', array(
+				'site_id' => $this->site->id,
+				'user_id' => \Auth::user()->id,
+				'lesson-title' => $stored->title,
+				'lesson-id' => $stored->id
+			) );
+
+			$total_created = MemberMeta::get( 'lessons_created', \Auth::user()->id );
+
+			if( $total_created )
+				$stored->lessons_created = $total_created->value;
+			else
+				$stored->lessons_created = 0;
+
+			return $stored;
+		}
+		else
+		{
+			return [];
+		}
     }
 
     public function update($model)
@@ -114,29 +140,63 @@ class LessonController extends SMController
         $newpermalink=\Input::get("permalink");
         if(!\Input::get('site_id'))
             \Input::merge(array('site_id' => $this->site->id ));
-        
-        //homepageURLupdate
-        SiteMetaData::where("key","homepage_url")->where("site_id",$this->site->id)->where("value","lesson/".$model->permalink)->update(array("value" => "lesson/".\Input::get("permalink") ));
-        SiteFooterMenuItem::where("url","lesson/".$model->permalink)->where("site_id",$this->site->id)->update(array("url"=>"lesson/".\Input::get("permalink")));
-        SiteMenuItem::where("url","lesson/".$model->permalink)->where("site_id",$this->site->id)->update(array("url"=>"lesson/".\Input::get("permalink")));
-        
-        return $model->update(\Input::except('_method' , 'access'));
+
+		if( \SMRole::userHasAccess( $this->site->id, 'manage_content', \Auth::user()->id ) )
+		{
+			//homepageURLupdate
+			SiteMetaData::where( "key", "homepage_url" )->where( "site_id", $this->site->id )
+				->where( "value", "lesson/" . $model->permalink )
+				->update( array( "value" => "lesson/" . \Input::get( "permalink" ) ) );
+			SiteFooterMenuItem::where( "url", "lesson/" . $model->permalink )->where( "site_id", $this->site->id )
+				->update( array( "url" => "lesson/" . \Input::get( "permalink" ) ) );
+			SiteMenuItem::where( "url", "lesson/" . $model->permalink )->where( "site_id", $this->site->id )
+				->update( array( "url" => "lesson/" . \Input::get( "permalink" ) ) );
+
+			\App\Models\Event::Log( 'updated-lesson', array(
+				'site_id' => $this->site->id,
+				'user_id' => \Auth::user()->id,
+				'lesson-title' => $model->title,
+				'lesson-id' => $model->id
+			) );
+
+			return $model->update( \Input::except( '_method', 'access' ) );
+		}
+		else
+		{
+			return $model;
+		}
     }
 
-    public function destroy($model){
-        $notification = SiteNotice::whereContent($model->title)->first();
-        if($notification!=null)
-            $notification->delete();
-        else
-            \Log::info('koi msla he vai :'.$model->title);
-        $model->site->total_lessons = $model->site->total_lessons - 1;
-        $model->site->save();
+    public function destroy($model)
+	{
+		if( \SMRole::userHasAccess( $this->site->id, 'manage_content', \Auth::user()->id ) )
+		{
+			$notification = SiteNotice::whereContent( $model->title )->first();
+			if( $notification != null )
+				$notification->delete();
+			else
+				\Log::info( 'koi msla he vai :' . $model->title );
+			$model->site->total_lessons = $model->site->total_lessons - 1;
+			$model->site->save();
 
-		$permalinks = Permalink::whereSiteId($model->site_id)->whereTargetId($model->id)->whereType($model->getTable())->get();
-		foreach( $permalinks as $permalink )
-			$permalink->delete();
+			$permalinks = Permalink::whereSiteId( $model->site_id )->whereTargetId( $model->id )
+				->whereType( $model->getTable() )->get();
+			foreach( $permalinks as $permalink )
+				$permalink->delete();
 
-        return parent::destroy($model);
+			\App\Models\Event::Log( 'deleted-lesson', array(
+				'site_id' => $this->site->id,
+				'user_id' => \Auth::user()->id,
+				'lesson-title' => $model->title,
+				'lesson-id' => $model->id
+			) );
+
+			return parent::destroy( $model );
+		}
+		else
+		{
+			return [];
+		}
     }
 
     public function addAllVideos(){
@@ -208,6 +268,77 @@ class LessonController extends SMController
             ->update([ 'access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id]);
         return array('access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id);
     }
+
+	public function bulkUpdateAccess()
+	{
+		$lesson_ids = \Input::get('lesson_ids');
+		$access_level_type = \Input::get('access_level_type');
+		$access_level_id = \Input::get('access_level_id') ? \Input::get('access_level_id') : 0 ;
+
+		if( !empty( $lesson_ids ) && is_array( $lesson_ids ) )
+		{
+			\DB::table('lessons')
+				->whereSiteId( $this->site->id )
+				->whereIn( 'id' , $lesson_ids )
+				->update([ 'access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id]);
+
+			$lesson_key ='modules' . ':' . $this->site->id . ':*';
+
+			$keys[] = $lesson_key;
+
+			SMCache::clear($keys);
+
+			$routes[] = 'module_home';
+			SMCache::reset($routes);
+
+			return array('access_level_type'=> $access_level_type , 'access_level_id'=> $access_level_id);
+		}
+	}
+
+	public function bulkDelete()
+	{
+		$lesson_ids = \Input::get('lesson_ids');
+		$module_ids = \Input::get('module_ids');
+
+		if( !empty( $lesson_ids ) && is_array( $lesson_ids ) )
+		{
+			\DB::table('lessons')
+				->whereSiteId( $this->site->id )
+				->whereIn( 'id' , $lesson_ids )
+				->update([ 'deleted_at' => Carbon::now() ]);
+
+			\DB::table('permalinks')
+				->whereSiteId( $this->site->id )
+				->whereType('lessons')
+				->whereIn( 'target_id' , $lesson_ids )
+				->whereNull( 'deleted_at' )
+				->update([ 'deleted_at' => Carbon::now() ]);
+		}
+
+		if( !empty( $module_ids ) && is_array( $module_ids ) )
+		{
+			\DB::table('modules')
+				->whereSiteId( $this->site->id )
+				->whereIn( 'id' , $module_ids )
+				->update([ 'deleted_at' => Carbon::now() ]);
+
+			\DB::table('lessons')
+				->whereSiteId( $this->site->id )
+				->whereIn( 'module_id' , $module_ids )
+				->update([ 'module_id' => 0 ]);
+		}
+
+		$lesson_key ='modules' . ':' . $this->site->id . ':*';
+
+		$keys[] = $lesson_key;
+
+		SMCache::clear($keys);
+
+		$routes[] = 'module_home';
+		SMCache::reset($routes);
+
+		return array( 'deleted_modules' => $module_ids , 'deleted_lessons' => $lesson_ids );
+	}
 
     public function single($id){
 

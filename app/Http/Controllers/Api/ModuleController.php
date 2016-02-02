@@ -50,8 +50,14 @@ class ModuleController extends SMController
 
     public function show($model)
     {
-        $model = $model->find($model->id);
-        return parent::show($model);
+        if (\Input::has('view') && \Input::get('view') == 'public')
+        {
+            return $this->home($model->id);
+        } else {
+            $model = $model->find($model->id);
+            return parent::show($model);
+        }
+
     }
 
     public function destroy($model){        
@@ -62,7 +68,7 @@ class ModuleController extends SMController
         return parent::destroy($model);
     }
 
-    public function home()
+    public function home($module_id = false)
     {
 		if( !$this->site ){
 			$error = array("message" => 'This site does not exist. Please check URL.', "code" => 500);
@@ -97,13 +103,17 @@ class ModuleController extends SMController
         }
         if(\Auth::check()){
             $modules = $this->model->with("lessons" , "lessons.userNote", "lessons.access_level")->whereSiteId
-            ($this->site->id)
-                ->get();
+            ($this->site->id);
+            if ($module_id)
+                $modules = $modules->whereId($module_id);
+            $modules = $modules->get();
             $unassigned_lessons = Lesson::with('userNote')->whereSiteId($this->site->id)->whereModuleId(0)->orderBy('sort_order','asc')->get();
         }
         else{
-            $modules = $this->model->with("lessons")->whereSiteId($this->site->id)->get();
-
+            $modules = $this->model->with("lessons")->whereSiteId($this->site->id);
+            if ($module_id)
+                $modules = $modules->whereId($module_id);
+            $modules = $modules->get();
             $unassigned_lessons = Lesson::whereSiteId($this->site->id)->whereModuleId(0)->orderBy('sort_order','asc')->get();
         }
 
@@ -113,8 +123,8 @@ class ModuleController extends SMController
         $sort_order = $page_meta->getItem( 'default_module_sort_order' );
 
         $default_module = new Module(array('id'=>0,'site_id'=>$this->site->id,'sort_order'=>$sort_order,'title'=>'','access_level'=>0, 'lessons' => $unassigned_lessons ) );
-
-        $modules->add( $default_module );
+        if (!$module_id)
+            $modules->add( $default_module );
 
         $count = 0;
         $modules_length = count( $modules );
@@ -241,7 +251,7 @@ class ModuleController extends SMController
         $next = 0;
 
         foreach ($input as $key => $val ) {
-            if($val["lesson"]!=null)
+            if( !empty( $val["lesson"] ) )
             {
                 $lesson = Lesson::find($val["lesson"]);
                 $lesson->sort_order = $key + 1;

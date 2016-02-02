@@ -9,5 +9,4 @@ class Unsubscriber extends Root
     public function email() {
         return $this->belongsTo('App\Models\Email');
     }
-
 }

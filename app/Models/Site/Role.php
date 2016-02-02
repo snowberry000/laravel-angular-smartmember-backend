@@ -40,7 +40,7 @@ class Role extends Root{
                 ->orWhere('expired_at', '=', '0000-00-00 00:00:00')
                 ->orWhereNull('expired_at');
         })->get();
-
+        \Log::info($access_levels);
         foreach ($access_levels as $access_level)
         {
             $unique_access_levels = array_merge($unique_access_levels, Pass::access_levels($access_level->access_level_id));
@@ -319,16 +319,239 @@ class Role extends Root{
             }
         }
     }
+
+	public static function removeSuperLevel( $access_level_id, $user_id )
+	{
+		$special_cases = Role::SpecialCases();
+
+		$all_the_levels = Pass::access_levels( $access_level_id );
+
+		foreach( $special_cases as $slug => $special_case )
+		{
+			$product_levels = $special_case[ 'products' ];
+
+			$revoke_all = false;
+
+			foreach( $all_the_levels as $key => $val )
+			{
+				if( in_array( $val, $product_levels ) )
+				{
+					$revoke_all = true;
+					break;
+				}
+			}
+
+			if( $revoke_all )
+			{
+				foreach ( $special_case['granted-levels'] as $subdomain => $chosen_access_level )
+				{
+					$site = Site::whereSubdomain( $subdomain )->first();
+					if( $site && isset( $site->id ) )
+					{
+						$access_level = AccessLevel::whereSiteId( $site->id )->where( 'name' , '=' , $chosen_access_level )->first();
+
+						if( !$access_level && is_numeric( $chosen_access_level ) )
+							$access_level = AccessLevel::whereSiteId( $site->id )->where( 'id' , '=' , $chosen_access_level )->first();
+
+						if( $access_level && isset( $access_level->id ) )
+						{
+							$passes = self::whereUserId( $user_id )->whereAccessLevelId( $access_level->id )->get();
+
+							if( $passes )
+							{
+								foreach( $passes as $pass )
+									$pass->delete();
+							}
+						}
+					}
+				}
+
+				\App\Models\Event::Log( 'refunded-' . $slug, array(
+					'site_id' => $special_case['site'],
+					'user_id' => $user_id
+				) );
+			}
+		}
+	}
+
+	public static function GrantSuperLevel( $access_level_id, $user_id )
+	{
+		$special_cases = Role::SpecialCases();
+
+		$all_the_levels = \App\Models\AccessLevel\Pass::access_levels( $access_level_id );
+
+		foreach( $special_cases as $slug => $special_case )
+		{
+			$product_levels = $special_case['products'];
+
+			$grant_all = false;
+
+			foreach( $all_the_levels as $key => $val )
+			{
+				if( in_array( $val, $product_levels ) )
+				{
+					$grant_all = true;
+					break;
+				}
+			}
+
+			if( $grant_all )
+			{
+				$data = ['user_id' => $user_id, 'type' => 'member' ];
+
+				foreach ( $special_case['granted-levels'] as $subdomain => $chosen_access_level )
+				{
+					$site = Site::whereSubdomain( $subdomain )->first();
+
+					if( $site && isset( $site->id ) )
+					{
+						$data['site_id'] = $site->id;
+
+						$access_level = AccessLevel::whereSiteId($site->id)->where('name' , '=' , $chosen_access_level)->first();
+
+						if( !$access_level && is_numeric( $chosen_access_level ) )
+							$access_level = AccessLevel::whereSiteId( $site->id )->where( 'id' , '=' , $chosen_access_level )->first();
+
+						$existing_role = Role::whereUserId( $data['user_id'] )->whereSiteId( $site->id );
+
+						if($access_level && isset($access_level->id))
+						{
+							$data['access_level_id'] = $access_level->id;
+							$existing_role = $existing_role->whereAccessLevelId( $data['access_level_id'] );
+						}
+
+						$existing_role = $existing_role->first();
+
+						if( !$existing_role )
+							Role::create($data);
+					}
+				}
+
+				\App\Models\Event::Log( 'received-' . $slug, array(
+					'site_id' => $special_case['site'],
+					'user_id' => $user_id
+				) );
+			}
+		}
+	}
+
+	public static function SpecialCases()
+	{
+		//each one of these is the slug we identify the bundle by as the main key, it's value is an array of three items
+		//	1. "products" is an array of the access level ids that grant this special bundle
+		//  2. "site" is the site these products are from, that is just for logging purposes
+		//  3. "granted-levels" is an array of site subdomains as the key with either the name or id of the access level that is supposed to be granted for that site
+		return array(
+			'sm-2-bundle' => array(
+				'products' => array(
+					2684,
+					2694
+				),
+				'site' => 6192,
+				'granted-levels' => array(
+					'dpp1' => 'Smart Member 2.0',
+					'dpp2' => 'Smart Member 2.0',
+					'dpp3' => 'Smart Member 2.0',
+					'3c' => 'Smart Member 2.0',
+					'help' => 'Smart Member 2.0',
+					'jv' => 'Smart Member 2.0',
+					'sm' => 'Smart Member 2.0'
+				)
+			),
+			'omg-bundle' => array(
+				'products' => array(
+					2972,
+					2973
+				),
+				'site' => 6192,
+				'granted-levels' => array(
+					'dpp1' => 'Smart Member 2.0',
+					'dpp2' => 'Smart Member 2.0',
+					'dpp3' => 'Smart Member 2.0'
+				)
+			)
+		);
+	}
 }
 
 Role::created(function($pass){
-    //Company::createCompanyUsingPass($pass);
     Role::addPersonToWebinar($pass);
     Role::addPersonToAssociateShareAccessLevelKey($pass);
 
+	if( !empty( $pass->access_level_id ) )
+		Role::GrantSuperLevel( $pass->access_level_id, $pass->user_id );
+});
+
+Role::saved(function($pass){
+    Role::addPersonToWebinar($pass);
+    Role::addPersonToAssociateShareAccessLevelKey($pass);
+    $subdomain = \Domain::getSubdomain();
+    $user = User::find($pass->user_id);
+
+    $keys = array();
+    $keys[] = $subdomain.':_site_details' . ':'.$user->access_token;
+	$keys[] = 'my:_site_details' . ':'.$user->access_token;
+    $keys[] = $subdomain.':_module_home' . ':'.$user->access_token;
+    $keys[] = $subdomain.':_user_'.$pass->user_id.':'.$user->access_token;
+	$keys[] = 'my:_user_'.$pass->user_id.':'.$user->access_token;
+    \Log::info($keys);
+    \SMCache::clear($keys);
+});
+
+Role::saving(function($pass){
+	$updates = [
+		'access_level_id'
+	];
+
+	foreach( $pass->getDirty() as $attribute => $value )
+	{
+		if( in_array( $attribute, $updates ) )
+		{
+			$original = $pass->getOriginal( $attribute );
+			if( $original != $value )
+			{
+				switch( $attribute )
+				{
+					case 'access_level_id':
+						if( !empty( $original ) && empty( $value ) )
+						{
+							$pass->access_level_id = $original;
+							\App\Models\AppConfiguration\Facebook::removeRefundedMember( $pass );
+							Role::removeSuperLevel( $pass->access_level_id, $pass->user_id );
+							$pass->access_level_id = $value;
+						}
+						break;
+				}
+			}
+		}
+	}
 });
 
 Role::deleted(function($pass){
 	//we are going to remove the user from any fb groups that were tied to this access pass
+    // return $pass;
 	\App\Models\AppConfiguration\Facebook::removeRefundedMember( $pass );
+	Role::removeSuperLevel( $pass->access_level_id, $pass->user_id );
+    $subdomain = \Domain::getSubdomain();
+    $user = User::find( $pass->user_id );
+
+    $keys = array();
+    $keys[] = $subdomain.':_site_details' . ':'.$user->access_token;
+    $keys[] = 'my:_site_details' . ':'.$user->access_token;
+    $keys[] = $subdomain.':_module_home' . ':'.$user->access_token;
+    $keys[] = $subdomain.':_user_'.$pass->user_id.':'.$user->access_token;
+    $keys[] = 'my:_user_'.$pass->user_id.':'.$user->access_token;
+
+    $count = Role::whereUserId($pass->user_id)->whereSiteId($pass->site_id)->whereNull('deleted_at')->count();
+    //-- \Log::info($count);
+    if($count == 0)
+    {
+        $site = Site::find($pass->site_id);
+        if(isset($site->id)){
+            $site->total_members = $site->total_members - 1;
+            $site->save();
+        }
+    }
+
+    \SMCache::clear($keys);
 });

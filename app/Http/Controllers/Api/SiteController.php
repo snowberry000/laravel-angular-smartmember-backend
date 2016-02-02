@@ -17,6 +17,7 @@ use App\Models\Livecast;
 use App\Models\Post;
 use App\Models\Comment;
 use App\Models\Wizard;
+use App\Models\MemberMeta;
 use Auth;
 use Input;
 use PRedis;
@@ -76,6 +77,16 @@ class SiteController extends SMController
             \App::abort(403, "Failed to create site, please contact support");
         }
 
+        $subdomain = Input::get('subdomain');
+
+        if(isset($subdomain) && $subdomain && !empty($subdomain)){
+            $exists = Site::whereSubdomain($subdomain)->first();
+
+            if($exists && isset($exists->id)){
+                \App::abort(403, "This subdomain already exists. Please choose a different one");
+            }
+        }
+        
         $site = parent::store();
 
 		$clone_id = \Input::get('clone_id');
@@ -93,6 +104,13 @@ class SiteController extends SMController
             \Log::info('cloning sites');
             $this->model->clone_site($site->id , $clone_id , \Auth::user()->id );
         }
+
+		$total_created = MemberMeta::get( 'sites_created', \Auth::user()->id );
+
+		if( $total_created )
+			$site->sites_created = $total_created->value;
+		else
+			$site->sites_created = 0;
 		
         return $site;
     }
@@ -232,6 +250,10 @@ class SiteController extends SMController
 
     public function membersLight() {
 
+    }
+
+    public function getTicketcount (){
+        return SupportTicket::getUnreadSupportTickets( $this->site );
     }
 
     public function getLatestOfAllContent()

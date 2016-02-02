@@ -32,7 +32,7 @@ class SiteMetaDataController extends SMController
 
 		$query = $query->orderBy('id' , 'DESC');
 		$query = $query->whereNull('deleted_at');
-		$query = $query->whereNotIn( 'key', ['import_queue_locked', 'imports_queue_locked']);
+		$query = $query->whereNotIn( 'key', ['import_queue_locked', 'imports_queue_locked', 'last_email_sent']);
 		foreach (Input::all() as $key => $value){
 			switch($key){
 				case 'q':
@@ -56,45 +56,61 @@ class SiteMetaDataController extends SMController
 
     public function save()
     {
-        if (Input::has('site')){
-            $site = Input::get('site');
-            $this->site->fill($site);
-            $this->site->save();
-        }
-
         $is_bridgepage = false;
         $bpage_permalink = "";
-        //TODO: check if admin
-        $site_id = $this->site->id;
-        foreach (Input::except(['site','import_queue_locked', 'imports_queue_locked']) as $key => $input) {
-            $pageMetaData = SiteMetaData::whereSiteId($site_id)->whereKey($key)->first();
-            if (!$pageMetaData) {
-                $pageMetaData = new SiteMetaData();
-                $pageMetaData->site_id = $site_id;
-                $pageMetaData->key = $key;
-            }
-            $pageMetaData->value = $input;
-            $pageMetaData->save();
 
-            if ($pageMetaData->key == 'homepage_url')
-            {
-                $bridgepage = Permalink::wherePermalink($pageMetaData->value)->whereSiteId($this->site->id)
-                    ->whereType('bridge_bpages')->first();
-                if (!$bridgepage)
-                {
-                    $bridgepage_recheck = BridgePage::wherePermalink($pageMetaData->value)->whereSiteId
-                    ($this->site->id)->first();
-                    if (isset($bridgepage_recheck))
-                    {
-                        $is_bridgepage = true;
-                        $bpage_permalink = $pageMetaData->value;
+		if ( \SMRole::userHasAccess( $this->site->id, 'edit_theme_options', \Auth::user()->id ) )
+		{
+			if( Input::has('site') )
+			{
+				$site = Input::get('site');
+                $subdomain = isset($site['subdomain']) ? $site['subdomain'] : '';
+                if(isset($subdomain) && isset($this->site->subdomain) && $subdomain != $this->site->subdomain){
+                    $exists = Site::whereSubdomain($subdomain)->first();
+                    if($exists && isset($exists->id)){
+                        \App::abort(403, "This subdomain already exists. Please choose a different one");
                     }
-                } else {
-                    $is_bridgepage = true;
-                    $bpage_permalink = $pageMetaData->value;
                 }
-            }
-        }
+				$this->site->fill($site);
+				$this->site->save();
+			}
+
+			$site_id = $this->site->id;
+			foreach( Input::except( [ 'site', 'import_queue_locked', 'imports_queue_locked' ] ) as $key => $input )
+			{
+				$pageMetaData = SiteMetaData::whereSiteId( $site_id )->whereKey( $key )->first();
+				if( !$pageMetaData )
+				{
+					$pageMetaData          = new SiteMetaData();
+					$pageMetaData->site_id = $site_id;
+					$pageMetaData->key     = $key;
+				}
+
+				$pageMetaData->value = $input;
+				$pageMetaData->save();
+
+				if( $pageMetaData->key == 'homepage_url' )
+				{
+					$bridgepage = Permalink::wherePermalink( $pageMetaData->value )->whereSiteId( $this->site->id )
+						->whereType( 'bridge_bpages' )->first();
+					if( !$bridgepage )
+					{
+						$bridgepage_recheck = BridgePage::wherePermalink( $pageMetaData->value )->whereSiteId
+						( $this->site->id )->first();
+						if( isset( $bridgepage_recheck ) )
+						{
+							$is_bridgepage   = true;
+							$bpage_permalink = $pageMetaData->value;
+						}
+					}
+					else
+					{
+						$is_bridgepage   = true;
+						$bpage_permalink = $pageMetaData->value;
+					}
+				}
+			}
+		}
 
         if ($is_bridgepage)
         {
@@ -211,7 +227,7 @@ class SiteMetaDataController extends SMController
 
     public function getTrackingCode()
     {
-        if (isset($this->site->id))
+        if( isset( $this->site->id ) )
         {
             $data = SiteMetaData::whereSiteId($this->site->id)->whereIn("key",array('google_analytics_id','facebook_retargetting_pixel','facebook_conversion_pixel','bing_id','google_webmaster_tag','bing_webmaster_tag'))->get();
             $tracking_code = array();
