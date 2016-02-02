@@ -491,6 +491,26 @@ class Site extends Root
         }
         return array('success' => $result);
     }
+
+	public static function reservedSubdomains()
+	{
+		return [
+			'my',
+			'docs',
+			'www',
+			'api'
+		];
+	}
+
+	public static function isReserved( $subdomain )
+	{
+		$reserved_subdomains = self::reservedSubdomains();
+
+		if( in_array( $subdomain, $reserved_subdomains ) )
+			return true;
+
+		return false;
+	}
 }
 
 Site::creating(function($site){
@@ -515,6 +535,9 @@ Site::creating(function($site){
 
 Site::saving(function($site){
     $routes[] = 'site_details';
+
+	if( Site::isReserved( $site->subdomain ) )
+		\App::abort("409", "That subdomain is not allowed");
     
     SMCache::reset($routes);
 
