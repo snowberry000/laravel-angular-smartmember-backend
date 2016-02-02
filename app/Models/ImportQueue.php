@@ -129,12 +129,12 @@ class ImportQueue extends Root
 				$user->refreshToken();
 				$password = User::randomPassword();
 				$user->password = $password;
-				if (!empty($queue_item->name))
+
+				if ( !empty( $queue_item->name ) )
 				{
-					$name_arr = $this->nameSplitter($queue_item->name);
-					$user->first_name = $name_arr['first_name'];
-					$user->last_name = $name_arr['last_name'];
+					$user->first_name = $queue_item->name;
 				}
+
 				$user->email = $queue_item->email;
 				$user->verified = 1;
 				$user->reset_token = md5( microtime().rand() );
@@ -142,9 +142,9 @@ class ImportQueue extends Root
 				$newUser = true;
 				$count++;
 			} else {
-				if (empty($user->first_name) && empty($user->last_name))
+				if ( empty( $user->first_name ) && empty( $user->last_name ) )
 				{
-					if ( !empty( $queue_item->name ) )
+					if ( !empty( $queue_item->name ) && empty( $user->first_name ) )
 					{
 						$user->first_name = $queue_item->name;
 						$user->save();
