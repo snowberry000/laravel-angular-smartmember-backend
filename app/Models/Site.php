@@ -513,14 +513,14 @@ class Site extends Root
 			'smtp','soap','software','sorry','spreadsheet','spunk','srntp','ssh','ssl','stage','staging','stat','static','statistic','statu','store','suggest','suggestquerie','suggestquery','survey',
 			'surveytool','svn','sync','sysadmin','talk','talkgadget','test','tester','testing','text','tit','tits','tool','toolbar','tosser','trac','translate','translation','translator','trend','turd','twat',
 			'txt','ul','upload','vagina','validation','vid','video','video-stat','voice','w','wank','wave','webdisk','webmail','webmaster','webrnail','whm','whoi','whore','wifi','wiki','wtf','ww','www','wwww',
-			'xhtml','xhtrnl','xml','xxx'
+			'xhtml','xhtrnl','xml','xxx', 'sm2', 'sm3', 'status', 'aboutus'
 		];
 	}
 
 	public static function blacklistedWords()
 	{
 		return [
-			'fuck', 'shit', 'xxx', 'bitch', 'damn', 'faggot'
+			'fuck', 'shit', 'xxx', 'bitch', 'damn', 'faggot', 'porn', 'pornography', 'porno'
 		];
 	}
 
