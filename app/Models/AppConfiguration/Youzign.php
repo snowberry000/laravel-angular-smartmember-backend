@@ -25,7 +25,7 @@ class YouZign
         foreach ($data as $design)
         {
             if (isset($design['image_src']))
-                Media::insert(['site_id' => $site_id, 'type' => 'image', 'source' => $design['image_src'][0]]);
+                Media::insert(['site_id' => $site_id, 'type' => 'youzign', 'source' => $design['image_src'][0]]);
             else
                 return 'bad_credentials';
         }
