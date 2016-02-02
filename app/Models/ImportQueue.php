@@ -144,12 +144,9 @@ class ImportQueue extends Root
 			} else {
 				if (empty($user->first_name) && empty($user->last_name))
 				{
-					\Log::info($queue_item->name);
-					if (!empty($queue_item->name))
+					if ( !empty( $queue_item->name ) )
 					{
-						$name_arr = $this->nameSplitter($queue_item->name);
-						$user->first_name = $name_arr['first_name'];
-						$user->last_name = $name_arr['last_name'];
+						$user->first_name = $queue_item->name;
 						$user->save();
 					}
 				}
