@@ -492,7 +492,7 @@ class Site extends Root
         return array('success' => $result);
     }
 
-	public static function reservedSubdomains()
+	public static function blacklistedSubdomains()
 	{
 		return [
 			'my', 'docs', 'www', 'api', 'about','aboutu','abuse','acme','ad','admanager','admin','admindashboard','administrator','ads','adsense','adult','adword','affiliate','affiliatepage','afp','alpha',
@@ -517,21 +517,21 @@ class Site extends Root
 		];
 	}
 
-	public static function reservedWords()
+	public static function blacklistedWords()
 	{
 		return [
 			'fuck', 'shit', 'xxx', 'bitch', 'damn', 'faggot'
 		];
 	}
 
-	public static function isReserved( $subdomain )
+	public static function isBlacklisted( $subdomain )
 	{
-		$reserved_subdomains = self::reservedSubdomains();
+		$reserved_subdomains = self::blacklistedSubdomains();
 
 		if( in_array( $subdomain, $reserved_subdomains ) )
 			\App::abort("409", "Sorry, but the subdomain \"" . $subdomain . "\" is not allowed.");
 
-		$reserved_words = self::reservedWords();
+		$reserved_words = self::blacklistedWords();
 
 		foreach( $reserved_words as $key => $val )
 		{
@@ -566,7 +566,7 @@ Site::creating(function($site){
 Site::saving(function($site){
     $routes[] = 'site_details';
 
-	Site::isReserved( $site->subdomain );
+	Site::isBlacklisted( $site->subdomain );
     
     SMCache::reset($routes);
 
