@@ -30,7 +30,18 @@ class PostController extends SMController
     public function index(){
         if( \Input::has('view') && \Input::get('view') == 'admin' )
 		{
-			return parent::paginateIndex();
+			$posts = parent::paginateIndex();
+
+            foreach ($posts['items'] as $i => $post) {
+                if($post->access_level_type==4){
+                    if (!\App\Helpers\SMAuthenticate::set() || !\SMRole::hasAccess($this->site->id,'view_private_content')){
+                        unset($posts['items'][ $i ]);
+                    }
+                }
+
+            }
+            $posts['items'] = array_values($posts['items']->toArray());
+            return $posts;
 		}
 		else
 		{
@@ -65,7 +76,6 @@ class PostController extends SMController
 						unset( $posts[ $i ] );
 					}
 				}
-
 				$post->comment_count = Comment::whereType( 'post' )->whereTargetId( $post->id )->count();
 			}
             $posts = array_values($posts->toArray());
