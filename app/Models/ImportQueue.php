@@ -32,7 +32,8 @@ class ImportQueue extends Root
 		foreach ($emails as $email)
 		{
 			$toQueue = [];
-			$toQueue['email'] = $email;
+			$toQueue['name'] = $email['name'];
+			$toQueue['email'] = $email['email'];
 			$toQueue['access_levels'] = trim(implode(',', $access_levels), ",");
 			$toQueue['site_id'] = $site->id;
 			$toQueue['expiry'] = $expiry;
@@ -97,6 +98,20 @@ class ImportQueue extends Root
 		return false;
     }
 
+	private function nameSplitter($fullName)
+	{
+		if (strpos($fullName, " ") !== FALSE)
+		{
+			$parts = explode(" ", $fullName);
+			$lastname = array_pop($parts);
+			$firstname = implode(" ", $parts);
+		} else {
+			$firstname = $fullName;
+			$lastname = '';
+		}
+		return array('first_name' => $firstname, 'last_name' => $lastname);
+	}
+
 	private function queueHelper($site_id)
 	{
 		$per_run = 4000;
@@ -114,14 +129,28 @@ class ImportQueue extends Root
 				$user->refreshToken();
 				$password = User::randomPassword();
 				$user->password = $password;
+
+				if ( !empty( $queue_item->name ) )
+				{
+					$user->first_name = $queue_item->name;
+				}
+
 				$user->email = $queue_item->email;
 				$user->verified = 1;
 				$user->reset_token = md5( microtime().rand() );
 				$user->save();
 				$newUser = true;
 				$count++;
+			} else {
+				if ( empty( $user->first_name ) && empty( $user->last_name ) )
+				{
+					if ( !empty( $queue_item->name ) && empty( $user->first_name ) )
+					{
+						$user->first_name = $queue_item->name;
+						$user->save();
+					}
+				}
 			}
-
 			$granted_passes = [];
 			$alreadyExists = Role::whereUserId($user->id)->whereSiteId($queue_item->site_id)->first();
 			if (!empty($queue_item->access_levels))
