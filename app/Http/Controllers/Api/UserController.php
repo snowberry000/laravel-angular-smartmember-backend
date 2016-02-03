@@ -53,11 +53,19 @@ class UserController extends SMController
 							->orderBy('first_name', 'asc')
 							->orderBy('email', 'asc');
 
+
 			if( \Input::has('q') && !empty( \Input::get('q') ) )
 			{
-				$this->model = User::applySearchQuery( $this->model, \Input::get( 'q' ) );
+				$this->model->where(function ($query) {
+				    $query->where('email','like','%' . \Input::get('q')  . "%")
+				          ->orWhere('first_name','like','%' . \Input::get('q') . "%")
+				          ->orWhere('last_name','like','%' . \Input::get('q') . "%");
+				});
+				//$this->model -> Where('email','like','%' . \Input::get('q')  . "%");
 				\Input::merge(['q' => null ]);
 			}
+
+			// \Log::info($this->model->toSql() );
 
 			return parent::paginateIndex();
 		}
