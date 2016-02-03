@@ -11,6 +11,16 @@ class EmailRecipient extends Root
 		return $this->belongsTo('App\Models\Email', 'email_id');
 	}
 
+	public function setIntroAttribute( $value )
+	{
+		$this->attributes['intro'] = html_entity_decode( $value, ENT_QUOTES | ENT_HTML5 );
+	}
+
+	public function getIntroAttribute( $value )
+	{
+		return html_entity_decode( $value, ENT_QUOTES | ENT_HTML5 );
+	}
+
 	public function fillInData( $job_id )
 	{
 		$recipient_bits = explode( '_', $this->recipient );
