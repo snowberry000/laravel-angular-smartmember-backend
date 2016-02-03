@@ -228,6 +228,8 @@ class SiteController extends SMController
                 $data->wizard_step = count($count);
             }
 
+            $data->wizard_completed = Wizard::whereSiteId($this->site->id)->whereSlug('site_launch_wizard')->first(['is_completed']);
+
            	$data->can_create_sites = !empty($role);
         }
 
