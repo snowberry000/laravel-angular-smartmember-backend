@@ -43,7 +43,7 @@ class SupportTicket extends Root
             if( \Auth::user() && \SMRole::hasAccess($site->id,'manage_support_tickets') )
                 if (!empty($site))
                 {
-                    return SupportTicket::whereSiteId( $site->id )->whereSiteId( $site->id )->whereParentId(0)->whereStatus('open')->count();
+                    return SupportTicket::whereSiteId( $site->id )->whereParentId(0)->whereStatus('open')->count();
                 }
                 else
                     return 0;
