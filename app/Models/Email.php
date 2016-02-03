@@ -89,6 +89,26 @@ class Email extends Root
         }
 	}
 
+	public function setContentAttribute( $value )
+	{
+		$this->attributes['content'] = html_entity_decode( $value, ENT_QUOTES | ENT_HTML5 );
+	}
+
+	public function getContentAttribute( $value )
+	{
+		return html_entity_decode( $value, ENT_QUOTES | ENT_HTML5 );
+	}
+
+	public function setMailSignatureAttribute( $value )
+	{
+		$this->attributes['mail_signature'] = html_entity_decode( $value, ENT_QUOTES | ENT_HTML5 );
+	}
+
+	public function getMailSignatureAttribute( $value )
+	{
+		return html_entity_decode( $value, ENT_QUOTES | ENT_HTML5 );
+	}
+
 	public static function AddUnsubscribeToContent($content, $site_id)
 	{
 		$site = Site::find( $site_id );
