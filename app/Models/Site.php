@@ -16,7 +16,7 @@ class Site extends Root
         if(preg_match('/[^a-z_\-0-9]/i', $value)){
           \App::abort(403,"This subdomain is not in a valid format. Only Alphanumeric is allowed");
         }
-        $this->attributes['subdomain'] = $value;
+        $this->attributes['subdomain'] = strtolower( $value );
     }
 
     public function addMember($user, $type='member', $password = '', $skip_email = false, $cbreceipt=false){
@@ -138,6 +138,11 @@ class Site extends Root
 			});
 		else
 			return $q;
+	}
+
+	public function getSubdomainAttribute( $value )
+	{
+		return strtolower( $value );
 	}
 
     public function getHeaderBackgroundColor()
