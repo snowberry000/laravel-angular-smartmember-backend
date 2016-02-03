@@ -19,6 +19,11 @@ class Site extends Root
         $this->attributes['subdomain'] = strtolower( $value );
     }
 
+	public function setDomainAttribute( $value )
+	{
+		$this->attributes['domain'] = strtolower( $value );
+	}
+
     public function addMember($user, $type='member', $password = '', $skip_email = false, $cbreceipt=false){
         if (Role::whereUserId($user->id)
             ->whereSiteId($this->id)
@@ -141,6 +146,11 @@ class Site extends Root
 	}
 
 	public function getSubdomainAttribute( $value )
+	{
+		return strtolower( $value );
+	}
+
+	public function getDomainAttribute( $value )
 	{
 		return strtolower( $value );
 	}
