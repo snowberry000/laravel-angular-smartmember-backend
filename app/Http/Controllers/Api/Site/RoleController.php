@@ -23,8 +23,23 @@ class RoleController extends SMController
 
     public function getSupportAgent()
     {
-        $agents = Role::getFullMembersWithCapability($this->site->id, 'manage_support_tickets');
-        return array('items' => $agents, 'total_count' => count($agents));
+		if( \Input::has('site_id') && !empty( \Input::get('site_id') ) )
+			$site_id = \Input::get('site_id');
+		else
+		{
+			if( !isset( $this->site ) && !empty( $this->site->id ) )
+				$site_id = $this->site->id;
+		}
+
+		if( !empty( $site_id ) )
+		{
+			$agents = Role::getFullMembersWithCapability( $site_id, 'manage_support_tickets' );
+			return array( 'items' => $agents, 'total_count' => count( $agents ) );
+		}
+		else
+		{
+			return array( 'items' => [], 'total_count' => 0 );
+		}
     }
 
     public function index(){
