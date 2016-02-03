@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Http\Controllers\Api\SiteController;
+use SMCache;
 
 class Wizard extends Root
 {
@@ -42,4 +43,15 @@ class Wizard extends Root
 
 		return false;
     }
+
+    
+
 }
+
+
+Wizard::saving(function(){
+       
+        $routes[] = 'site_details';
+        //$routes[] = 'module_home';
+        SMCache::reset($routes);
+    });
