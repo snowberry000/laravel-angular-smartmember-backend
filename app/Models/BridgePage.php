@@ -138,6 +138,11 @@ class BridgePage extends Root
 	}
 }
 
+BridgePage::saving( function( $model ) {
+	if ( !\SMRole::userHasAccess( $model->site_id, 'manage_content', \Auth::user()->id ) )
+		\App::abort( '409', 'You must have admin access on the site to edit and create Bridge Pages' );
+} );
+
 BridgePage::created(function($model){
     $model->permalink = \App\Models\Permalink::set($model);
     $model->save();
