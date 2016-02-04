@@ -40,6 +40,7 @@ class EmailSubscriberController extends SMController
 
     public function index()
     {
+        $emailList_id = false;
         if (\Input::has('emaillist_id') && !empty(\Input::get('emaillist_id')))
         {
             $emailList_id = \Input::get('emaillist_id');
