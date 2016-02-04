@@ -217,7 +217,7 @@ class SendGridEmail {
 		if( $cbreceipt )
 			$data['cbreceipt'] = $cbreceipt;
 
-
+		$site_welcome_content = html_entity_decode( $site_welcome_content, ENT_QUOTES | ENT_HTML5 );
 
 		$from = "noreply@" . ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' );
 
@@ -473,6 +473,8 @@ class SendGridEmail {
 			];
 
 			$site_welcome_content = str_replace( array_keys( $replacements ), array_values( $replacements ), $site_welcome_content );
+
+			$site_welcome_content = html_entity_decode( $site_welcome_content, ENT_QUOTES | ENT_HTML5 );
 
 			$from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
 
