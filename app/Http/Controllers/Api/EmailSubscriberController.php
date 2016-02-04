@@ -350,6 +350,19 @@ class EmailSubscriberController extends SMController
         return parent::destroy($model);
     }
 
+    public function unsubscribeList() {
+        $list_id = \Input::get('list_id');
+        $subscriber = \Input::get('subscriber');
+        $subscriber_entry = EmailListLedger::whereListId( $list_id )->whereSubscriberId( $subscriber['id'] )->get();
+        if( $subscriber_entry && count( $subscriber_entry ) > 0 )
+        {
+            foreach( $subscriber_entry as $key2 => $val2 )
+            {
+                $val2->delete();
+            }
+        }
+    }
+
     public function postSubscribe()
     {
         if (! \Input::has('email') || ! \Input::has('list')) return array();
