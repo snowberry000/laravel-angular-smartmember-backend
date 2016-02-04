@@ -181,7 +181,7 @@ class EmailSubscriberController extends SMController
         else
             $subscriber = EmailSubscriber::where('hash', $hash)->first();
 
-		$subscribers_ids = [];
+		$subscriber_ids = [];
 
 		if( $subscriber )
 		{
@@ -206,7 +206,7 @@ class EmailSubscriberController extends SMController
 
 		if( $recipient_ids && count( $recipient_ids ) > 0 )
 		{
-			$recipients = EmailRecipient::whereIn('id', $recipient_ids )->get();
+			$recipients = EmailRecipient::whereIn('id', $recipient_ids )->withTrashed()->get();
 
 			if( $recipients )
 			{
@@ -244,7 +244,7 @@ class EmailSubscriberController extends SMController
 
 				if( !empty( $email_list_ids ) )
 				{
-					$subscribed_list_ids = EmailListLedger::whereIn( 'list_id', $email_list_ids )->whereIn( 'subscriber_id', $subscribers_ids )->get()->lists(['list_id']);
+					$subscribed_list_ids = EmailListLedger::whereIn( 'list_id', $email_list_ids )->whereIn( 'subscriber_id', $subscriber_ids )->get()->lists(['list_id']);
 
 					if( $subscribed_list_ids && count( $subscribed_list_ids ) > 0 )
 						$return[ 'email_lists' ] = EmailList::whereIn( 'id', $subscribed_list_ids )->get();
@@ -315,7 +315,7 @@ class EmailSubscriberController extends SMController
 			{
 				foreach( \Input::get( 'lists' ) as $key => $val )
 				{
-					$subscriber_entry = EmailListLedger::whereListId( $val[ 'id' ] )->whereIn( $subscribers )->get();
+					$subscriber_entry = EmailListLedger::whereListId( $val[ 'id' ] )->whereIn( 'subscriber_id', $subscribers )->get();
 
 					if( $subscriber_entry && count( $subscriber_entry ) > 0 )
 					{
