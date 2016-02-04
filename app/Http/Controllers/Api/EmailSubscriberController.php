@@ -157,8 +157,6 @@ class EmailSubscriberController extends SMController
 
     public function getUnsubscribeInfo()
     {
-        $emailList = [];
-
         $list_type = \Input::get('list_type', 'user');
         $hash = \Input::get('hash');
 
@@ -181,103 +179,143 @@ class EmailSubscriberController extends SMController
 				$return['subscriber'] = $subscriber;
         }
         else
-        {
             $subscriber = EmailSubscriber::where('hash', $hash)->first();
 
-			if( $subscriber )
-				$return['subscriber'] = $subscriber;
+		$subscribers_ids = [];
 
-			$recipient_ids = EmailRecipientsQueue::whereEmailJobId( \Input::get('job_id') )->withTrashed()->get()->lists(['email_recipient_id']);
+		if( $subscriber )
+		{
+			$subscriber_ids[] = $subscriber->id;
 
-			if( $recipient_ids && count( $recipient_ids ) > 0 )
+			$subscribers = EmailSubscriber::whereEmail( $subscriber->email )->get();
+
+			if( $subscribers )
 			{
-				$recipients = EmailRecipient::whereIn('id', $recipient_ids )->get();
-
-				if( $recipients )
+				foreach( $subscribers as $sub )
 				{
-					$email_list_ids = [];
-
-					foreach( $recipients as $key => $val )
-					{
-						$recipient_bits = explode( '_', $val->recipient );
-
-						if( $recipient_bits[0] == 'list' )
-						{
-							if( !empty( $recipient_bits[1] ) )
-								$email_list_ids[] = $recipient_bits[1];
-						}
-					}
-
-					if( !empty( $email_list_ids ) )
-					{
-						$subscribed_list_ids = EmailListLedger::whereIn( 'list_id', $email_list_ids )->whereSubscriberId( $subscriber->id )->get()->lists(['list_id']);
-
-						if( $subscribed_list_ids && count( $subscribed_list_ids ) > 0 )
-							$return[ 'email_lists' ] = EmailList::whereIn( 'id', $subscribed_list_ids )->get();
-					}
+					if( !in_array( $sub->id, $subscriber_ids ) )
+						$subscriber_ids[] = $sub->id;
 				}
 			}
-        }
+		}
+
+		if( $subscriber )
+			$return['subscriber'] = $subscriber;
+
+		$recipient_ids = EmailRecipientsQueue::whereEmailJobId( \Input::get('job_id') )->withTrashed()->get()->lists(['email_recipient_id']);
+
+		if( $recipient_ids && count( $recipient_ids ) > 0 )
+		{
+			$recipients = EmailRecipient::whereIn('id', $recipient_ids )->get();
+
+			if( $recipients )
+			{
+				$email_list_ids = [];
+
+				foreach( $recipients as $key => $val )
+				{
+					$recipient_bits = explode( '_', $val->recipient );
+
+					if( $recipient_bits[0] == 'list' )
+					{
+						if( !empty( $recipient_bits[1] ) )
+						{
+							$email_list = EmailList::find( $recipient_bits[1] );
+
+							if( $email_list && !empty( $email_list->account_id ) )
+							{
+								$email_lists = EmailList::whereAccountId( $email_list->account_id )->get()->lists(['id']);
+
+								if( $email_lists )
+								{
+									foreach( $email_lists as $list )
+									{
+										if( !in_array( $list, $email_list_ids ) )
+											$email_list_ids[] = $list;
+									}
+								}
+							}
+
+							if( !in_array( $recipient_bits[ 1 ], $email_list_ids ) )
+								$email_list_ids[] = $recipient_bits[ 1 ];
+						}
+					}
+				}
+
+				if( !empty( $email_list_ids ) )
+				{
+					$subscribed_list_ids = EmailListLedger::whereIn( 'list_id', $email_list_ids )->whereIn( 'subscriber_id', $subscribers_ids )->get()->lists(['list_id']);
+
+					if( $subscribed_list_ids && count( $subscribed_list_ids ) > 0 )
+						$return[ 'email_lists' ] = EmailList::whereIn( 'id', $subscribed_list_ids )->get();
+				}
+			}
+		}
 
         return $return;
     }
 
-    public function unsubscribe()
-    {
-        $job_id = \Input::get("job_id");
+	public function unsubscribe()
+	{
+		$job_id = \Input::get("job_id");
 
 		$site_id = \Input::get('site_id', 0);
 
 		if( !$site_id && $this->site && $this->site->id )
 			$site_id = $this->site->id;
 
-        $list_type = \Input::get("list_type", 'user');
-        $hash = \Input::get('hash', 'doesntexist');//set it to something we don't use by default, it will look for the e-mail address instead then
+		$list_type = \Input::get("list_type", 'user');
+		$hash = \Input::get('hash', 'doesntexist');//set it to something we don't use by default, it will look for the e-mail address instead then
 
-        if ($list_type == 'segment')
-        {
-            $subscriber = User::where('email_hash', $hash)->first();
+		switch( $list_type )
+		{
+			case 'segment':
+				$subscriber = User::where('email_hash', $hash)->first();
 
-			if( !$subscriber )
-			{
-				if( \Input::has('email_address') )
+				if( !$subscriber )
 				{
-					$subscriber = User::whereEmail( \Input::get('email_address') )->first();
+					if( \Input::has('email_address') )
+					{
+						$subscriber = User::whereEmail( \Input::get('email_address') )->first();
+					}
 				}
-			}
+				break;
+			default:
+				$subscriber = EmailSubscriber::where('hash', $hash)->first();
 
-			if( $subscriber )
-			{
-				UnsubscriberSegment::insert(
-					[ 'email' => $subscriber->email,
-					  'site_id' => $site_id ] );
-			}
-        }
-        else
-        {
-            $subscriber = EmailSubscriber::where('hash', $hash)->first();
-
-			if( !$subscriber )
-			{
-				if( \Input::has('email_address') )
+				if( !$subscriber )
 				{
-					$subscriber = EmailSubscriber::whereEmail( \Input::get('email_address') )->first();
+					if( \Input::has('email_address') )
+					{
+						$subscriber = EmailSubscriber::whereEmail( \Input::get('email_address') )->first();
+					}
 				}
-			}
 
-			if( $subscriber )
-			{
-				Unsubscriber::insert(
-					[ 'subscriber_id' => $subscriber->id,
-					  'job_id' => $job_id,
-					  'company_id' => $site_id ] );
-			}
-
-			if( \Input::has('lists') && !empty( \Input::get('lists') ) )
-			{
-				foreach( \Input::get('lists') as $key => $val )
+				if( $subscriber )
 				{
-					$subscriber_entry = EmailListLedger::whereListId( $val['id'] )->whereSubscriberId( $subscriber->id )->get();
+					Unsubscriber::insert(
+						[ 'subscriber_id' => $subscriber->id,
+						  'job_id' => $job_id,
+						  'company_id' => $site_id ] );
+				}
+		}
+
+		if( \Input::has('site_emails') && !empty( \Input::get('site_emails') ) )
+		{
+			UnsubscriberSegment::insert(
+				[ 'email' => $subscriber->email,
+				  'site_id' => $site_id ] );
+		}
+
+		if( \Input::has('lists') && !empty( \Input::get('lists') ) )
+		{
+			$subscribers = EmailSubscriber::whereEmail( $subscriber->email )->get()->lists(['id']);
+
+			if( $subscribers )
+			{
+				foreach( \Input::get( 'lists' ) as $key => $val )
+				{
+					$subscriber_entry = EmailListLedger::whereListId( $val[ 'id' ] )->whereIn( $subscribers )->get();
 
 					if( $subscriber_entry && count( $subscriber_entry ) > 0 )
 					{
@@ -288,18 +326,8 @@ class EmailSubscriberController extends SMController
 					}
 				}
 			}
-        }
-
-        if (! $subscriber)
-			return;
-
-        if(\Input::has('reason') && \Input::get('reason'))
-        {
-            \DB::table('unsubfeedback')->insert([
-                ['email' => $subscriber->email, 'unsub_reason' => \Input::get('reason'),'site_id' => $site_id]
-            ]);
-        }
-    }
+		}
+	}
 
     public function update($model)
     {
