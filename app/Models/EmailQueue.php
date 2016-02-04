@@ -552,7 +552,7 @@ class EmailQueue extends Root
 
     function unLockQueue($site_id)
     {
-		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('email_queue_locked')->get();
+		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->withTrashed()->whereKey('email_queue_locked')->get();
 
 		foreach( $email_queue_locked as $lock_item )
 			$lock_item->forceDelete();
@@ -590,10 +590,10 @@ class EmailQueue extends Root
 
 	function unLockRecipientQueue($site_id)
 	{
-		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('email_recipient_queue_locked')->first();
+		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->withTrashed()->whereKey('email_recipient_queue_locked')->get();
 
-		if( $email_queue_locked )
-			$email_queue_locked->delete();
+		foreach( $email_queue_locked as $lock_item )
+			$lock_item->forceDelete();
 	}
 
     function injectTrackingIntoContent( $content, $site_id, $email_id = '', $job_id = '', $subscriber_id = '', $do_click_tracking = true, $segment_id = 0 )
