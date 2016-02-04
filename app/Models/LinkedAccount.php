@@ -71,7 +71,7 @@ class LinkedAccount extends Root
 
         if ($account->linked_user_id && is_numeric($account->linked_user_id) && $account->linked_user_id > 0)
         {
-            $tables = ['sites', 'affcontests', 'site_notices_seen', 'bridge_bpages', 'bridge_permalinks', 'comments', 'custom_attributes',
+            $tables = ['sites', 'affcontests', 'site_notices_seen', 'bridge_bpages', 'bridge_permalinks', 'comments',
                         'downloads_history', 'drafts', 'email_settings', 'events', 'forum_topics', 'forum_replies', 'history_logins',
                         'linked_accounts', 'media_files', 'sites', 'permalink_stats', 'support_tickets', 'support_ticket_actions',
                         'transactions', 'user_notes', 'user_meta', 'sites_roles', 'sites_custom_roles'];
