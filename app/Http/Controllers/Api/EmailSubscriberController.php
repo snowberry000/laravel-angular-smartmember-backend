@@ -40,14 +40,23 @@ class EmailSubscriberController extends SMController
 
     public function index()
     {
+        $emailList_id = false;
+        if (\Input::has('emaillist_id') && !empty(\Input::get('emaillist_id')))
+        {
+            $emailList_id = \Input::get('emaillist_id');
+        }
 		$total_count = 0;
         $page_size = config("vars.default_page_size");
         $query = $this->model;
         $query = $query->orderBy('id' , 'DESC');
         $query = $query->with('user');
 		$account_id = \Auth::user()->id;
-        $query = $query->with(['emailLists'=>function($q) use ($account_id){
+        $query = $query->with(['emailLists'=>function($q) use ($account_id, $emailList_id){
             $q->where('email_lists.account_id',$account_id);
+            if ($emailList_id)
+            {
+               $q->where('email_listledger.list_id', $emailList_id);
+            }
         }]);
         $query = $query->whereAccountId($account_id);
         $query = $query->select('id' , 'created_at')->selectRaw('email COLLATE utf8_general_ci as email')->selectRaw('name COLLATE utf8_general_ci as name')->selectRaw('"Subscriber" as status');
@@ -70,10 +79,13 @@ class EmailSubscriberController extends SMController
 			});
 			$query = $this->model->applySearchQuery($query,\Input::get('q') );
 		}
-
-		$total_count = $query->count() + $members->count();
-
-		$query = $query->union( $members->getQuery() );
+        if ($emailList_id)
+        {
+            $total_count = $query->count();
+        } else {
+            $total_count = $query->count() + $members->count();
+            $query = $query->union( $members->getQuery() );
+        }
 
         foreach (\Input::all() as $key => $value){
             switch($key){
@@ -81,6 +93,7 @@ class EmailSubscriberController extends SMController
 				case 'view':
 				case 'p':
 				case 'bypass_paging':
+                case 'emaillist_id':
                     break;
                 default:
                     $query->where($key,'=',$value);
