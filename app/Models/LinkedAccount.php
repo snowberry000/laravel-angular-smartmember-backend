@@ -71,9 +71,12 @@ class LinkedAccount extends Root
 
         if ($account->linked_user_id && is_numeric($account->linked_user_id) && $account->linked_user_id > 0)
         {
-            $tables = ['sites', 'affcontests', 'site_notices_seen', 'access_passes', 'bridge_bpages', 'comments',
-                        'companies', 'downloads_history', 'drafts', 'linked_accounts', 'roles', 'sites', 'support_tickets', 'support_ticket_actions',
-                        'support_tickets', 'team_roles', 'transactions', 'user_notes'];
+            $tables = ['sites', 'affcontests', 'site_notices_seen', 'bridge_bpages', 'bridge_permalinks', 'comments', 'custom_attributes',
+                        'downloads_history', 'drafts', 'email_settings', 'events', 'forum_topics', 'forum_replies', 'history_logins',
+                        'linked_accounts', 'media_files', 'sites', 'permalink_stats', 'support_tickets', 'support_ticket_actions',
+                        'transactions', 'user_notes', 'user_meta', 'sites_roles', 'sites_custom_roles'];
+
+            $tables_account_id = ['email_lists', 'email_subscribers'];
 
             foreach ($tables as $table)
             {
@@ -81,15 +84,21 @@ class LinkedAccount extends Root
                      ->where('user_id', $account->linked_user_id)
                     ->update(array('user_id' => $user_id));   
             }
+
+            foreach ($tables_account_id as $table)
+            {
+                \DB::table($table)
+                    ->where('account_id', $account->linked_user_id)
+                    ->update(array('account_id' => $user_id));
+            }
+
+            $user = User::find($account->linked_user_id);
+            if ($user)
+                $user->delete();
+
         }
-
-        $user = User::find($account->linked_user_id);
-        if ($user)
-            $user->delete();
-
         $account->verified = 1;
         $account->save();
-
 
         return ['status' => 'OK'];
     }

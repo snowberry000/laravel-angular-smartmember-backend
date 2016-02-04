@@ -505,7 +505,7 @@ class User extends Root implements AuthenticatableContract
         $response['status'] = 'OK';
         $response['account'] = $linked_account;
 
-        //SendGridEmail::sendAccountLinkEmail($linked_account);
+        SendGridEmail::sendAccountLinkEmail($linked_account);
         
         return $response;
     }
