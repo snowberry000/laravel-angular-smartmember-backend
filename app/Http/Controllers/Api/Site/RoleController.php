@@ -27,7 +27,7 @@ class RoleController extends SMController
 			$site_id = \Input::get('site_id');
 		else
 		{
-			if( !isset( $this->site ) && !empty( $this->site->id ) )
+			if( isset( $this->site ) && !empty( $this->site->id ) )
 				$site_id = $this->site->id;
 		}
 
@@ -38,7 +38,7 @@ class RoleController extends SMController
 		}
 		else
 		{
-			return array( 'items' => [], 'total_count' => 0 );
+			return array( 'items' => [ ['user' => \Auth::user() ]], 'total_count' => 0 );
 		}
     }
 
