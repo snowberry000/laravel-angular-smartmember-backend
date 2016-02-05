@@ -44,9 +44,32 @@ class ScriptCheck
         TODO: Add all possible cases for inline javascript here:
     */
     public function verify($value){
+        preg_match_all("/<script(.*?) src=\"(.*?).evsuite.com\\/player(.*?)\"(.*?)>(.*?)<\\/script>/is", $value, $matches );
+
+		//if we have some matches we need to loop through them to replace them with something else so they don't get stripped out with the rest of the js stuff
+		if( !empty( $matches ) && !empty( $matches[0] ) )
+		{
+			foreach( $matches[0] as $key => $val )
+			{
+				//if we actually have values for the matches we need we are going to switch it out with something else temporarily
+				if( !empty( $matches[2][ $key ] ) && !empty( $matches[3][ $key ] ) )
+					$value = str_replace( $val, '@@@@@@@EVSSTUFFHERE@@@@@@@' . $matches[2][ $key ] . '.evsuite.com/player' . $matches[3][ $key ] . '@@@@@@@EVSSTUFFHERE@@@@@@@', $value );
+			}
+		}
+
         $value = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $value);
 
         $value = str_replace( array('javascript:'), '', $value );
+
+		if( !empty( $matches ) && !empty( $matches[0] ) )
+		{
+			foreach( $matches[0] as $key => $val )
+			{
+				//if this was something we had matches for earlier we should be able to change it back to some acceptable js
+				if( !empty( $matches[2][ $key ] ) && !empty( $matches[3][ $key ] ) )
+					$value = str_replace( '@@@@@@@EVSSTUFFHERE@@@@@@@' . $matches[2][ $key ] . '.evsuite.com/player' . $matches[3][ $key ] . '@@@@@@@EVSSTUFFHERE@@@@@@@', '<script type="text/javascript" src="' . $matches[2][ $key ] . '.evsuite.com/player' . $matches[3][$key] . '"></script>', $value );
+			}
+		}
 
         return $value;
     }
