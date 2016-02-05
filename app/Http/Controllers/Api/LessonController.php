@@ -284,6 +284,7 @@ class LessonController extends SMController
 
 			$lesson_key ='modules' . ':' . $this->site->id . ':*';
 
+			$keys = [];
 			$keys[] = $lesson_key;
 
 			SMCache::clear($keys);
@@ -330,6 +331,7 @@ class LessonController extends SMController
 
 		$lesson_key ='modules' . ':' . $this->site->id . ':*';
 
+		$keys = [];
 		$keys[] = $lesson_key;
 
 		SMCache::clear($keys);
