@@ -1,5 +1,7 @@
 alter table affcontests add content text after last_refreshed;
 
+ALTER TABLE  `imports_queue` ADD  `name` VARCHAR( 255 ) NULL AFTER  `id` ;
+
 ALTER TABLE  `unsubscribers_segment` CHANGE  `company_id`  `site_id` BIGINT( 20 ) NOT NULL ;
 
 ALTER TABLE  `custom_pages` ADD  `hide_sidebars` BOOLEAN NOT NULL DEFAULT FALSE AFTER  `discussion_settings_id` ;
@@ -87,3 +89,17 @@ CREATE TABLE `member_meta` (
   KEY (`member_id`),
   KEY (`custom_attribute_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+ALTER TABLE  `email_recipients_queue` ADD  `sending_user_id` BIGINT NULL AFTER  `info` ;
+
+ALTER TABLE  `sites_menu_items` ADD  `open_in_new_tab` BOOLEAN NULL AFTER  `custom_icon` ;
+
+ALTER TABLE  `opens` ADD  `segment_id` BIGINT NULL AFTER  `job_id` ;
+
+ALTER TABLE  `clicks` ADD  `identifier` VARCHAR( 255 ) NULL AFTER  `ip` ;
+
+ALTER TABLE  `opens` ADD  `identifier` VARCHAR( 255 ) NULL AFTER  `ip` ;
+
+ALTER TABLE  `clicks` ADD  `segment_id` BIGINT NULL AFTER  `ip` ;
+
+ALTER TABLE  `support_tickets` ADD  `escalated_site_id` BIGINT NULL AFTER  `site_id` ;

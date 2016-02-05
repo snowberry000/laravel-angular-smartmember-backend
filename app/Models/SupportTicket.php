@@ -38,14 +38,16 @@ class SupportTicket extends Root
     public static function getUnreadSupportTickets()
     {
 		$site = \Domain::getSite();
-
-        if( \Auth::user() && \SMRole::hasAccess($site->id,'manage_support_tickets') )
-            if (!empty($site))
-            {
-                return SupportTicket::whereSiteId( $site->id )->whereSiteId( $site->id )->whereParentId(0)->whereStatus('open')->count();
-            }
-        else
-            return 0;
+        if ($site)
+        {
+            if( \Auth::user() && \SMRole::hasAccess($site->id,'manage_support_tickets') )
+                if (!empty($site))
+                {
+                    return SupportTicket::whereSiteId( $site->id )->whereParentId(0)->whereStatus('open')->count();
+                }
+                else
+                    return 0;
+        }
     }
 
 	public function applySearchQuery($query , $value)

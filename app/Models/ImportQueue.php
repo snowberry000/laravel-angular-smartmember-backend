@@ -32,7 +32,8 @@ class ImportQueue extends Root
 		foreach ($emails as $email)
 		{
 			$toQueue = [];
-			$toQueue['email'] = $email;
+			$toQueue['name'] = $email['name'];
+			$toQueue['email'] = $email['email'];
 			$toQueue['access_levels'] = trim(implode(',', $access_levels), ",");
 			$toQueue['site_id'] = $site->id;
 			$toQueue['expiry'] = $expiry;
@@ -97,6 +98,20 @@ class ImportQueue extends Root
 		return false;
     }
 
+	private function nameSplitter($fullName)
+	{
+		if (strpos($fullName, " ") !== FALSE)
+		{
+			$parts = explode(" ", $fullName);
+			$lastname = array_pop($parts);
+			$firstname = implode(" ", $parts);
+		} else {
+			$firstname = $fullName;
+			$lastname = '';
+		}
+		return array('first_name' => $firstname, 'last_name' => $lastname);
+	}
+
 	private function queueHelper($site_id)
 	{
 		$per_run = 4000;
@@ -114,14 +129,28 @@ class ImportQueue extends Root
 				$user->refreshToken();
 				$password = User::randomPassword();
 				$user->password = $password;
+
+				if ( !empty( $queue_item->name ) )
+				{
+					$user->first_name = $queue_item->name;
+				}
+
 				$user->email = $queue_item->email;
 				$user->verified = 1;
 				$user->reset_token = md5( microtime().rand() );
 				$user->save();
 				$newUser = true;
 				$count++;
+			} else {
+				if ( empty( $user->first_name ) && empty( $user->last_name ) )
+				{
+					if ( !empty( $queue_item->name ) && empty( $user->first_name ) )
+					{
+						$user->first_name = $queue_item->name;
+						$user->save();
+					}
+				}
 			}
-
 			$granted_passes = [];
 			$alreadyExists = Role::whereUserId($user->id)->whereSiteId($queue_item->site_id)->first();
 			if (!empty($queue_item->access_levels))
@@ -139,43 +168,7 @@ class ImportQueue extends Root
 					$pass = Role::whereUserId( $user->id )->whereSiteId( $queue_item->site_id )
 						->whereAccessLevelId( $level )->whereNull( 'deleted_at' )->first();
 
-					$all_the_levels = \App\Models\AccessLevel\Pass::access_levels( $level );
-
-					$sm_2_levels = [ 2684, 2694 ];
-
-					$grant_all = false;
-
-					foreach( $all_the_levels as $key => $val )
-					{
-						if( in_array( $val, $sm_2_levels ) )
-						{
-							$grant_all = true;
-							break;
-						}
-					}
-
-					if( $grant_all )
-					{
-						$subdomains = ['dpp1' , 'dpp2' , 'dpp3' , '3c' , 'help' , 'jv' , 'sm'];
-						$chosen_access_level = 'Smart Member 2.0';
-						$new_data = ['user_id' => $user->id, 'type' => 'member' ];
-						foreach ($subdomains as $key => $subdomain) {
-							$new_site = Site::whereSubdomain($subdomain)->first();
-							if($new_site && isset($new_site->id)){
-								$new_data['site_id'] = $new_site->id;
-								$new_access_level = AccessLevel::whereSiteId($new_site->id)->where('name' , '=' , $chosen_access_level)->first();
-								if($new_access_level && isset($new_access_level->id)){
-									$new_data['access_level_id'] = $new_access_level->id;
-								}
-								Role::create($new_data);
-							}
-						}
-
-						\App\Models\Event::Log( 'received-sm-2-bundle', array(
-							'site_id' => 6192,
-							'user_id' => $user->id
-						) );
-					}
+					Role::GrantSuperLevel( $level, $user->id );
 
 					if( !$pass )
 					{

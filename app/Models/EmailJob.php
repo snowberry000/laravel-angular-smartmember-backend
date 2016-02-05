@@ -26,6 +26,8 @@ class EmailJob extends Root
 		$emails = Email::where('subject','like','%' . $value . '%')->select('id')->lists('id');
 		return $query->whereIn('email_id',$emails);
 	}
+
+
 }
 
 

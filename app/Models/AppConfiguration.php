@@ -11,6 +11,7 @@ class AppConfiguration extends Root
     protected $table = 'app_configurations';
     protected $type;
     protected $auth_type = 'oauth';
+	protected $with = ['meta_data'];
 
 	public function site(){
 		return $this->belongsTo('App\Models\Site');

@@ -10,4 +10,13 @@ class CustomAttribute extends Root
 	{
 		return $this->belongsTo('App\Models\Event');
 	}
+
+	public function UpdateType( $type )
+	{
+		if( $this->type != 'bool' && $this->type != $type )
+		{
+			$this->type = $type;
+			$this->save();
+		}
+	}
 }

@@ -11,7 +11,7 @@ class Open extends Root
     {
         $asset_url = \Config::get('app.url') . '/trackOpen';
 
-        $content .= '<img style="display:none;" src="' . $asset_url . '?job_id=@@@job_id@@@&subscriber_id=@@@subscriber_id@@@&network_id=@@@network_id@@@" alt="" width="1" height="1"/>';
+        $content .= '<img style="display:none;" src="' . $asset_url . '?job_id=@@@job_id@@@&subscriber_id=@@@subscriber_id@@@&network_id=@@@network_id@@@&segment_id=@@@segment_id@@@&list_type=@@@list_type@@@" alt="" width="1" height="1"/>';
 
         return $content;
     }

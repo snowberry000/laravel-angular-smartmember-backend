@@ -77,9 +77,9 @@ class SendGridEmail {
 		else
 			$reset_url .= $site->subdomain . ".smartmember.com";
 
-		$login_url = $reset_url . '?signin';
+		$login_url = $reset_url . '/sign/in/';
 
-		$reset_url .="?forgot";
+		$reset_url .="/sign/forgot";
 		$string = '<ul style="font-size:17px;line-height:24px;margin:0 0 16px;margin-bottom:1.5rem;list-style:none;padding-left:1rem">';
 
 		if( !empty( $access_level_name ) )
@@ -179,7 +179,7 @@ class SendGridEmail {
 		$replacements = [
 			'%site_name%' => $site->name,
 			'%login_details%' => self::getLoginInfo( $user, $site, $password ),
-            '%site_url%' => $site->domain ? $site->domain . '?signin' : 'http://'.$site->subdomain . '.smartmember.com?signin',
+            '%site_url%' => $site->domain ? $site->domain . '/sign/in/' : 'http://'.$site->subdomain . '.smartmember.com/sign/in/',
 		    '%site_subdomain%' => $site->subdomain,
 			'%login_button%' => '' //this is to get rid of it for anyone who already implemented it
         ];
@@ -192,12 +192,12 @@ class SendGridEmail {
 		$subdomain = $site->subdomain == 'sm' ? 'my' : $site->subdomain;
         if (!empty($site->domain))
         {
-            $reset_link = 'http://' . strtolower($site->domain) . '?forgot';
-            $login_url = 'http://' . strtolower($site->domain) . '?signin';
+            $reset_link = 'http://' . strtolower($site->domain) . '/sign/forgot';
+            $login_url = 'http://' . strtolower($site->domain) . '/sign/in/';
             $site_url = 'http://' . strtolower($site->domain);
         } else {
-            $reset_link = \Domain::appRoute( $subdomain, '?forgot');
-            $login_url  = \Domain::appRoute( $subdomain, "?signin");
+            $reset_link = \Domain::appRoute( $subdomain, '/sign/forgot');
+            $login_url  = \Domain::appRoute( $subdomain, "/sign/in/");
             $site_url = \Domain::appRoute($subdomain, '');
         }
 
@@ -217,7 +217,7 @@ class SendGridEmail {
 		if( $cbreceipt )
 			$data['cbreceipt'] = $cbreceipt;
 
-
+		$site_welcome_content = html_entity_decode( $site_welcome_content, ENT_QUOTES | ENT_HTML5 );
 
 		$from = "noreply@" . ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' );
 
@@ -252,9 +252,9 @@ class SendGridEmail {
         if (!empty($site->domain))
         {
             \Log::info('This is the custom domain');
-            $reset_link = 'http://' . strtolower($site->domain) .  '?reset&reset_hash=' . $user->reset_token;
+            $reset_link = 'http://' . strtolower($site->domain) .  '/sign/reset/' . $user->reset_token;
         } else {
-            $reset_link = \Domain::appRoute (\Domain::getSubdomain(), '?reset&reset_hash=' . $user->reset_token);
+            $reset_link = \Domain::appRoute (\Domain::getSubdomain(), '/sign/reset/' . $user->reset_token);
         }
 
         $data = array();
@@ -467,12 +467,14 @@ class SendGridEmail {
 			$replacements = [
 				'%site_name%' => $site->name,
 				'%login_details%' => self::getLoginInfo( $user, $site, $password, $access_level_name ),
-				'%site_url%' => $site->domain ? $site->domain . '?signin' : 'http://'.$site->subdomain . '.smartmember.com?signin',
+				'%site_url%' => $site->domain ? $site->domain . '/sign/in/' : 'http://'.$site->subdomain . '.smartmember.com/sign/in/',
 				'%site_subdomain%' => $site->subdomain,
 				'%login_button%' => '' //this is to get rid of it for anyone who already implemented it
 			];
 
 			$site_welcome_content = str_replace( array_keys( $replacements ), array_values( $replacements ), $site_welcome_content );
+
+			$site_welcome_content = html_entity_decode( $site_welcome_content, ENT_QUOTES | ENT_HTML5 );
 
 			$from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
 
@@ -737,9 +739,9 @@ class SendGridEmail {
         }
 
 		$from_address = !empty( $theEmail->original_email->mail_sending_address ) ? $theEmail->original_email->mail_sending_address : ( !empty( $emailSetting ) ? $emailSetting->sending_address : '' );
-		$reply_address = !empty( $theEmail->original_email->mail_reply_address ) ? $theEmail->original_email->mail_reply_address : ( !empty( $emailSetting ) ? $emailSetting->replyto_address : $from_address );
-		$from_name = !empty( $theEmail->original_email->mail_name ) ? $theEmail->original_email->mail_name : ( !empty( $emailSetting ) ? $emailSetting->full_name : $from_address );
-
+		$reply_address = !empty( $theEmail->original_email->mail_reply_address ) ? $theEmail->original_email->mail_reply_address : ( !empty( $emailSetting ) && !empty( $emailSetting->replyto_address ) ? $emailSetting->replyto_address : $from_address );
+		$from_name = !empty( $theEmail->original_email->mail_name ) ? $theEmail->original_email->mail_name : ( !empty( $emailSetting ) && !empty( $emailSetting->full_name ) ? $emailSetting->full_name : $from_address );
+		
 		if( empty( $from_address ) || empty( $reply_address ) || empty( $from_name ) )
 			\App::abort(403, "Make sure you have a from address, reply address, and from name set.");
 
@@ -1006,7 +1008,7 @@ class SendGridEmail {
                 $view = \View::make( "email.support.agent_new", [
                     'name' => $agent[ 'name' ],
                     'ticket_id' => $ticket->id,
-                    'ticket_link' => 'http://my.smartmember.com/admin/team/helpdesk/ticket/' . $ticket->id,
+                    'ticket_link' => 'http://my.smartmember.com/admin/support/ticket/' . $ticket->id,
                     'site_logo' => isset( $site_logo ) ? $site_logo->value : '',
                     'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : '',
                     'subdomain' => $site ? $site->subdomain : '',
@@ -1043,7 +1045,7 @@ class SendGridEmail {
         $view = \View::make("email.support.all_agent", [
                 'name' => '',
                 'ticket_id' => $ticket->id, 
-                'ticket_link' => 'http://my.smartmember.com/admin/team/helpdesk/ticket/' . $ticket->id,
+                'ticket_link' => 'http://my.smartmember.com/admin/support/ticket/' . $ticket->id,
                 'site_logo' => isset($site_logo) ? $site_logo->value : '',
                 'subdomain' => $site->subdomain,
                 'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : '',
@@ -1072,7 +1074,7 @@ class SendGridEmail {
         $view = \View::make("email.support.agent_reply", [
                 'name' =>  $user['name'],
                 'ticket_id' => $ticket->id, 
-                'ticket_link' => 'http://my.smartmember.com/admin/team/helpdesk/ticket/' . $ticket->id,
+                'ticket_link' => 'http://my.smartmember.com/admin/support/ticket/' . $ticket->id,
                 'site_logo' => isset($site_logo) ? $site_logo->value : '',
                 'subdomain' => $site->subdomain,
                 'ticket'=>$ticket,

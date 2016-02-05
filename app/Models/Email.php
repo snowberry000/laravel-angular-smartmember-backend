@@ -89,6 +89,26 @@ class Email extends Root
         }
 	}
 
+	public function setContentAttribute( $value )
+	{
+		$this->attributes['content'] = html_entity_decode( $value, ENT_QUOTES | ENT_HTML5 );
+	}
+
+	public function getContentAttribute( $value )
+	{
+		return html_entity_decode( $value, ENT_QUOTES | ENT_HTML5 );
+	}
+
+	public function setMailSignatureAttribute( $value )
+	{
+		$this->attributes['mail_signature'] = html_entity_decode( $value, ENT_QUOTES | ENT_HTML5 );
+	}
+
+	public function getMailSignatureAttribute( $value )
+	{
+		return html_entity_decode( $value, ENT_QUOTES | ENT_HTML5 );
+	}
+
 	public static function AddUnsubscribeToContent($content, $site_id)
 	{
 		$site = Site::find( $site_id );
@@ -103,7 +123,7 @@ class Email extends Root
 		$app_url = 'http://' . $site->subdomain . '.' . $rootDomain . '/sign/unsubscribe';
 
 		// build manually because % gets messed up the http_build_query() way
-		$app_url .= '?hash=@@@hash@@@&job_id=@@@job_id@@@&network_id=@@@network_id@@@&list_type=@@@list_type@@@';
+		$app_url .= '?hash=@@@hash@@@&job_id=@@@job_id@@@&network_id=@@@network_id@@@&list_type=@@@list_type@@@&segment_id=@@@segment_id@@@';
 
 		$text = 'To manage your email communication preferences, ';
 		$text .= '<a href="' . $app_url . '">click here</a>.';

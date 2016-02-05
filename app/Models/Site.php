@@ -16,8 +16,13 @@ class Site extends Root
         if(preg_match('/[^a-z_\-0-9]/i', $value)){
           \App::abort(403,"This subdomain is not in a valid format. Only Alphanumeric is allowed");
         }
-        $this->attributes['subdomain'] = $value;
+        $this->attributes['subdomain'] = strtolower( $value );
     }
+
+	public function setDomainAttribute( $value )
+	{
+		$this->attributes['domain'] = strtolower( $value );
+	}
 
     public function addMember($user, $type='member', $password = '', $skip_email = false, $cbreceipt=false){
         if (Role::whereUserId($user->id)
@@ -138,6 +143,16 @@ class Site extends Root
 			});
 		else
 			return $q;
+	}
+
+	public function getSubdomainAttribute( $value )
+	{
+		return strtolower( $value );
+	}
+
+	public function getDomainAttribute( $value )
+	{
+		return strtolower( $value );
 	}
 
     public function getHeaderBackgroundColor()
@@ -491,6 +506,56 @@ class Site extends Root
         }
         return array('success' => $result);
     }
+
+	public static function blacklistedSubdomains()
+	{
+		return [
+			'my', 'docs', 'www', 'api', 'about','aboutu','abuse','acme','ad','admanager','admin','admindashboard','administrator','ads','adsense','adult','adword','affiliate','affiliatepage','afp','alpha',
+			'anal','analytic','android','answer','anu','anus','ap','api','app','appengine','application','appnew','arse','asdf','a','as','ass','asset','asshole','atf','backup','ball','balls','ballsack','bank',
+			'base','bastard','beginner','beta','biatch','billing','binarie','binary','bitch','biz','blackberry','blog','blogsearch','bloody','blowjob','blowjobs','bollock','boner','boob','boobs','book',
+			'bugger','bum','butt','buttplug','buy','buzz','c','cache','calendar','cart','catalog','ceo','chart','chat','checkout','ci','cia','client','clitori','clitoris','cname','cnarne','cock','code',
+			'community','confirm','confirmation','contact','contact-u','contactu','content','controlpanel','coon','core','corp','countrie','country','cpanel','crap','cs','cunt','cv','damn','dashboard','data',
+			'demo','deploy','deployment','desktop','dev','devel','developement','developer','development','dick','dike','dildo','dir','directory','discussion','dl','doc','document','donate','download','dyke',
+			'e','earth','email','enable','encrypted','engine','error','errorlog','fag','faggot','fbi','feature','feck','feed','feedburner','feedproxy','felching','fellate','fellatio','file','finance','flange',
+			'folder','forgotpassword','forum','friend','ftp','fuck','fudgepacker','fun','fusion','gadget','gear','geographic','gettingstarted','git','gitlab','gmail','go','goddamn','goto','gov','graph','group',
+			'hell','home','homo','html','htrnl','http','i','image','img','investor','invoice','io','ios','ipad','iphone','irnage','irng','item','j','jenkin','jerk','jira','jizz','job','join','js','knobend',
+			'lab','labia','legal','lesbo','list','lmao','lmfao','local','locale','location','log','login','logout','m','mail','manage','manager','map','marketing','me','media','message','misc','mm','mms',
+			'mobile','model','money','movie','muff','my','mystore','n','net','network','new','newsite','nigga','nigger','npm','ns','omg','online','order','org','other','p0rn','pack','packagist','page','partner',
+			'partnerpage','password','payment','peni','penis','people','person','pi','pis','piss','place','podcast','policy','poop','pop','pop3','popular','porn','pr0n','pricing','prick','print','privacy',
+			'private','prod','product','production','profile','promo','promotion','proxie','proxies','proxy','pube','public','purchase','pussy','queer','querie','queries','query','r','radio','random','reader',
+			'recover','redirect','register','registration','release','report','research','resolve','resolver','rnail','rnicrosoft','root','rs','rss','sale','sandbox','scholar','scrotum','search','secure',
+			'seminar','server','service','sex','sftp','sh1t','shit','shop','shopping','shortcut','signin','signup','site','sitemap','sitenew','sketchup','sky','slash','slashinvoice','slut','smegma','sms',
+			'smtp','soap','software','sorry','spreadsheet','spunk','srntp','ssh','ssl','stage','staging','stat','static','statistic','statu','store','suggest','suggestquerie','suggestquery','survey',
+			'surveytool','svn','sync','sysadmin','talk','talkgadget','test','tester','testing','text','tit','tits','tool','toolbar','tosser','trac','translate','translation','translator','trend','turd','twat',
+			'txt','ul','upload','vagina','validation','vid','video','video-stat','voice','w','wank','wave','webdisk','webmail','webmaster','webrnail','whm','whoi','whore','wifi','wiki','wtf','ww','www','wwww',
+			'xhtml','xhtrnl','xml','xxx', 'sm2', 'sm3', 'status', 'aboutus'
+		];
+	}
+
+	public static function blacklistedWords()
+	{
+		return [
+			'fuck', 'shit', 'xxx', 'bitch', 'damn', 'faggot', 'porn', 'pornography', 'porno'
+		];
+	}
+
+	public static function isBlacklisted( $subdomain )
+	{
+		$reserved_subdomains = self::blacklistedSubdomains();
+
+		if( in_array( $subdomain, $reserved_subdomains ) )
+			\App::abort("409", "Sorry, but the subdomain \"" . $subdomain . "\" is not allowed.");
+
+		$reserved_words = self::blacklistedWords();
+
+		foreach( $reserved_words as $key => $val )
+		{
+			if( strpos( $subdomain, $val ) !== false )
+				\App::abort("409", "Sorry, but the word \"" . $val . "\" is not allowed in the subdomain.");
+		}
+
+		return false;
+	}
 }
 
 Site::creating(function($site){
@@ -515,6 +580,8 @@ Site::creating(function($site){
 
 Site::saving(function($site){
     $routes[] = 'site_details';
+
+	Site::isBlacklisted( $site->subdomain );
     
     SMCache::reset($routes);
 

@@ -64,6 +64,13 @@ class SiteMetaDataController extends SMController
 			if( Input::has('site') )
 			{
 				$site = Input::get('site');
+                $subdomain = isset($site['subdomain']) ? $site['subdomain'] : '';
+                if(isset($subdomain) && isset($this->site->subdomain) && $subdomain != $this->site->subdomain){
+                    $exists = Site::whereSubdomain($subdomain)->first();
+                    if($exists && isset($exists->id)){
+                        \App::abort(403, "This subdomain already exists. Please choose a different one");
+                    }
+                }
 				$this->site->fill($site);
 				$this->site->save();
 			}

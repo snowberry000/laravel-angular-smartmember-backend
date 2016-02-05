@@ -113,6 +113,7 @@ class EmailQueue extends Root
 					{
 						$new_emails = \App\Models\Site\Role::join( 'users', 'users.id', '=', 'sites_roles.user_id' )
 							->whereNull( 'users.deleted_at' )
+							->whereNull( 'sites_roles.deleted_at' )
 							->whereIn( 'sites_roles.site_id', $site_ids )
 							->select( 'users.email' )
 							->select( [ 'users.email', 'users.id', 'users.email_hash' ] )
@@ -127,15 +128,51 @@ class EmailQueue extends Root
 					}
 					else
 					{
-						$new_emails = EmailSubscriber::whereIn('email_subscribers.site_id', $site_ids)
-							->leftjoin('users','users.email','=','email_subscribers.email')
+						if( !empty( $queue_item->sending_user_id ) )
+						{
+							$sending_user_id = $queue_item->sending_user_id;
+							$site_id = $current_site->id;
+
+							$email_lists = EmailList::whereAccountId( $sending_user_id )->get();
+
+							$list_ids = [];
+
+							foreach( $email_lists as $list )
+								$list_ids[] = $list->id;
+
+							$new_emails = EmailSubscriber::where( function( $q ) use ( $sending_user_id, $site_id, $list_ids ){
+								if( !empty( $list_ids ) )
+								{
+									$q->whereIn( 'email_listledger.list_id', $list_ids );
+									$q->orwhere( 'email_subscribers.account_id', $sending_user_id );
+								}
+								else
+								{
+									$q->where( 'email_subscribers.account_id', $sending_user_id );
+								}
+
+								$q->orwhere('email_subscribers.site_id', $site_id);
+							} );
+						}
+						else
+							$new_emails = EmailSubscriber::where('email_subscribers.site_id', $queue_item->site_id );
+
+						$new_emails = $new_emails->leftjoin('users','users.email','=','email_subscribers.email')
+							->leftjoin( 'email_listledger', 'email_listledger.subscriber_id', '=', 'email_subscribers.id')
 							->leftjoin('sites_roles',function($join) use ($site_ids) {
 								$join->on('users.id','=','sites_roles.user_id');
 								$join->whereIn('sites_roles.site_id',$site_ids);
 							})
-							->whereNull('users.email')
+							->where( function($q){
+								$q->whereNull( 'users.email' );
+								$q->orwhere(function($query){
+									$query->whereNull( 'sites_roles.id');
+								});
+							})
 							->whereNull('users.deleted_at')
 							->whereNull('sites_roles.deleted_at')
+							->whereNull('email_subscribers.deleted_at')
+							->whereNull('email_listledger.deleted_at')
 							->select(['email_subscribers.email','email_subscribers.id', 'email_subscribers.hash as email_hash'])
 							->take( $remaining + 1 )
 							->distinct()
@@ -181,12 +218,12 @@ class EmailQueue extends Root
 
 					$already_queued = EmailQueue::whereEmailId( $segment->email_id );
 
-					if( $segment->email_job_id )
+					if( $queue_item->email_job_id )
 					{
-						$already_queued = $already_queued->withTrashed()->where(function($q) use ($segment) {
-							$q->where(function($q2) use ($segment)
+						$already_queued = $already_queued->withTrashed()->where(function($q) use ($queue_item) {
+							$q->where(function($q2) use ($queue_item)
 							{
-								$q2->whereJobId( $segment->email_job_id );
+								$q2->whereJobId( $queue_item->email_job_id );
 							});
 							$q->orwhere(function($q2){
 								$q2->whereNull('deleted_at');
@@ -196,28 +233,25 @@ class EmailQueue extends Root
 
 					if( $segment_bits[ 0 ] == 'site' || $segment_bits[ 0 ] == 'level' || ( $segment_bits[ 0 ] == 'catch' && ( !$queue_item->info || !empty( $queuing_users ) ) ) )
 					{
-						$subscriber = EmailSubscriber::join( 'users as u', 'u.email', '=', 'email_subscribers.email' )
-							->where( 'u.id', $recipient->id )
-							->select( 'email_subscribers.id' )
-							->first();
+						$subscribers = EmailSubscriber::whereEmail( $recipient->email )->select('id')->get()->lists('id');
 
-						$already_queued = $already_queued->where( function ( $q2 ) use ( $recipient, $subscriber )
+						$already_queued = $already_queued->where( function ( $q2 ) use ( $recipient, $subscribers )
 						{
 							$q2->where( function ( $q ) use ( $recipient )
 							{
 								$q->whereListType( 'segment' );
 								$q->whereSubscriberId( $recipient->id );
 							} );
-							if( $subscriber )
+							if( $subscribers && count( $subscribers ) > 0 )
 							{
-								$q2->orwhere( function ( $q ) use ( $subscriber )
+								$q2->orwhere( function ( $q ) use ( $subscribers )
 								{
 									$q->where( function ( $query )
 									{
 										$query->whereNull( 'list_type' );
 										$query->orwhere( 'list_type', '' );
 									} );
-									$q->whereSubscriberId( $subscriber->id );
+									$q->whereIn( 'subscriber_id', $subscribers );
 								} );
 							}
 						} );
@@ -229,7 +263,9 @@ class EmailQueue extends Root
 							->select( 'u.id' )
 							->first();
 
-						$already_queued = $already_queued->where( function ( $q2 ) use ( $recipient, $user )
+						$all_subscribers = EmailSubscriber::whereEmail( $recipient->email )->select('id')->get()->lists('id');
+
+						$already_queued = $already_queued->where( function ( $q2 ) use ( $all_subscribers, $user )
 						{
 							if( $user )
 							{
@@ -239,14 +275,14 @@ class EmailQueue extends Root
 									$q->whereSubscriberId( $user->id );
 								} );
 							}
-							$q2->orwhere( function ( $q ) use ( $recipient )
+							$q2->orwhere( function ( $q ) use ( $all_subscribers )
 							{
 								$q->where( function ( $query )
 								{
 									$query->whereNull( 'list_type' );
 									$query->orwhere( 'list_type', '' );
 								} );
-								$q->whereSubscriberId( $recipient->id );
+								$q->whereIn( 'subscriber_id', $all_subscribers );
 							} );
 						} );
 					}
@@ -356,6 +392,7 @@ class EmailQueue extends Root
 					$queued_segment->email_recipient_id 	= $segment->id;
 					$queued_segment->email_job_id 			= $email_job->id;
 					$queued_segment->send_at 				= isset( $email_job->send_at ) ? $email_job->send_at : Carbon::now();
+					$queued_segment->sending_user_id		= \Auth::user()->id;
 					$queued_segment->save();
 				}
 				break;
@@ -519,7 +556,7 @@ class EmailQueue extends Root
 
     function unLockQueue($site_id)
     {
-		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('email_queue_locked')->get();
+		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->withTrashed()->whereKey('email_queue_locked')->get();
 
 		foreach( $email_queue_locked as $lock_item )
 			$lock_item->forceDelete();
@@ -557,13 +594,13 @@ class EmailQueue extends Root
 
 	function unLockRecipientQueue($site_id)
 	{
-		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('email_recipient_queue_locked')->first();
+		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->withTrashed()->whereKey('email_recipient_queue_locked')->get();
 
-		if( $email_queue_locked )
-			$email_queue_locked->delete();
+		foreach( $email_queue_locked as $lock_item )
+			$lock_item->forceDelete();
 	}
 
-    function injectTrackingIntoContent($content, $site_id, $email_id = '', $job_id = '', $subscriber_id = '', $do_click_tracking = true)
+    function injectTrackingIntoContent( $content, $site_id, $email_id = '', $job_id = '', $subscriber_id = '', $do_click_tracking = true, $segment_id = 0 )
     {
         if ($do_click_tracking)
             $content = Link::EncodeLinksInContent($content, $job_id);
@@ -761,6 +798,7 @@ class EmailQueue extends Root
             $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%email_id%'][] = $queue_item->email_id;
             $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%job_id%'][] = $queue_item->job_id;
             $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%network_id%'][] = $site_id;
+            $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%segment_id%'][] = $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro';
         }
 
         $total_email_sent = 0;
@@ -788,7 +826,7 @@ class EmailQueue extends Root
 					$emails_already_pulled[ $key ] = $email;
 
 					$email->content = $this->injectTrackingIntoContent( $email->content, $site_id,
-																		$email->id, $queue[ $key ][ $key2 ][ 0 ][ 'job_id' ], $subscriber_id = '', $do_click_tracking = false );
+																		$email->id, $queue[ $key ][ $key2 ][ 0 ][ 'job_id' ], $subscriber_id = '', $do_click_tracking = true, $key2 );
 				}
 
 				$intro = !empty( $intros_already_pulled[ $key2 ] ) ? $intros_already_pulled[ $key2 ] : [];

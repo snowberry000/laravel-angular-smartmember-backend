@@ -15,6 +15,8 @@ use App\Models\UserRole;
 use App\Models\Transaction;
 use App\Models\AppConfiguration;
 use App\Models\LinkedAccount;
+use App\Models\CustomAttribute;
+use App\Models\MemberMeta;
 use Auth;
 
 class UserController extends SMController
@@ -29,6 +31,45 @@ class UserController extends SMController
     }
 
     public function index(){
+		if ( \SMRole::userHasAccess( $this->site->id, 'manage_members', \Auth::user()->id ) )
+		{
+			$site_id = $this->site->id;
+
+			$access_level = \Input::get('access_level_id', false );
+
+			if( $access_level )
+				\Input::merge(['access_level_id' => null]);
+
+			$this->model = User::with( [ 'role' => function( $q ) use( $site_id ) {
+								$q->whereSiteId( $site_id );
+							}, 'role.accessLevel' ] )
+							->whereHas('role', function($query) use ($site_id, $access_level) {
+								$query->whereSiteId( $site_id );
+
+								if( $access_level )
+									$query->whereAccessLevelId( $access_level );
+							})
+							->orderBy('last_name', 'asc')
+							->orderBy('first_name', 'asc')
+							->orderBy('email', 'asc');
+
+
+			if( \Input::has('q') && !empty( \Input::get('q') ) )
+			{
+				$this->model->where(function ($query) {
+				    $query->where('email','like','%' . \Input::get('q')  . "%")
+				          ->orWhere('first_name','like','%' . \Input::get('q') . "%")
+				          ->orWhere('last_name','like','%' . \Input::get('q') . "%");
+				});
+				//$this->model -> Where('email','like','%' . \Input::get('q')  . "%");
+				\Input::merge(['q' => null ]);
+			}
+
+			// \Log::info($this->model->toSql() );
+
+			return parent::paginateIndex();
+		}
+
     	\App::abort('401',"You don't have access to this resource");
     }
 
@@ -488,7 +529,15 @@ class UserController extends SMController
 			}
 
 			$return = [];
-			$return['total_count'] = $query->count();
+			if ($type == 'member')
+			{
+				$count = \DB::table('sites_roles')->select(\DB::raw(' COUNT( DISTINCT user_id ) AS num'))->whereIn('site_id', $site_ids)->first();
+				$return['total_count'] = $count->num;
+				$query = $query->distinct()->groupBy('user_id');
+			} else {
+				$return['total_count'] = $query->count();
+			}
+
 			if( !\Input::has('bypass_paging') || !\Input::get('bypass_paging') )
 				$query = $query->take($page_size);
 
@@ -496,6 +545,40 @@ class UserController extends SMController
 				$query->skip((\Input::get('p')-1)*$page_size);
 
 			$return['items'] = $query->get();
+
+			if( $type == 'member' )
+			{
+				$custom_attributes = CustomAttribute::whereUserId( 10 )->get();
+
+				$keys = [];
+
+				foreach( $custom_attributes as $attribute )
+					$keys[ $attribute->id ] = $attribute->name;
+
+				foreach( $return['items'] as $member )
+				{
+					if( !empty( $keys ) )
+					{
+						$meta = MemberMeta::whereMemberId( $member->user_id )->whereIn( 'custom_attribute_id', array_keys( $keys ) )->get();
+
+						$meta_data = [];
+
+						foreach( $meta as $key => $val )
+						{
+							$meta_data[ $keys[ $val->custom_attribute_id ] ] = $val->value;
+						}
+
+						foreach( $keys as $key => $val )
+						{
+							if( empty( $meta_data[ $val ] ) )
+								$meta_data[ $val ] = null;
+						}
+
+						$member->meta = $meta_data;
+					}
+				}
+			}
+
 			return $return;
 		}
 	}

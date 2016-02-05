@@ -325,6 +325,10 @@ class SMAuthenticate
         if($model->access_level_type <= 1)
             return SMAuthenticate::checkScheduleAvailability($model);
 
+        // if(isset($model->show_content_publicly) && $model->show_content_publicly){
+        //     return SMAuthenticate::checkDripAvailability($model) && SMAuthenticate::checkScheduleAvailability($model);
+        // }
+
         if(!$logged_in && $model->access_level_type > 1){
             return false;
         }
