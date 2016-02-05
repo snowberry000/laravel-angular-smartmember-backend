@@ -15,7 +15,7 @@ class EmailAutoResponderController extends SMController
     }
 
     public function show($model){
-        $this->model = $this->model->with(['emails', 'emailLists']);
+        $this->model = $this->model->with(['emails', 'emailLists','accessLevels','sites']);
         return $this->model->where('id','=',$model->id)->whereSiteId( $this->site->id )->first();
     }
 
@@ -25,7 +25,7 @@ class EmailAutoResponderController extends SMController
             App::abort(408, "You must be signed in to a team to view autoresponders");
 
 		$page_size = config("vars.default_page_size");
-		$query = $this->model->with(['emails', 'emailLists'])->whereSiteId( $this->site->id );
+		$query = $this->model->with(['emails', 'emailLists','accessLevels','sites'])->whereSiteId( $this->site->id );
 
 		$query = $query->orderBy('id' , 'DESC');
 		$query = $query->whereNull('deleted_at');
@@ -83,12 +83,27 @@ class EmailAutoResponderController extends SMController
             $lists = $data['lists'];
             unset($data['lists']);
         }
+        $access_levels = [];
+        if (array_key_exists('access_levels', $data))
+        {
+            $access_levels = $data['access_levels'];
+            unset($data['access_levels']);
+        }
+        $sites = [];
+        if (array_key_exists('sites', $data))
+        {
+            $sites = $data['sites'];
+            unset($data['sites']);
+        }
 
         
         $this->model->where('id',$model->id)->update($data);
         $ids = array_keys($lists);
-
         $model->emailLists()->sync($ids);
+        $ids = array_keys($access_levels);
+        $model->accessLevels()->sync($ids);
+        //$ids = array_keys($sites);
+        $model->sites()->sync($sites);
 
 
         $tmp = [];
