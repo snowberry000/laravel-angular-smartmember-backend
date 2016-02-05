@@ -286,6 +286,15 @@ class LessonController extends SMController
 
 			$keys[] = $lesson_key;
 
+			$keys[] = $this->site->subdomain . ':_site_details:*';
+			$keys[] = $this->site->subdomain . ':_site_details';
+
+			if( !empty( $this->site->domain ) )
+			{
+				$keys[] = $this->site->domain . ':_site_details:*';
+				$keys[] = $this->site->domain . ':_site_details';
+			}
+
 			SMCache::clear($keys);
 
 			$routes[] = 'module_home';
@@ -331,6 +340,15 @@ class LessonController extends SMController
 		$lesson_key ='modules' . ':' . $this->site->id . ':*';
 
 		$keys[] = $lesson_key;
+
+		$keys[] = $this->site->subdomain . ':_site_details:*';
+		$keys[] = $this->site->subdomain . ':_site_details';
+
+		if( !empty( $this->site->domain ) )
+		{
+			$keys[] = $this->site->domain . ':_site_details:*';
+			$keys[] = $this->site->domain . ':_site_details';
+		}
 
 		SMCache::clear($keys);
 
