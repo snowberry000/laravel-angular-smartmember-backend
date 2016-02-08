@@ -565,6 +565,8 @@ Site::creating(function($site){
 
     $site->user_id = \Auth::user()->id;
 
+	$site->hash = md5( microtime() * rand() );
+
 	if( !\Auth::user()->setup_wizard_complete )
 	{
 		\Auth::user()->setup_wizard_complete = 1;
