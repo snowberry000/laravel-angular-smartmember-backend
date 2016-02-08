@@ -369,21 +369,39 @@ class Transaction extends Root
         $site = Site::whereSubdomain($data['subdomain'])->first();
 
         $fields = array();
-        $fields['type']             = $data['payment_gross'] > 0 ? "sale" : "rfnd";
-        $fields['source']           = 'wso';
-        $fields['user_id']          = '';
-        $item_number_parts = explode("_", $data['item_number']);
-        $item_number = $item_number_parts[0] . "_" . $item_number_parts[1];
+        if (isset($data['payment_gross'])) //for old api
+        {
+            $fields['type']             = $data['payment_gross'] > 0 ? "sale" : "rfnd";
+            $fields['source']           = 'wso';
+            $fields['user_id']          = '';
+            $item_number_parts = explode("_", $data['item_number']);
+            $item_number = $item_number_parts[0] . "_" . $item_number_parts[1];
 
-        $fields['wso_product_id']   = $item_number;
-        $fields['transaction_id']   = $data['payment_gross'] > 0 ? $data['txn_id'] : $data['parent_txn_id'];
-        $fields['name']             = isset($data['first_name']) ? $data['first_name'] . ' ' . $data['last_name'] : '';
-        $fields['email']            = isset($data['payer_email']) ? $data['payer_email'] : '';
-        $fields['payment_method']   = 'paypal';
-        $fields['price']            = isset($data['payment_gross']) ? $data['payment_gross'] : '';
-        $fields['association_hash'] = $association_hash;
-        $fields['data']             = json_encode( $data );
-        $fields['site_id']          = $site->id;
+            $fields['wso_product_id']   = $item_number;
+            $fields['transaction_id']   = $data['payment_gross'] > 0 ? $data['txn_id'] : $data['parent_txn_id'];
+            $fields['name']             = isset($data['first_name']) ? $data['first_name'] . ' ' . $data['last_name'] : '';
+            $fields['email']            = isset($data['payer_email']) ? $data['payer_email'] : '';
+            $fields['payment_method']   = 'paypal';
+            $fields['price']            = isset($data['payment_gross']) ? $data['payment_gross'] : '';
+            $fields['association_hash'] = $association_hash;
+            $fields['data']             = json_encode( $data );
+            $fields['site_id']          = $site->id;
+        } else {
+            $fields['type']             = $data['AMT'] > 0 ? "sale" : "rfnd";
+            $fields['source']           = 'wso';
+            $fields['user_id']          = '';
+            $item_number_parts = explode("_", $data['WP_ITEM_NUMBER']);
+            $item_number = $item_number_parts[0] . "_" . $item_number_parts[1];
+            $fields['wso_product_id']   = $item_number;
+            $fields['transaction_id']   = $data['TRANSACTIONID'];
+            $fields['name']             = isset($data['FIRSTNAME']) ? $data['FIRSTNAME'] . ' ' . $data['LASTNAME'] : '';
+            $fields['email']            = isset($data['EMAIL']) ? $data['EMAIL'] : '';
+            $fields['payment_method']   = 'paypal';
+            $fields['price']            = isset($data['AMT']) ? $data['AMT'] : '';
+            $fields['association_hash'] = $association_hash;
+            $fields['data']             = json_encode( $data );
+            $fields['site_id']          = $site->id;
+        }
 
         $subdomain = \Domain::getSubdomain();
 
