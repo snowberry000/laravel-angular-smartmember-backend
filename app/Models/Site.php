@@ -535,7 +535,7 @@ class Site extends Root
 	public static function blacklistedWords()
 	{
 		return [
-			'fuck', 'shit', 'xxx', 'bitch', 'damn', 'faggot', 'porn', 'pornography', 'porno'
+			'fuck', 'xxx', 'bitch', 'damn', 'faggot', 'porn', 'pornography', 'porno'
 		];
 	}
 
