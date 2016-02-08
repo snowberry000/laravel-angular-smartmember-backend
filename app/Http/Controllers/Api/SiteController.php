@@ -511,7 +511,7 @@ class SiteController extends SMController
 
 	public function updateSiteHash()
 	{
-		$sites = $this->model->all();
+		$sites = $this->model->whereNull('hash')->orwhere('hash','')->get();
 
 		foreach( $sites as $site )
 		{
