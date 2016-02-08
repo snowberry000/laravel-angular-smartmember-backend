@@ -113,7 +113,7 @@ class EmailSubscriber extends Root
 
 
 	public static function subscribersFromList($subscribers, $account_id, $list_id)
-	{+
+	{
 		$bits = preg_split('/[\ \n\,]+/', $subscribers );
 		$subscriber_list = [];
 		
@@ -154,4 +154,54 @@ class EmailSubscriber extends Root
 
 		return $subscriber_list;
 	}
+
+	public static function scheduleResponder($email_subscriber)
+	{
+		//We search for autoresponder of the site
+		//foreach autoresponder we search for the email
+		//foreach email we check to see if there is queue item already
+
+		$autoresponders = EmailAutoResponder::with(['emailLists' => function($query) use ($email_subscriber) {
+			$query->whereIn('emailLists.list_id', $email_subscriber->emaiLists);
+		}])->get();
+
+		if ($autoresponders->count() > 0) {
+			foreach ($autoresponders as $autoresponder) {
+
+				$emails = $autoresponder->emails;
+				$date = Carbon::parse($email_subscriber->emaiLists->created_at );
+				foreach ($emails as $email)
+				{
+					$queues = EmailQueue::whereEmailId($email->id)->whereSubscriberId($email_subscriber->id)->get();
+					if ($queues->count() == 0)
+					{
+						switch ($email->pivot->unit)
+						{
+							case 1:
+								$date = $date->addHours($email->pivot->delay);
+								break;
+							case 2:
+								$date = $date->addDays($email->pivot->delay);
+								break;
+							case 3:
+								$date = $date->addMonths($email->pivot->delay);
+								break;
+						}
+						if ($date->timestamp > Carbon::now()->timestamp)
+						{
+							$email->send_at = $date;
+							EmailQueue::enqueueAutoResponderEmail($email, $email_subscriber, 'segment');
+						}
+					}
+				}
+			}
+		}
+
+	}
 }
+
+
+
+EmailSubscriber::saved(function($email_subscriber){
+	EmailSubscriber::scheduleResponder($email_subscriber);
+});
