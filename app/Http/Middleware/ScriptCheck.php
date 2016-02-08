@@ -43,7 +43,7 @@ class ScriptCheck
 	public static function allowedScriptPatterns()
 	{
 		return [
-			'[a-z\:\\/\.]*?\.evsuite\.com\/player[a-z0-9\:\\/\.\?\=\&\-\_]*?',
+			'[a-z\:\\/\.]*?\.evsuite\.com\\/player[a-z0-9\:\\/\.\?\=\&\-\_]*?',
 			'\\/\\/app\.voicestak\.com\\/assets\\/js\\/fancybox\.js',
 			'\\/\\/app\.voicestak\.com\\/assets\\/js\\/voice-stack\.js'
 		];
