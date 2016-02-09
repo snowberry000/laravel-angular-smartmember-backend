@@ -226,7 +226,6 @@ class Role extends Root{
             $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
                 $query->where('site_id', $pass->site_id);
             })->union($autoresponders_ac->getQuery())->get();
-            dd($autoresponders);
         } else {
             $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
                 $query->where('site_id', $pass->site_id);
