@@ -49,7 +49,7 @@ class EmailSubscriberController extends SMController
         $page_size = config("vars.default_page_size");
         $query = $this->model;
         $query = $query->orderBy('id' , 'DESC');
-        $query = $query->with('user');
+        $query = $query->with('user','emailLists');
 		$account_id = \Auth::user()->id;
         $query = $query->whereHas('emailLists', function($q) use ($account_id, $emailList_id){
             $q->where('email_lists.account_id',$account_id);
@@ -60,7 +60,6 @@ class EmailSubscriberController extends SMController
         });
         $query = $query->whereAccountId($account_id);
         $query = $query->select('id' , 'created_at')->selectRaw('email COLLATE utf8_general_ci as email')->selectRaw('name COLLATE utf8_general_ci as name')->selectRaw('"Subscriber" as status');
-
         $site_ids = [$this->site->id];
 
         $members = User::whereHas('role', function($q) use ($site_ids) {
