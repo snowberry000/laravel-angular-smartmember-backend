@@ -54,6 +54,8 @@ class EmailQueue extends Root
 
 		$more_remaining = false;
 
+		$queueEmails = [];
+
 		if( $segment )
 		{
 			$segment_bits = explode( '_', $segment->recipient );
@@ -235,6 +237,9 @@ class EmailQueue extends Root
 					{
 						$subscribers = EmailSubscriber::whereEmail( $recipient->email )->select('id')->get()->lists('id');
 
+						if( self::inQueueArray( $queueEmails, $recipient->id, $subscribers ) )
+							continue;
+
 						$already_queued = $already_queued->where( function ( $q2 ) use ( $recipient, $subscribers )
 						{
 							$q2->where( function ( $q ) use ( $recipient )
@@ -265,6 +270,14 @@ class EmailQueue extends Root
 
 						$all_subscribers = EmailSubscriber::whereEmail( $recipient->email )->select('id')->get()->lists('id');
 
+						if( $user )
+							$check_user_id = $user->id;
+						else
+							$check_user_id = 0;
+
+						if( self::inQueueArray( $queueEmails, $check_user_id, $all_subscribers ) )
+							continue;
+
 						$already_queued = $already_queued->where( function ( $q2 ) use ( $all_subscribers, $user )
 						{
 							if( $user )
@@ -274,16 +287,28 @@ class EmailQueue extends Root
 									$q->whereListType( 'segment' );
 									$q->whereSubscriberId( $user->id );
 								} );
-							}
-							$q2->orwhere( function ( $q ) use ( $all_subscribers )
-							{
-								$q->where( function ( $query )
+								$q2->orwhere( function ( $q ) use ( $all_subscribers )
 								{
-									$query->whereNull( 'list_type' );
-									$query->orwhere( 'list_type', '' );
+									$q->where( function ( $query )
+									{
+										$query->whereNull( 'list_type' );
+										$query->orwhere( 'list_type', '' );
+									} );
+									$q->whereIn( 'subscriber_id', $all_subscribers );
 								} );
-								$q->whereIn( 'subscriber_id', $all_subscribers );
-							} );
+							}
+							else
+							{
+								$q2->where( function ( $q ) use ( $all_subscribers )
+								{
+									$q->where( function ( $query )
+									{
+										$query->whereNull( 'list_type' );
+										$query->orwhere( 'list_type', '' );
+									} );
+									$q->whereIn( 'subscriber_id', $all_subscribers );
+								} );
+							}
 						} );
 					}
 
@@ -322,6 +347,31 @@ class EmailQueue extends Root
 			return self::enqueueSegment( $queue_item, $remaining );
 
 		return $remaining;
+	}
+
+	public static function inQueueArray( $queueEmails, $user_id, $subscriber_ids )
+	{
+		foreach( $queueEmails as $key => $val )
+		{
+			switch( $val['list_type'] )
+			{
+				case 'segment':
+					if( $user_id && $val['subscriber_id'] == $user_id )
+						return true;
+					break;
+				default:
+					if( $subscriber_ids )
+					{
+						foreach( $subscriber_ids as $id )
+						{
+							if( $val[ 'subscriber_id' ] == $id )
+								return true;
+						}
+					}
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -494,8 +544,8 @@ class EmailQueue extends Root
 
 					$insert_values[] = '(' . implode( ',', $recipient ) . ')';
 				}
-
-				$sql = "INSERT DELAYED INTO `emails_queue` (" . implode( ',', $cols ) . ') values ' . implode( ',', $insert_values ) . ';';
+				//getting rid of the delayed because this could be causing duplicates.
+				$sql = "INSERT INTO `emails_queue` (" . implode( ',', $cols ) . ') values ' . implode( ',', $insert_values ) . ';';
 				\DB::statement( $sql );
 			}
 		}
@@ -578,7 +628,7 @@ class EmailQueue extends Root
         $now = Carbon::now();
         $email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('email_recipient_queue_locked')->first();
 
-        if (isset($email_queue_locked) && $email_queue_locked->value > $now->timestamp) {
+        if( $email_queue_locked && $email_queue_locked->value > $now->timestamp ) {
             return true;
         }
 
@@ -588,7 +638,7 @@ class EmailQueue extends Root
 	function lockRecipientQueue($site_id)
 	{
 		$now = Carbon::now();
-		SiteMetaData::create(['site_id' => $site_id, 'key' => 'email_recipient_queue_locked', 'value' => $now->timestamp + 300 ]);
+		SiteMetaData::create(['site_id' => $site_id, 'key' => 'email_recipient_queue_locked', 'value' => $now->timestamp + 3000 ]);
 	}
 
 	function unLockRecipientQueue($site_id)
