@@ -3,6 +3,7 @@
 use App\Http\Controllers\ApiController;
 use App\Models\EmailList;
 use App\Models\EmailAutoResponder;
+use App\Models\Site\Role;
 use Input;
 use DB;
 
@@ -98,11 +99,8 @@ class EmailAutoResponderController extends SMController
 
         
         $this->model->where('id',$model->id)->update($data);
-        $ids = array_keys($lists);
-        $model->emailLists()->sync($ids);
-        $ids = array_keys($access_levels);
-        $model->accessLevels()->sync($ids);
-        //$ids = array_keys($sites);
+        $model->emailLists()->sync($lists);
+        $model->accessLevels()->sync($access_levels);
         $model->sites()->sync($sites);
 
 

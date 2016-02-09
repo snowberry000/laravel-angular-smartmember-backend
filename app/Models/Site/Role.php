@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use App\Models\AccessLevel\Pass;
 use Config;
 use App\Models\EmailSubscriber;
+use App\Models\EmailQueue;
 
 class Role extends Root{
     protected $table = 'sites_roles';
@@ -219,13 +220,13 @@ class Role extends Root{
     {
         if ($pass->access_level_id)
         {
-            $autoresponders = EmailAutoResponder::with(['accessLevels' => function($query) use ($pass) {
-                $query->where('accessLevels.access_level_id', $pass->access_level_id);
-            }])->get();
+            $autoresponders = EmailAutoResponder::whereHas('accessLevels', function($query) use ($pass) {
+                $query->where('access_level_id', $pass->access_level_id);
+            })->get();
         } else {
-            $autoresponders = EmailAutoResponder::with(['sites' => function($query) use ($pass) {
-                $query->where('sites.site_id', $pass->site_id);
-            }])->get();
+            $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
+                $query->where('site_id', $pass->site_id);
+            })->get();
         }
         if ($autoresponders->count() > 0)
         {

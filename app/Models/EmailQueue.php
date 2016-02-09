@@ -518,14 +518,13 @@ class EmailQueue extends Root
 
         $tosend['send_at'] = isset($email->send_at) ? $email->send_at : Carbon::now();
         $queueEmails[] = $tosend;
-
 		$length = count( $queueEmails );
 		$max_placeholders = 65535;
 		$columns = 5;
 
 		$max_rows_per_insert = floor( $max_placeholders / $columns );
 
-		for( $x = 0; $x < $queueEmails; $x = $x + $max_rows_per_insert + 1 )
+		for( $x = 0; $x < $length; $x = $x + $max_rows_per_insert + 1 )
 		{
 			EmailQueue::insert( array_slice( $queueEmails, $x, $max_rows_per_insert ) );
 		}

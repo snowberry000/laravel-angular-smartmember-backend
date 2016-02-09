@@ -41,7 +41,14 @@ class EmailList extends Root
 			$subscriber_list = EmailSubscriber::subscribersFromList($subscribers, $data['account_id'], $model->id);
 
 		if ( ! empty($subscriber_list) ) {
-			$model->subscribers()->attach($subscriber_list);
+			foreach ($subscriber_list as $subscriber_id)
+			{
+				$email_list_ledger = new EmailListLedger();
+				$email_list_ledger->list_id = $model->id;
+				$email_list_ledger->subscriber_id = $subscriber_id;
+				$email_list_ledger->save();
+			}
+			//$model->subscribers()->attach($subscriber_list);
             $model->total_subscribers = $model->total_subscribers + count($subscriber_list);
 			$model->save();
 		}

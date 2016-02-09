@@ -81,12 +81,8 @@ class EmailAutoResponder extends Root
 		
 		$responder->emails()->attach($emails);
 
-		// Set email lists
-		$ids = array_keys($lists);
-		$responder->emailLists()->sync($ids);
-		$ids = array_keys($access_levels);
-		$responder->accessLevels()->sync($ids);
-		//$ids = array_keys($sites);
+		$responder->emailLists()->sync($lists);
+		$responder->accessLevels()->sync($access_levels);
 		$responder->sites()->sync($sites);
 		return $responder;
 	}

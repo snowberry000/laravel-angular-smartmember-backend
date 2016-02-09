@@ -2,6 +2,7 @@
 
 namespace App\Models;
 use App\Models\EmailList;
+use App\Models\EmailListLedger;
 
 class EmailSubscriber extends Root
 {
@@ -66,7 +67,14 @@ class EmailSubscriber extends Root
 		$subscriber = parent::create($data);
 		$subscriber->account_id = $data['account_id'];
 		$subscriber->save();
-		$subscriber->emailLists()->sync(array_keys($lists));
+		foreach (array_keys($lists) as $list_id)
+		{
+			$email_list_ledger = new EmailListLedger();
+			$email_list_ledger->list_id = $list_id;
+			$email_list_ledger->subscriber_id = $subscriber->id;
+			$email_list_ledger->save();
+		}
+		//$subscriber->emailLists()->sync(array_keys($lists));
 
 		return $subscriber;
 	}
@@ -96,16 +104,11 @@ class EmailSubscriber extends Root
 			else
 			{
 				$count++;
-				\DB::table('email_listledger')->insert(['list_id' => $key, 'subscriber_id' => $existing_sub->id]);
-				if( $value == true )
-				{
-					$el = EmailList::find( $key );
-					if($el!=null)
-					{
-						$el->total_subscribers = $el->total_subscribers + 1;
-						$el->save();
-					}
-				}
+				$email_list_ledger = new EmailListLedger();
+				$email_list_ledger->list_id = $key;
+				$email_list_ledger->subscriber_id = $existing_sub->id;
+				$email_list_ledger->save();
+				//\DB::table('email_listledger')->insert(['list_id' => $key, 'subscriber_id' => $existing_sub->id]);
 			}
 		}
 		return array('record'=>$this,'total'=>$count);
@@ -154,54 +157,6 @@ class EmailSubscriber extends Root
 
 		return $subscriber_list;
 	}
-
-	public static function scheduleResponder($email_subscriber)
-	{
-		//We search for autoresponder of the site
-		//foreach autoresponder we search for the email
-		//foreach email we check to see if there is queue item already
-
-		$autoresponders = EmailAutoResponder::with(['emailLists' => function($query) use ($email_subscriber) {
-			$query->whereIn('emailLists.list_id', $email_subscriber->emaiLists);
-		}])->get();
-
-		if ($autoresponders->count() > 0) {
-			foreach ($autoresponders as $autoresponder) {
-
-				$emails = $autoresponder->emails;
-				$date = Carbon::parse($email_subscriber->emaiLists->created_at );
-				foreach ($emails as $email)
-				{
-					$queues = EmailQueue::whereEmailId($email->id)->whereSubscriberId($email_subscriber->id)->get();
-					if ($queues->count() == 0)
-					{
-						switch ($email->pivot->unit)
-						{
-							case 1:
-								$date = $date->addHours($email->pivot->delay);
-								break;
-							case 2:
-								$date = $date->addDays($email->pivot->delay);
-								break;
-							case 3:
-								$date = $date->addMonths($email->pivot->delay);
-								break;
-						}
-						if ($date->timestamp > Carbon::now()->timestamp)
-						{
-							$email->send_at = $date;
-							EmailQueue::enqueueAutoResponderEmail($email, $email_subscriber, 'segment');
-						}
-					}
-				}
-			}
-		}
-
-	}
 }
 
 
-
-EmailSubscriber::saved(function($email_subscriber){
-	EmailSubscriber::scheduleResponder($email_subscriber);
-});
