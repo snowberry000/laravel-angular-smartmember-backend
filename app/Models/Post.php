@@ -47,6 +47,11 @@ class Post extends Root
         return $this->belongsTo('App\Models\DiscussionSettings');
     }
 
+    public function dripfeed()
+    {
+        return $this->hasOne('App\Models\DripFeed', 'target_id', 'id')->whereType('posts');
+    }
+
     public static function create(array $post_data = array()){
         $discussions = [];
         $categories = [];
@@ -77,6 +82,12 @@ class Post extends Root
             unset($post_data["seo_settings"]);
         }
 
+        if (isset($post_data['dripfeed_settings']) && !empty($post_data['dripfeed_settings']))
+        {
+            $dripfeed = $post_data["dripfeed_settings"];
+        }
+        unset($post_data["dripfeed_settings"]);
+
         $discussions =  DiscussionSettings::create($discussions);
 
         unset($post_data['permalink']);
@@ -98,6 +109,11 @@ class Post extends Root
         $post->save();
         if ($seo){
             SeoSetting::savePage($seo, $site_id, 4, $post->id);
+        }
+
+        if ($dripfeed)
+        {
+            DripFeed::set($post, $dripfeed);
         }
 
         return $post;
@@ -156,6 +172,18 @@ class Post extends Root
             $category->fill($category_data);
             $category->save();
         }
+
+        if( !empty( $post_data['remove_dripfeed'] ) )
+        {
+            DripFeed::remove($this);
+        }
+        elseif (isset($post_data['dripfeed_settings']) && !empty($post_data['dripfeed_settings']))
+        {
+            $dripfeed = $post_data['dripfeed_settings'];
+            DripFeed::set($this, $dripfeed);
+        }
+        unset($post_data['dripfeed_settings']);
+        unset($post_data['remove_dripfeed']);
 
         unset($post_data['permalink']);
 

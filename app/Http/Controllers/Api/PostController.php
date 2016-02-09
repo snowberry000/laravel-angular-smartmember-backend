@@ -91,7 +91,7 @@ class PostController extends SMController
 
         $most_used = $this->getMostUsed($model->site_id);
 
-        $model = $this->model->with("seo_settings",'discussion_settings',"tags","categories","access_level")->whereId($model->id)->first();
+        $model = $this->model->with("seo_settings",'discussion_settings',"dripfeed","tags","categories","access_level")->whereId($model->id)->first();
        
         $model->most_used_categories = $most_used['most_used_categories'];
         $model->most_used_tags = $most_used['most_used_tags'];

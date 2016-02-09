@@ -25,7 +25,8 @@ class SupportTicketController extends SMController
         $this->model = new SupportTicket();     
     }
 
-    public function index(){
+    public function index()
+	{
         $user = \Auth::user();
 
         $query = $this->filter();
@@ -49,44 +50,56 @@ class SupportTicketController extends SMController
 				$site_ids = $sites;
 		}
 
+		if( \Input::has('agents') && ( !empty( \Input::get('agents') ) || \Input::get('agents') == 0 ) )
+		{
+			$agent_ids = explode( ',', \Input::get('agents' ) );
+
+			if( !empty( $agent_ids ) )
+				$query = $query->whereIn( 'agent_id', $agent_ids );
+		}
+
 		if( !empty( $site_ids ) )
-            $query = $query->where(function($query2) use ($site_ids) {
-                $query2->whereIn('site_id', $site_ids)
-                    ->orWhereIn('escalated_site_id', $site_ids);
-            });
-		else {
-            $query = $query->where(function($query2) {
-                $query2->whereSiteId($this->site->id)->orWhere('escalated_site_id', $this->site->id);
-                });
-            }
+		{
+			$query = $query->where( function ( $query2 ) use ( $site_ids )
+			{
+				$query2->whereIn( 'site_id', $site_ids )
+					->orWhereIn( 'escalated_site_id', $site_ids );
+			} );
+		}
+		else
+		{
+			$query = $query->where(function($query2) {
+				$query2->whereSiteId($this->site->id)->orWhere('escalated_site_id', $this->site->id);
+			} );
+		}
 
-            $p = \Input::get('p');
-            if($p!=null)
-            {
-                $response['count'] = $query->whereParentId(0)->count();
-                $response['tickets'] = $query->skip((Input::get('p')-1)*config("vars.default_page_size"))->with(array('agent'))->orderBy('updated_at' , 'DESC')->whereParentId(0)->get();
-                foreach ($response['tickets'] as $key => $value) {
-                   // $response['tickets'][$key]['lastReply']=SupportTicket::whereParentId($value->id)->orderBy('updated_at' , 'DESC')->first(['updated_at','created_at']);
+		$p = \Input::get('p');
+		if($p!=null)
+		{
+			$response['count'] = $query->whereParentId(0)->count();
+			$response['tickets'] = $query->skip((Input::get('p')-1)*config("vars.default_page_size"))->with(array('agent'))->orderBy('updated_at' , 'DESC')->whereParentId(0)->get();
+			foreach ($response['tickets'] as $key => $value) {
+			   // $response['tickets'][$key]['lastReply']=SupportTicket::whereParentId($value->id)->orderBy('updated_at' , 'DESC')->first(['updated_at','created_at']);
 
-                    if( !empty( $response['tickets'][$key]->agent ) && empty( $response['tickets'][$key]->agent->profile_image ) )
-                        $response['tickets'][$key]->agent->profile_image = User::gravatarImage( $response['tickets'][$key]->agent->email, 100 );
+				if( !empty( $response['tickets'][$key]->agent ) && empty( $response['tickets'][$key]->agent->profile_image ) )
+					$response['tickets'][$key]->agent->profile_image = User::gravatarImage( $response['tickets'][$key]->agent->email, 100 );
 
-	                if( !empty( $response['tickets'][$key]->user_email ) && empty( $response['tickets'][$key]->profile_image ) )
-		                $response['tickets'][$key]->profile_image = User::gravatarImage( $response['tickets'][$key]->user_email, 300 );
+				if( !empty( $response['tickets'][$key]->user_email ) && empty( $response['tickets'][$key]->profile_image ) )
+					$response['tickets'][$key]->profile_image = User::gravatarImage( $response['tickets'][$key]->user_email, 300 );
 
-					/*if( $current_company_id != 10372 )
-					{
-						if( $response['tickets'][$key]->company_id == 10372 )
-							$response['tickets'][$key]->sm_tech = true;
-					}*/
-                }
+				/*if( $current_company_id != 10372 )
+				{
+					if( $response['tickets'][$key]->company_id == 10372 )
+						$response['tickets'][$key]->sm_tech = true;
+				}*/
+			}
 
 
-                return $response;
-            }
-            else
-                return $this->model->with(['agent' , 'notes'])->whereSiteId($this->site->id)->whereParentId(0)->orderBy('updated_at','DESC')->get();
-        }
+			return $response;
+		}
+		else
+			return $this->model->with(['agent' , 'notes'])->whereSiteId($this->site->id)->whereParentId(0)->orderBy('updated_at','DESC')->get();
+	}
 
     public function update($model){
         //return ($model);
@@ -522,6 +535,7 @@ class SupportTicketController extends SMController
                     $query->take((Input::get('count')));
                     break;
 				case 'sites':
+				case 'agents':
                 case 'sortBy':
                     break;
                 default:

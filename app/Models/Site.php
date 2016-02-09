@@ -535,7 +535,7 @@ class Site extends Root
 	public static function blacklistedWords()
 	{
 		return [
-			'fuck', 'shit', 'xxx', 'bitch', 'damn', 'faggot', 'porn', 'pornography', 'porno'
+			'fuck', 'xxx', 'bitch', 'damn', 'faggot', 'porn', 'pornography', 'porno'
 		];
 	}
 
@@ -564,6 +564,8 @@ Site::creating(function($site){
     }
 
     $site->user_id = \Auth::user()->id;
+
+	$site->hash = md5( microtime() * rand() );
 
 	if( !\Auth::user()->setup_wizard_complete )
 	{
