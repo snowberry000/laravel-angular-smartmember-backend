@@ -220,9 +220,13 @@ class Role extends Root{
     {
         if ($pass->access_level_id)
         {
-            $autoresponders = EmailAutoResponder::whereHas('accessLevels', function($query) use ($pass) {
+            $autoresponders_ac = EmailAutoResponder::whereHas('accessLevels', function($query) use ($pass) {
                 $query->where('access_level_id', $pass->access_level_id);
-            })->get();
+            });
+            $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
+                $query->where('site_id', $pass->site_id);
+            })->union($autoresponders_ac->getQuery())->get();
+            dd($autoresponders);
         } else {
             $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
                 $query->where('site_id', $pass->site_id);
