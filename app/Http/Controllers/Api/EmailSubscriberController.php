@@ -49,18 +49,17 @@ class EmailSubscriberController extends SMController
         $page_size = config("vars.default_page_size");
         $query = $this->model;
         $query = $query->orderBy('id' , 'DESC');
-        $query = $query->with('user');
+        $query = $query->with('user','emailLists');
 		$account_id = \Auth::user()->id;
-        $query = $query->with(['emailLists'=>function($q) use ($account_id, $emailList_id){
+        $query = $query->whereHas('emailLists', function($q) use ($account_id, $emailList_id){
             $q->where('email_lists.account_id',$account_id);
             if ($emailList_id)
             {
                $q->where('email_listledger.list_id', $emailList_id);
             }
-        }]);
+        });
         $query = $query->whereAccountId($account_id);
         $query = $query->select('id' , 'created_at')->selectRaw('email COLLATE utf8_general_ci as email')->selectRaw('name COLLATE utf8_general_ci as name')->selectRaw('"Subscriber" as status');
-
         $site_ids = [$this->site->id];
 
         $members = User::whereHas('role', function($q) use ($site_ids) {
@@ -136,10 +135,10 @@ class EmailSubscriberController extends SMController
         {
             foreach( $lists as $key => $value )
             {
-                if( $value == true )
+                if( $value )
                 {
                     $el = EmailList::find( $key );
-                    if($el!=null)
+                    if($el)
                     {
                         $el->total_subscribers = $el->total_subscribers + 1;
                         $el->save();
@@ -422,7 +421,12 @@ class EmailSubscriberController extends SMController
             return $subscriber;
         }
 
-        $emailList->subscribers()->attach($subscriber->id);
+        $email_list_ledger = new EmailListLedger();
+        $email_list_ledger->list_id = $list;
+        $email_list_ledger->subscriber_id = $subscriber->id;
+        $email_list_ledger->save();
+        //EmailListLedger::insert(['list_id' => $emailList->id, 'subscriber_id' => $subscriber->id]);
+        //$emailList->subscribers()->attach($subscriber->id);
         $emailList->total_subscribers = $emailList->total_subscribers + 1;
         $emailList->save();
 
@@ -671,7 +675,12 @@ class EmailSubscriberController extends SMController
 
 	    if( $list )
 	    {
-		    $emailList->subscribers()->attach($subscriber->id);
+            $email_list_ledger = new EmailListLedger();
+            $email_list_ledger->list_id = $list;
+            $email_list_ledger->subscriber_id = $subscriber->id;
+            $email_list_ledger->save();
+            //EmailListLedger::insert(['list_id' => $list, 'subscriber_id' => $subscriber->id]);
+		    //$emailList->subscribers()->attach($subscriber->id);
 		    $emailList->total_subscribers = $emailList->total_subscribers + 1;
 		    $emailList->save();
 

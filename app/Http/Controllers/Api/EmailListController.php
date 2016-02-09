@@ -7,6 +7,7 @@ use App\Models\Site;
 use App\Models\EmailSubscriber;
 use App\Models\AccessLevel;
 use App\Models\SegmentTool;
+use App\Models\EmailListLedger;
 use Input;
 
 class EmailListController extends SMController
@@ -52,7 +53,12 @@ class EmailListController extends SMController
         if( Input::has('p') )
             $query = $query->skip((\Input::get('p')-1)*$page_size);
 
-        return array('items' => $query->get() , 'total_count' => $count);
+        $email_lists = $query->get();
+        foreach ($email_lists as $list)
+        {
+            $list->total_subscribers = EmailListLedger::whereListId($list->id)->count();
+        }
+        return array('items' => $email_lists , 'total_count' => $count);
     }
 
     public function sendMailLists()

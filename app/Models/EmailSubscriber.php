@@ -2,6 +2,7 @@
 
 namespace App\Models;
 use App\Models\EmailList;
+use App\Models\EmailListLedger;
 
 class EmailSubscriber extends Root
 {
@@ -66,7 +67,14 @@ class EmailSubscriber extends Root
 		$subscriber = parent::create($data);
 		$subscriber->account_id = $data['account_id'];
 		$subscriber->save();
-		$subscriber->emailLists()->sync(array_keys($lists));
+		foreach (array_keys($lists) as $list_id)
+		{
+			$email_list_ledger = new EmailListLedger();
+			$email_list_ledger->list_id = $list_id;
+			$email_list_ledger->subscriber_id = $subscriber->id;
+			$email_list_ledger->save();
+		}
+		//$subscriber->emailLists()->sync(array_keys($lists));
 
 		return $subscriber;
 	}
@@ -96,16 +104,11 @@ class EmailSubscriber extends Root
 			else
 			{
 				$count++;
-				\DB::table('email_listledger')->insert(['list_id' => $key, 'subscriber_id' => $existing_sub->id]);
-				if( $value == true )
-				{
-					$el = EmailList::find( $key );
-					if($el!=null)
-					{
-						$el->total_subscribers = $el->total_subscribers + 1;
-						$el->save();
-					}
-				}
+				$email_list_ledger = new EmailListLedger();
+				$email_list_ledger->list_id = $key;
+				$email_list_ledger->subscriber_id = $existing_sub->id;
+				$email_list_ledger->save();
+				//\DB::table('email_listledger')->insert(['list_id' => $key, 'subscriber_id' => $existing_sub->id]);
 			}
 		}
 		return array('record'=>$this,'total'=>$count);
@@ -113,7 +116,7 @@ class EmailSubscriber extends Root
 
 
 	public static function subscribersFromList($subscribers, $account_id, $list_id)
-	{+
+	{
 		$bits = preg_split('/[\ \n\,]+/', $subscribers );
 		$subscriber_list = [];
 		
@@ -155,3 +158,5 @@ class EmailSubscriber extends Root
 		return $subscriber_list;
 	}
 }
+
+

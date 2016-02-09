@@ -1,6 +1,7 @@
 <?php namespace App\Models\Site;
 
 use App\Models\AccessLevelShareKey;
+use App\Models\EmailAutoResponder;
 use App\Models\Root;
 use App\Models\User;
 use App\Models\AccessLevel\SharedGrant;
@@ -13,6 +14,7 @@ use Carbon\Carbon;
 use App\Models\AccessLevel\Pass;
 use Config;
 use App\Models\EmailSubscriber;
+use App\Models\EmailQueue;
 
 class Role extends Root{
     protected $table = 'sites_roles';
@@ -212,6 +214,55 @@ class Role extends Root{
         $pass->save();
 
         return $pass;
+    }
+
+    public static function scheduleResponder($pass)
+    {
+        if ($pass->access_level_id)
+        {
+            $autoresponders_ac = EmailAutoResponder::whereHas('accessLevels', function($query) use ($pass) {
+                $query->where('access_level_id', $pass->access_level_id);
+            });
+            $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
+                $query->where('site_id', $pass->site_id);
+            })->union($autoresponders_ac->getQuery())->get();
+        } else {
+            $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
+                $query->where('site_id', $pass->site_id);
+            })->get();
+        }
+        if ($autoresponders->count() > 0)
+        {
+            foreach ($autoresponders as $autoresponder)
+            {
+                $emails = $autoresponder->emails;
+                $subscriber = User::find($pass->user_id);
+                $date = Carbon::parse($pass->created_at );
+                foreach ($emails as $email)
+                {
+                    switch ($email->pivot->unit)
+                    {
+                        case 1:
+                            if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+                                $date = $date->addMinutes(5);
+                            else
+                                $date = $date->addHours($email->pivot->delay);
+                            break;
+                        case 2:
+                            $date = $date->addDays($email->pivot->delay);
+                            break;
+                        case 3:
+                            $date = $date->addMonths($email->pivot->delay);
+                            break;
+                    }
+                    if ($date->timestamp > Carbon::now()->timestamp)
+                    {
+                        $email->send_at = $date;
+                        EmailQueue::enqueueAutoResponderEmail($email, $subscriber, 'segment');
+                    }
+                }
+            }
+        }
     }
 
     public static function addPersonToWebinar($pass)
@@ -476,8 +527,8 @@ class Role extends Root{
 
 Role::created(function($pass){
     Role::addPersonToWebinar($pass);
+    Role::scheduleResponder($pass);
     Role::addPersonToAssociateShareAccessLevelKey($pass);
-
 	if( !empty( $pass->access_level_id ) )
 		Role::GrantSuperLevel( $pass->access_level_id, $pass->user_id );
 });

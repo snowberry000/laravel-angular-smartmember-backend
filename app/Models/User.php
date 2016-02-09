@@ -578,6 +578,39 @@ class User extends Root implements AuthenticatableContract
 
 		return [];
 	}
+
+    public function sitesWithRole( $role, $return_sites = true )
+    {
+        $roles        = $site_ids = [ ];
+        $role_sites = [ 'all' => [] ];
+        $system_roles = Config::get( 'roles.roles' );
+
+        foreach( $system_roles as $key => $val )
+        {
+            if( $key == $role )
+            {
+                $roles[]      = $key;
+                $role_sites['all'][] = $key;
+            }
+        }
+        $roles = Role::whereIn( 'type', $roles )->whereUserId( $this->id )->get();
+
+        foreach( $roles as $role )
+        {
+            if( in_array( $role->type, $role_sites['all'] ) && !in_array( $role->site_id, $site_ids ) )
+                $site_ids[] = $role->site_id;
+        }
+
+        if( !empty( $site_ids ) )
+        {
+            if( !$return_sites )
+                return $site_ids;
+
+            $sites = Site::whereIn( 'id', $site_ids )->get();
+            return $sites;
+        }
+        return [];
+    }
 }
 
 User::creating(function ($user) {
