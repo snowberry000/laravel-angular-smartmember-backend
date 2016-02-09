@@ -32,7 +32,8 @@ class ScriptCheck
             {
                 if( is_string( $value ) )
                 {
-                    Input::merge( array( $key => $this->verify( $value ) ) );
+                    $value = $this->verify( $value );
+                    Input::merge( array( $key => $this->verifyJsTag( $value ) ) );
                 }
 
             }
@@ -101,4 +102,52 @@ class ScriptCheck
 
         return $value;
     }
+
+	public function verifyJsTag($value){
+		$allowed_patterns = $this->allowedScriptPatterns();
+
+		$all_matches = [];
+
+		foreach( $allowed_patterns as $index => $pattern )
+		{
+			$matches = [];
+
+			$re = '/<javascript[^<>]*?src=\"(' . $pattern . ')\"[^<>]*?>.*?<\/javascript>/is';
+
+			preg_match_all( $re, $value, $matches );
+
+			$all_matches[] = $matches;
+		}
+
+		foreach( $all_matches as $matches )
+		{
+			//if we have some matches we need to loop through them to replace them with something else so they don't get stripped out with the rest of the js stuff
+			if( !empty( $matches ) && !empty( $matches[ 0 ] ) )
+			{
+				foreach( $matches[ 0 ] as $key => $val )
+				{
+					//if we actually have values for the matches we need we are going to switch it out with something else temporarily
+					if( !empty( $matches[ 1 ][ $key ] ) )
+						$value = str_replace( $val, '@@@@@@@ALLOWEDSCRIPT@@@@@@@' . $matches[ 1 ][ $key ] . '@@@@@@@ALLOWEDSCRIPT@@@@@@@', $value );
+				}
+			}
+		}
+
+		$value = preg_replace('#<javascript(.*?)>(.*?)</javascript>#is', '', $value);
+
+		foreach( $all_matches as $matches )
+		{
+			if( !empty( $matches ) && !empty( $matches[ 0 ] ) )
+			{
+				foreach( $matches[ 0 ] as $key => $val )
+				{
+					//if this was something we had matches for earlier we should be able to change it back to some acceptable js
+					if( !empty( $matches[ 1 ][ $key ] ) )
+						$value = str_replace( '@@@@@@@ALLOWEDSCRIPT@@@@@@@' . $matches[ 1 ][ $key ] . '@@@@@@@ALLOWEDSCRIPT@@@@@@@', '<javascript type="text/javascript" src="' . $matches[ 1 ][ $key ] . '"></javascript>', $value );
+				}
+			}
+		}
+
+		return $value;
+	}
 }
