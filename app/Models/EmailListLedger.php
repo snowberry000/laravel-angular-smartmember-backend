@@ -46,7 +46,10 @@ class EmailListLedger extends Root
 					switch ($email->pivot->unit)
 					{
 						case 1:
-							$date = $date->addHours($email->pivot->delay);
+							if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+								$date = $date->addMinutes(5);
+							else
+								$date = $date->addHours($email->pivot->delay);
 							break;
 						case 2:
 							$date = $date->addDays($email->pivot->delay);
