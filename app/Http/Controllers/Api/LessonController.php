@@ -328,7 +328,8 @@ class LessonController extends SMController
 				->whereIn( 'module_id' , $module_ids )
 				->update([ 'module_id' => 0 ]);
 		}
-
+		$this->site->total_lessons = $this->site->total_lessons - count($lesson_ids);
+		$this->site->save();
 		$lesson_key ='modules' . ':' . $this->site->id . ':*';
 
 		$keys = [];
