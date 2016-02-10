@@ -56,6 +56,7 @@ class Post extends Root
         $discussions = [];
         $categories = [];
         $tags = [];
+        $dripfeed = [];
         $seo = null;
         unset($post_data['timeLeft']);
         unset($post_data['site']);
