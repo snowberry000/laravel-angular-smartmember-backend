@@ -735,7 +735,16 @@ class EmailQueue extends Root
 
         foreach ($queue_items as $queue_item) 
         {
-			preg_match_all("|%[a-zA-Z0-9-_]+%|U", $queue_item->email->content, $matches, PREG_PATTERN_ORDER);
+			if( $queue_item->email )
+				preg_match_all("|%[a-zA-Z0-9-_]+%|U", $queue_item->email->content, $matches, PREG_PATTERN_ORDER);
+			else
+			{
+				\DB::table('emails_queue')
+					->whereEmailId( $queue_item->email_id )
+					->whereNull('deleted_at')
+					->update([ 'deleted_at' => Carbon::now() ]);
+				continue;
+			}
 
 			$additional_meta = [];
 
@@ -755,11 +764,21 @@ class EmailQueue extends Root
 				}
 			}
 
-            if( $queue_item->list_type == 'segment' && !isset($queue_item->user->email)) 
-                continue;
+            if( $queue_item->list_type == 'segment' && ( !$queue_item->user || !$queue_item->user->email ) )
+			{
+				if( !$queue_item->user )
+					$queue_item->delete();
 
-            if ($queue_item->list_type != 'segment' && !isset($queue_item->subscriber->email))
-                continue;
+				continue;
+			}
+
+            if ($queue_item->list_type != 'segment' && ( !$queue_item->subscriber || !$queue_item->subscriber->email ) )
+			{
+				if( !$queue_item->subscriber )
+					$queue_item->delete();
+
+				continue;
+			}
 
             if( $queue_item->list_type == 'segment')
                 $emails[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro'][$queue_item->user->email] = $queue_item->id;
@@ -861,7 +880,13 @@ class EmailQueue extends Root
 					$email = Email::with( 'recipients' )->whereId( $key )->first();
 
 					if( !$email )
+					{
+						\DB::table('emails_queue')
+							->whereEmailId( $key )
+							->whereNull('deleted_at')
+							->update([ 'deleted_at' => Carbon::now() ]);
 						continue;
+					}
 
 					if( $email->recipients )
 					{
