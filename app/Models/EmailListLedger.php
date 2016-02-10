@@ -61,7 +61,7 @@ class EmailListLedger extends Root
 					if ($date->timestamp > Carbon::now()->timestamp)
 					{
 						$email->send_at = $date;
-						EmailQueue::enqueueAutoResponderEmail($email, $subscriber, 'segment');
+						EmailQueue::enqueueAutoResponderEmail($email, $subscriber, '');
 					}
 				}
 			}
