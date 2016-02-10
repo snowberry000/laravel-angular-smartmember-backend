@@ -887,8 +887,8 @@ class EmailQueue extends Root
 				$to                                  = array_keys( $value2 );
 				$to_ids                              = array_values( $value2 );
 				$sending_email->to                   = $to;
-				$sending_email->subject              = !empty( $intro->subject ) ? $intro->subject : $email->subject;
-				$sending_email->content              = ( !empty( $intro->intro ) ? $intro->intro : '' ) . $email->content;
+				$sending_email->subject              = !empty( $intro ) && !empty( $intro->subject ) ? $intro->subject : $email->subject;
+				$sending_email->content              = ( !empty( $intro ) && !empty( $intro->intro ) ? $intro->intro : '' ) . $email->content;
 				$sending_email->id                   = $email->id;
 				$sending_email->original_email		 = $email;
 				$sending_email->sendgrid_integration = $email->sendgrid_integration;
