@@ -507,6 +507,18 @@ class Site extends Root
         return array('success' => $result);
     }
 
+	public function support_email()
+	{
+		$meta_item = $this->meta_data()->whereKey('support_email_address')->first();
+
+		if( $meta_item )
+			return $meta_item->value;
+		else
+		{
+			return "noreply@" . ( !empty( $this->domain ) ? $this->domain : $this->subdomain . '.smartmember.com' );
+		}
+	}
+
 	public static function blacklistedSubdomains()
 	{
 		return [

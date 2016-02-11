@@ -807,7 +807,7 @@ class SendGridEmail {
                 'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : ''
             ])->render();
 
-		$from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
+		$from = !empty( $site ) ? $site->support_email() : 'noreply@smartmember.com';
 
         $email->addTo($user['email'])
             ->setFrom( $from )
@@ -837,7 +837,7 @@ class SendGridEmail {
                 'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : ''
             ])->render();
 
-		$from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
+		$from = !empty( $site ) ? $site->support_email() : 'noreply@smartmember.com';
 
         $email->addTo($user['email'])
             ->setFrom( $from )
@@ -876,7 +876,7 @@ class SendGridEmail {
                 'hash' => md5( $user[ 'email' ] . $ticket->id )
             ] )->render();
 
-			$from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
+			$from = !empty( $site ) ? $site->support_email() : 'noreply@smartmember.com';
 
             $email->addTo( $user[ 'email' ] )
                 ->setFrom( $from )
@@ -926,7 +926,7 @@ class SendGridEmail {
                 'hash' => md5( $user[ 'email' ] . $ticket->id )
             ] )->render();
 
-			$from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
+			$from = !empty( $site ) ? $site->support_email() : 'noreply@smartmember.com';
 
             $email->addTo( $user[ 'email' ] )
                 ->setFrom( $from )
@@ -974,7 +974,7 @@ class SendGridEmail {
                 'hash' => md5( $user[ 'email' ] . $ticket->id )
             ] )->render();
 
-			$from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
+			$from = !empty( $site ) ? $site->support_email() : 'noreply@smartmember.com';
 
             $email->addTo( $user[ 'email' ] )
                 ->setFrom( $from )
@@ -1017,7 +1017,7 @@ class SendGridEmail {
                     'ticket_message' => $ticket->message
                 ] )->render();
 
-				$from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
+				$from = !empty( $site ) ? $site->support_email() : 'noreply@smartmember.com';
 
                 $email->addTo( $agent[ 'email' ] )
                     ->setFrom( $from )
@@ -1054,7 +1054,7 @@ class SendGridEmail {
                 'ticket'=>$ticket
             ])->render();
 
-		$from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
+		$from = !empty( $site ) ? $site->support_email() : 'noreply@smartmember.com';
 
         $email->setFrom( $from )
         ->setSubject( ( $site ? '[' . $site->name . '] ' : '' ) . 'NEW TICKET: ' . $ticket->subject )
@@ -1083,7 +1083,7 @@ class SendGridEmail {
                 'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : ''
             ])->render();
 
-		$from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
+		$from = !empty( $site ) ? $site->support_email() : 'noreply@smartmember.com';
 
         $email->addTo($user['email'])
             ->setFrom( $from )
