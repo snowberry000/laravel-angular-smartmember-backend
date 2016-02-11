@@ -103,3 +103,11 @@ ALTER TABLE  `opens` ADD  `identifier` VARCHAR( 255 ) NULL AFTER  `ip` ;
 ALTER TABLE  `clicks` ADD  `segment_id` BIGINT NULL AFTER  `ip` ;
 
 ALTER TABLE  `support_tickets` ADD  `escalated_site_id` BIGINT NULL AFTER  `site_id` ;
+
+TRUNCATE `categories`;
+TRUNCATE `tags`;
+TRUNCATE `posts_categories`;
+TRUNCATE `posts_tags`;
+
+ALTER TABLE  `categories` ADD  `permalink` VARCHAR( 255 ) NOT NULL DEFAULT  '' AFTER  `text` ,
+ADD INDEX (  `permalink` ) ;

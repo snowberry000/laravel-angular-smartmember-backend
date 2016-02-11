@@ -15,3 +15,12 @@ class Category extends Root
     }
 }
 
+Category::creating(function($model){
+	\App\Models\Permalink::handleReservedWords($model);
+});
+
+Category::created(function($model){
+	$model->permalink = \App\Models\Permalink::set($model);
+	$model->save();
+	return $model;
+});
