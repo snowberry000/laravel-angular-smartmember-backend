@@ -103,3 +103,8 @@ ALTER TABLE  `opens` ADD  `identifier` VARCHAR( 255 ) NULL AFTER  `ip` ;
 ALTER TABLE  `clicks` ADD  `segment_id` BIGINT NULL AFTER  `ip` ;
 
 ALTER TABLE  `support_tickets` ADD  `escalated_site_id` BIGINT NULL AFTER  `site_id` ;
+
+ALTER TABLE  `support_articles` ADD  `display` VARCHAR( 255 ) NULL AFTER  `permalink` ,
+ADD  `parent_id` BIGINT( 22 ) NOT NULL DEFAULT  '0' AFTER  `display`;
+
+ALTER TABLE  `support_categories` ADD  `migrated` TINYINT NOT NULL DEFAULT 0;

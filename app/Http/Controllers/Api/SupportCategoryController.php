@@ -178,4 +178,27 @@ class SupportCategoryController extends SMController
 		return $categories;
 	}
 
+	public function migrateToArticles()
+	{
+		$categories = $this->model->whereMigrated(0)->get();
+
+		foreach( $categories as $category )
+		{
+			$article_data = [
+				'site_id' => $category->site_id,
+				'title' => !empty( $category->title ) ? $category->title : 'support-category',
+				'display' => 'article-index',
+				'parent_id' => 0
+			];
+
+			$new_article = SupportArticle::create( $article_data );
+
+			\DB::table('support_articles')
+				->whereCategoryId( $category->id )
+				->update([ 'parent_id' => $new_article->id ]);
+
+			$category->migrated = 1;
+			$category->save();
+		}
+	}
 }
