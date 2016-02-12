@@ -4,6 +4,7 @@
 class Post extends Root
 {
     protected $table = 'posts';
+	protected $with = ['categories'];
 
     public function site()
     {
@@ -40,7 +41,7 @@ class Post extends Root
 
     public function categories()
     {
-        return $this->belongsToMany('App\Models\Category','posts_categories','post_id','category_id');
+		return $this->belongsToMany('App\Models\Category', 'posts_categories', 'post_id', 'category_id')->withTimestamps()->wherePivot( 'deleted_at', null )->distinct();
     }
 
     public function discussion_settings(){
@@ -207,6 +208,35 @@ class Post extends Root
 
 Post::creating(function($model){
     \App\Models\Permalink::handleReservedWords($model);
+});
+
+Post::saved(function($model){
+	if( \Input::has('chosen_categories') )
+	{
+		$category_ids = [];
+
+		foreach( \Input::get('chosen_categories') as $key => $val )
+		{
+			$category_ids[] = $val;
+
+			$category = PostCategory::wherePostId( $model->id )->whereId( $val )->first();
+
+			if( $category )
+				continue;
+
+			$category = PostCategory::create( ['post_id' => $model->id, 'category_id' => $val ] );
+		}
+
+		$extra_categories = PostCategory::wherePostId( $model->id );
+
+		if( !empty( $category_ids ) )
+			$extra_categories = $extra_categories->whereNotIn( 'category_id', $category_ids );
+
+		$extra_categories = $extra_categories->get();
+
+		foreach( $extra_categories as $extra_category )
+			$extra_category->delete();
+	}
 });
 
 Post::created(function($model){
