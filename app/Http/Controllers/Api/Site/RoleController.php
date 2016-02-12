@@ -181,6 +181,9 @@ class RoleController extends SMController
 
         foreach ($arrayCSV as $key => $value) {
             $tempArr = explode("!@~&", $key);
+            if (strlen(trim($tempArr[0].$tempArr[1]))<=0){
+                continue;
+            }
             $tempValue = rtrim(implode(',', $value), ',');
             $output [] = array($tempArr[0],$tempArr[1],$tempArr[2],$tempValue);   
         }
