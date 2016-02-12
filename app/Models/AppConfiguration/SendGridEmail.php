@@ -803,7 +803,7 @@ class SendGridEmail {
                 'subdomain' => $site->subdomain,
                 'ticket'=>$ticket,
                 'ticket_subject'  => $ticket->subject,
-                'ticket_message' => $ticket->message,
+                'ticket_message' => html_entity_decode($ticket->message, ENT_QUOTES | ENT_HTML5),
                 'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : ''
             ])->render();
 
@@ -833,7 +833,7 @@ class SendGridEmail {
                 'subdomain' => $site->subdomain,
                 'ticket'=>$ticket,
                 'ticket_subject'  => $ticket->subject,
-                'ticket_message' => $ticket->message,
+                'ticket_message' => html_entity_decode($ticket->message, ENT_QUOTES|ENT_HTML5),
                 'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : ''
             ])->render();
 
@@ -871,7 +871,7 @@ class SendGridEmail {
                 'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : '',
                 'ticket'=>$ticket,
                 'ticket_subject'  => $ticket->subject,
-                'ticket_message' => $ticket->message,
+                'ticket_message' => html_entity_decode($ticket->message, ENT_QUOTES|ENT_HTML5),
                 'subdomain' => $site->subdomain,
                 'hash' => md5( $user[ 'email' ] . $ticket->id )
             ] )->render();
@@ -921,7 +921,7 @@ class SendGridEmail {
                 'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : '',
                 'ticket'=>$ticket,
                 'ticket_subject'  => $ticket->subject,
-                'ticket_message' => $ticket->message,
+                'ticket_message' => html_entity_decode($ticket->message,ENT_QUOTES|ENT_HTML5),
                 'subdomain' => $site->subdomain,
                 'hash' => md5( $user[ 'email' ] . $ticket->id )
             ] )->render();
@@ -969,7 +969,7 @@ class SendGridEmail {
                 'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : '',
                 'ticket'=>$ticket,
                 'ticket_subject'  => $ticket->subject,
-                'ticket_message' => $ticket->message,
+                'ticket_message' => html_entity_decode($ticket->message,ENT_QUOTES|ENT_HTML5),
                 'subdomain' => $site->subdomain,
                 'hash' => md5( $user[ 'email' ] . $ticket->id )
             ] )->render();
@@ -1014,7 +1014,7 @@ class SendGridEmail {
                     'subdomain' => $site ? $site->subdomain : '',
                     'ticket'=>$ticket,
                     'ticket_subject'  => $ticket->subject,
-                    'ticket_message' => $ticket->message
+                    'ticket_message' => html_entity_decode($ticket->message, ENT_QUOTES|ENT_HTML5)
                 ] )->render();
 
 				$from = !empty( $site ) ? $site->support_email() : 'noreply@smartmember.com';
@@ -1050,7 +1050,7 @@ class SendGridEmail {
                 'subdomain' => $site->subdomain,
                 'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : '',
                 'ticket_subject'  => $ticket->subject,
-                'ticket_message' => $ticket->message,
+                'ticket_message' => html_entity_decode($ticket->message, ENT_QUOTES|ENT_HTML5),
                 'ticket'=>$ticket
             ])->render();
 
@@ -1079,7 +1079,7 @@ class SendGridEmail {
                 'subdomain' => $site->subdomain,
                 'ticket'=>$ticket,
                 'ticket_subject'  => $ticket->subject,
-                'ticket_message' => $ticket->message,
+                'ticket_message' => html_entity_decode($ticket->message,ENT_QUOTES|ENT_HTML5),
                 'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : ''
             ])->render();
 
