@@ -111,3 +111,4 @@ TRUNCATE `posts_tags`;
 
 ALTER TABLE  `categories` ADD  `permalink` VARCHAR( 255 ) NOT NULL DEFAULT  '' AFTER  `text` ,
 ADD INDEX (  `permalink` ) ;
+ALTER TABLE  `categories` CHANGE  `text`  `title` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ;
