@@ -52,10 +52,16 @@ class EmailListLedger extends Root
 								$date = $date->addHours($email->pivot->delay);
 							break;
 						case 2:
-							$date = $date->addDays($email->pivot->delay);
+							if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+								$date = $date->addMinutes(5);
+							else
+								$date = $date->addDays($email->pivot->delay);
 							break;
 						case 3:
-							$date = $date->addMonths($email->pivot->delay);
+							if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+								$date = $date->addMinutes(5);
+							else
+								$date = $date->addMonths($email->pivot->delay);
 							break;
 					}
 					if ($date->timestamp > Carbon::now()->timestamp)
