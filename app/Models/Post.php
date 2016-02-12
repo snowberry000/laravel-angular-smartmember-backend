@@ -41,7 +41,7 @@ class Post extends Root
 
     public function categories()
     {
-		return $this->belongsToMany('App\Models\Category', 'posts_categories', 'post_id', 'category_id')->distinct();
+		return $this->belongsToMany('App\Models\Category', 'posts_categories', 'post_id', 'category_id')->withTimestamps()->wherePivot( 'deleted_at', null )->distinct();
     }
 
     public function discussion_settings(){
@@ -211,7 +211,7 @@ Post::creating(function($model){
 });
 
 Post::saved(function($model){
-	if( \Input::has('chosen_categories') && !empty( \Input::get('chosen_categories') ) )
+	if( \Input::has('chosen_categories') )
 	{
 		$category_ids = [];
 
@@ -227,7 +227,12 @@ Post::saved(function($model){
 			$category = PostCategory::create( ['post_id' => $model->id, 'category_id' => $val ] );
 		}
 
-		$extra_categories = PostCategory::wherePostId( $model->id )->whereNotIn( 'category_id', $category_ids )->get();
+		$extra_categories = PostCategory::wherePostId( $model->id );
+
+		if( !empty( $category_ids ) )
+			$extra_categories = $extra_categories->whereNotIn( 'category_id', $category_ids );
+
+		$extra_categories = $extra_categories->get();
 
 		foreach( $extra_categories as $extra_category )
 			$extra_category->delete();

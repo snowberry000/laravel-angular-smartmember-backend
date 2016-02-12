@@ -13,6 +13,14 @@ class Category extends Root
     public function post(){
     	return $this->belongsTo('App\\Models\\Post');
     }
+
+	public function applySearchQuery($q, $value)
+	{
+		if(!empty($value))
+			return $q->where('title', 'like','%' . $value . "%");
+		else
+			return $q;
+	}
 }
 
 Category::creating(function($model){

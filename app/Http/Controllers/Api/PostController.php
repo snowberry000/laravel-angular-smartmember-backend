@@ -30,6 +30,17 @@ class PostController extends SMController
     public function index(){
         if( \Input::has('view') && \Input::get('view') == 'admin' )
 		{
+			if( \Input::has('permalink') && !empty( \Input::get('permalink') ) )
+			{
+				$category = Category::whereSiteId( $this->site->id )->wherePermalink( \Input::get('permalink') )->first();
+
+				$this->model = Post::whereHas('categories', function( $q ) use ( $category ) {
+					$q->where( 'categories.id', $category->id );
+				});
+
+				\Input::merge( [ 'permalink' => null ] );
+			}
+
 			$posts = parent::paginateIndex();
 
             foreach ($posts['items'] as $i => $post) {
@@ -40,7 +51,12 @@ class PostController extends SMController
                 }
 
             }
+
             $posts['items'] = array_values($posts['items']->toArray());
+
+			if( !empty( $category ) )
+				$posts['category'] = $category;
+
             return $posts;
 		}
 		else

@@ -13,6 +13,11 @@ class CategoryController extends SMController
 
 	public function index()
 	{
+		if( \Input::has('view') && \Input::get('view') == 'admin' )
+		{
+			return parent::paginateIndex();
+		}
+
 		return $this->model->whereSiteId( $this->site->id )->get();
 	}
 
