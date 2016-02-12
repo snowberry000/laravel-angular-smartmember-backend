@@ -106,7 +106,7 @@ class Site extends Root
 
     public function links()
     {
-        return $this->hasManu('App\Models\Link', 'site_id');
+        return $this->hasMany('App\Models\Link', 'site_id');
     }
 
     public static function getShareData($subdomain){
