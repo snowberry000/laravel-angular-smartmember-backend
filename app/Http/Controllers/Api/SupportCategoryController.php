@@ -30,7 +30,8 @@ class SupportCategoryController extends SMController
         return $category;
     }
 	
-	public function index(){
+	public function index()
+	{
 		if( \Input::has('view') && \Input::get('view') == 'admin' )
 		{
 			return parent::paginateIndex();

@@ -67,7 +67,7 @@ class ApiController extends Controller
 				case 'bypass_paging':
 					break;
 				default:
-					if( !empty( $value ) )
+					if( !empty( $value ) || $value === 0 )
 						$query->where($key,'=',$value);
 			}
 		}

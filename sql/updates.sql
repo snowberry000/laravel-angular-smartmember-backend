@@ -113,7 +113,9 @@ ALTER TABLE  `categories` ADD  `permalink` VARCHAR( 255 ) NOT NULL DEFAULT  '' A
 ADD INDEX (  `permalink` ) ;
 ALTER TABLE  `categories` CHANGE  `text`  `title` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ;
 
-ALTER TABLE  `support_articles` ADD  `display` VARCHAR( 255 ) NULL AFTER  `permalink` ,
+ALTER TABLE  `support_articles` ADD  `display` VARCHAR( 255 ) NULL DEFAULT 'default' AFTER  `permalink` ,
 ADD  `parent_id` BIGINT( 22 ) NOT NULL DEFAULT  '0' AFTER  `display`;
+
+UPDATE  `support_articles` SET display =  'default' WHERE display IS NULL AND deleted_at IS NULL;
 
 ALTER TABLE  `support_categories` ADD  `migrated` TINYINT NOT NULL DEFAULT 0;
