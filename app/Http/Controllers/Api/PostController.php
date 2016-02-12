@@ -116,9 +116,57 @@ class PostController extends SMController
         return ['most_used_tags'=>$most_used_tags , 'most_used_categories'=>$most_used_categories];
     }
 
+	public static function AllowedColumns()
+	{
+		return [
+			'site_id',
+			'author_id',
+			'company_id',
+			'title',
+			'content',
+			'note',
+			'embed_content',
+			'featured_image',
+			'access_level_type',
+			'access_level_id',
+			'permalink',
+			'discussion_settings_id',
+			'deleted_at',
+			'created_at',
+			'updated_at',
+			'end_published_date',
+			'published_date',
+			'preview_schedule',
+			'transcript_content_public',
+			'transcript_content',
+			'transcript_button_text',
+			'audio_file',
+			'always_show_featured_image',
+			'show_content_publicly'
+		];
+	}
+
+	public static function SetAllowedInput()
+	{
+		$input_fields = [];
+
+		foreach( self::AllowedColumns() as $key => $val )
+		{
+			if( \Input::has( $val ) )
+				$input_fields[ $val ] = \Input::get( $val );
+		}
+
+		return $input_fields;
+	}
+
     public function store()
     {
-       	$stored = parent::store();
+       	$stored = $this->model->create( $this->SetAllowedInput() );
+
+		if( !$stored->id )
+		{
+			App::abort(401, "The operation requested couldn't be completed");
+		}
 
 		\App\Models\Event::Log( 'created-post', array(
 			'site_id' => $this->site->id,
@@ -148,20 +196,6 @@ class PostController extends SMController
 
     public function update($model)
     {
-        $categories = \Input::get('categories');
-        $categoriesID=array_values(array_column($categories,'id'));
-        $deleteCategories = PostCategory::whereNotIn('category_id',$categoriesID)->get(array('id'));
-        \Log::info(array_pluck($deleteCategories,'id'));
-        if(sizeof($deleteCategories)>0)
-            $model->categories()->detach(array_pluck($deleteCategories,'id'));
-
-        $tags = \Input::get('tags');
-        $tagsID=array_values(array_column($tags,'id'));
-        $deleteTags = \DB::table('posts_tags')->whereNotIn('tag_id',$tagsID)->get(array('id'));
-        \Log::info(array_pluck($deleteTags,'id'));
-        if(sizeof($deleteTags)>0)
-            $model->tags()->detach(array_pluck($deleteTags,'id'));
-
 		\App\Models\Event::Log( 'updated-post', array(
 			'site_id' => $this->site->id,
 			'user_id' => \Auth::user()->id,
@@ -169,7 +203,10 @@ class PostController extends SMController
 			'post-id' => $model->id
 		) );
 
-        return $model->update(\Input::except('_method' , 'access'));
+		$model->fill( $this->SetAllowedInput() );
+		$model->save();
+
+		return $model;
     }
 
     public function getByPermalink($id){
