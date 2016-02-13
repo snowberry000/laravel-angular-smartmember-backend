@@ -35,6 +35,7 @@ class SupportArticleController extends SMController
 
 	public function index()
 	{
+		\Input::merge( array( 'site_id' => $this->site->id ) );
 		$data = parent::paginateIndex();
 
 		foreach( $data['items'] as $key => $val )

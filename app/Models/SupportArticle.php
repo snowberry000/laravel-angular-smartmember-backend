@@ -23,8 +23,10 @@ class SupportArticle extends Root
 
     public function applySearchQuery($q, $value)
     {
-
-        return $q->where('title', 'like','%' . $value . "%");
+        return $q->where( function( $query ) use ( $value ) {
+			$query->where( 'title', 'like','%' . $value . "%");
+			$query->orwhere('content', 'like', '%' . $value . '%');
+		} );
     }
     
     public function category(){
