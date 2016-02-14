@@ -4,10 +4,18 @@
 class SupportArticle extends Root
 {
     protected $table = 'support_articles';
+	protected $with = ['articles'];
+
+	public function articles()
+	{
+		return $this->hasMany('App\Models\SupportArticle', 'parent_id');
+	}
 
     public static function create(array $data = array())
     {
         unset($data['permalink']);
+		unset( $data['articles'] );
+		unset( $data['parent'] );
         $article = parent::create($data);
         $article->save();
         return $article;
@@ -15,8 +23,10 @@ class SupportArticle extends Root
 
     public function applySearchQuery($q, $value)
     {
-
-        return $q->where('title', 'like','%' . $value . "%");
+        return $q->where( function( $query ) use ( $value ) {
+			$query->where( 'title', 'like','%' . $value . "%");
+			$query->orwhere('content', 'like', '%' . $value . '%');
+		} );
     }
     
     public function category(){
@@ -26,8 +36,9 @@ class SupportArticle extends Root
     public function update(array $data=array())
     {
         
-        unset($data['permalink']);
-        $data['site_id'] = $this->site->id;
+        unset( $data['permalink'] );
+		unset( $data['articles'] );
+		unset( $data['parent'] );
 
         $this->fill($data);
         $this->save();
