@@ -57,7 +57,7 @@ class Permalink extends Root
 
 			if ($if_exists){
 				$last_char = $text{strlen($text)-1};
-				if ($text{strlen($text)-2} == '-' && is_numeric($last_char)){
+				if (!empty($text{strlen($text)-2}) && $text{strlen($text)-2} == '-' && is_numeric($last_char)){
 					$last_char = intval($last_char) + 1;
 					$text{strlen($text)-1} = $last_char;
 				}else{
