@@ -42,7 +42,12 @@ class SiteController extends SMController
 		}
 		elseif( \Input::has('cloneable') && \Input::get('cloneable') == 1 )
 		{
-			return \Auth::user()->sitesWithCapability('clone_site');
+            $dfy_sites = $this->model->where('cloneable', 1)->whereNull('deleted_at')->orderBy('id', 'DESC')->get();
+			return
+                array(
+                'sites' => \Auth::user()->sitesWithCapability('clone_site'),
+                'dfy_sites' => $dfy_sites
+                );
 		}
 		else
 		{
