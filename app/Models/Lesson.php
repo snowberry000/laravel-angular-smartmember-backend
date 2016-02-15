@@ -1,5 +1,6 @@
 <?php namespace App\Models;
 
+use App\Models\UserNote;
 use PRedis;
 use App\Http\Controllers\Api\SiteController;
 use SMCache;
@@ -266,6 +267,14 @@ Lesson::creating(function($lesson){
 });
 
 Lesson::deleting(function($lesson){
+    if(!empty($lesson->id))
+    {
+        $notesIds = UserNote::where('lesson_id',$lesson->id)->whereNull('deleted_at')->get(['id']);
+        if(!empty($notesIds))
+            UserNote::destroy(array_pluck($notesIds, 'id'));
+    }
+
+
     $lesson_key ='modules' . ':' . $lesson->site_id . ':*';
 
     $keys[] = $lesson_key;
