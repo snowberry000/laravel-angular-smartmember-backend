@@ -172,7 +172,8 @@ class SiteMetaDataController extends SMController
             'facebook_conversion_pixel',
             'bing_id',
             'bing_webmaster_tag',
-            'google_webmaster_tag'
+            'google_webmaster_tag',
+            'active_campaign_id'
         );
 
         if( in_array( $pageMetaData->key,$no_script_areas ) )
@@ -229,7 +230,7 @@ class SiteMetaDataController extends SMController
     {
         if( isset( $this->site->id ) )
         {
-            $data = SiteMetaData::whereSiteId($this->site->id)->whereIn("key",array('google_analytics_id','facebook_retargetting_pixel','facebook_conversion_pixel','bing_id','google_webmaster_tag','bing_webmaster_tag'))->get();
+            $data = SiteMetaData::whereSiteId($this->site->id)->whereIn("key",array('google_analytics_id','facebook_retargetting_pixel','facebook_conversion_pixel','bing_id','google_webmaster_tag','bing_webmaster_tag','active_campaign_id'))->get();
             $tracking_code = array();
             if( !empty( $data ) )
             {
@@ -247,6 +248,8 @@ class SiteMetaDataController extends SMController
                         $tracking_code[ 'google_webmaster_tag' ] = $val[ 'value' ];
                     elseif( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'bing_webmaster_tag' && !empty( $val[ 'value' ] ) )
                         $tracking_code[ 'bing_webmaster_tag' ] = $val[ 'value' ];
+                    elseif (!empty( $val[ 'key' ] ) && $val[ 'key' ] == 'active_campaign_id' && !empty( $val['value'] ) )
+                        $tracking_code[ 'active_campaign_id' ] = $val[ 'value' ];
                 }
             }
 
