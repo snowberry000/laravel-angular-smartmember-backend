@@ -28,7 +28,7 @@ class SiteController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth", ['except' => array('details', 'getLatestOfAllContent')]);
+        $this->middleware("auth", ['except' => array('details', 'getLatestOfAllContent','getTicketCount')]);
         $this->middleware("smember", ['only' => array('store')]);
         $this->model = new Site();
 
