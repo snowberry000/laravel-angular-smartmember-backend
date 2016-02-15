@@ -218,53 +218,56 @@ class Role extends Root{
 
     public static function scheduleResponder($pass)
     {
-        if ($pass->access_level_id)
+        if ($pass->type != 'owner')
         {
-            $autoresponders_ac = EmailAutoResponder::whereHas('accessLevels', function($query) use ($pass) {
-                $query->where('access_level_id', $pass->access_level_id);
-            });
-            $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
-                $query->where('site_id', $pass->site_id);
-            })->union($autoresponders_ac->getQuery())->get();
-        } else {
-            $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
-                $query->where('site_id', $pass->site_id);
-            })->get();
-        }
-        if ($autoresponders->count() > 0)
-        {
-            foreach ($autoresponders as $autoresponder)
+            if ($pass->access_level_id )
             {
-                $emails = $autoresponder->emails;
-                $subscriber = User::find($pass->user_id);
-                $date = Carbon::parse($pass->created_at );
-                foreach ($emails as $email)
+                $autoresponders_ac = EmailAutoResponder::whereHas('accessLevels', function($query) use ($pass) {
+                    $query->where('access_level_id', $pass->access_level_id);
+                });
+                $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
+                    $query->where('site_id', $pass->site_id);
+                })->union($autoresponders_ac->getQuery())->get();
+            } else {
+                $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
+                    $query->where('site_id', $pass->site_id);
+                })->get();
+            }
+            if ($autoresponders->count() > 0)
+            {
+                foreach ($autoresponders as $autoresponder)
                 {
-                    switch ($email->pivot->unit)
+                    $emails = $autoresponder->emails;
+                    $subscriber = User::find($pass->user_id);
+                    $date = Carbon::parse($pass->created_at );
+                    foreach ($emails as $email)
                     {
-                        case 1:
-                            if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-                                $date = $date->addMinutes(5);
-                            else
-                                $date = $date->addHours($email->pivot->delay);
-                            break;
-                        case 2:
-                            if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-                                $date = $date->addMinutes(5);
-                            else
-                                $date = $date->addDays($email->pivot->delay);
-                            break;
-                        case 3:
-                            if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-                                $date = $date->addMinutes(5);
-                            else
-                                $date = $date->addMonths($email->pivot->delay);
-                            break;
-                    }
-                    if ($date->timestamp > Carbon::now()->timestamp)
-                    {
-                        $email->send_at = $date;
-                        EmailQueue::enqueueAutoResponderEmail($email, $subscriber, 'segment');
+                        switch ($email->pivot->unit)
+                        {
+                            case 1:
+                                if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+                                    $date = $date->addMinutes(5);
+                                else
+                                    $date = $date->addHours($email->pivot->delay);
+                                break;
+                            case 2:
+                                if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+                                    $date = $date->addMinutes(5);
+                                else
+                                    $date = $date->addDays($email->pivot->delay);
+                                break;
+                            case 3:
+                                if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+                                    $date = $date->addMinutes(5);
+                                else
+                                    $date = $date->addMonths($email->pivot->delay);
+                                break;
+                        }
+                        if ($date->timestamp > Carbon::now()->timestamp)
+                        {
+                            $email->send_at = $date;
+                            EmailQueue::enqueueAutoResponderEmail($email, $subscriber, 'segment');
+                        }
                     }
                 }
             }
