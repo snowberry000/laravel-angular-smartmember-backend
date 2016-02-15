@@ -87,11 +87,10 @@ class SupportTicketController extends SMController
 				if( !empty( $response['tickets'][$key]->user_email ) && empty( $response['tickets'][$key]->profile_image ) )
 					$response['tickets'][$key]->profile_image = User::gravatarImage( $response['tickets'][$key]->user_email, 300 );
 
-				/*if( $current_company_id != 10372 )
-				{
-					if( $response['tickets'][$key]->company_id == 10372 )
-						$response['tickets'][$key]->sm_tech = true;
-				}*/
+				if( $response['tickets'][$key]->escalated_site_id == 2056 )
+					$response['tickets'][$key]->sm_tech = true;
+				elseif( $response['tickets'][$key]->escalated_site_id == 6325 )
+					$response['tickets'][$key]->sm_marketing = true;
 			}
 
 
@@ -134,6 +133,11 @@ class SupportTicketController extends SMController
 
         if( !empty( $model->agent ) && empty( $model->agent->profile_image ) )
             $model->agent->profile_image = User::gravatarImage( $model->agent->email );
+
+		if( $model->escalated_site_id == 2056 )
+			$model->sm_tech = true;
+		elseif( $model->escalated_site_id == 6325 )
+			$model->sm_marketing = true;
 
         foreach( $model->reply as $reply )
         {
