@@ -37,10 +37,10 @@ class DownloadController extends SMController
         }
 
         
-        $downloads = array_values(array_sort($downloads, function($value)
-        {
-            return $value['sort_order'];
-        }));
+       // $downloads = array_values(array_sort($downloads, function($value)
+       // {
+       //     return $value['sort_order'];
+       // }));
 
         $returnDownloads=[];
         $length = count($downloads);
