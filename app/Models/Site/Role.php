@@ -246,19 +246,19 @@ class Role extends Root{
                         {
                             case 1:
                                 if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-                                    $date = $date->addMinutes(5);
+                                    $date = $date->addMinute();
                                 else
                                     $date = $date->addHours($email->pivot->delay);
                                 break;
                             case 2:
                                 if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-                                    $date = $date->addMinutes(5);
+                                    $date = $date->addMinute();
                                 else
                                     $date = $date->addDays($email->pivot->delay);
                                 break;
                             case 3:
                                 if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-                                    $date = $date->addMinutes(5);
+                                    $date = $date->addMinute();
                                 else
                                     $date = $date->addMonths($email->pivot->delay);
                                 break;
