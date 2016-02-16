@@ -22,6 +22,7 @@ class ImportJobController extends SMController
         $query = $this->model;
         $query = $query->whereNull('deleted_at');
         $query = $query->whereSiteId($this->site->id);
+        $query = $query->orderBy('created_at','DESC');
         foreach (Input::all() as $key => $value){
             switch($key){
                 case 'q':
