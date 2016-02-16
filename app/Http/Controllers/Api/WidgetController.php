@@ -106,4 +106,18 @@ class WidgetController extends SMController
 
 		return ['success'];
 	}
+
+	public function locationOptions()
+	{
+		$data = [];
+
+		$data['posts'] = \App\Models\Post::whereSiteId( $this->site->id )->get();
+		$data['pages'] = \App\Models\CustomPage::whereSiteId( $this->site->id )->get();
+		$data['livecasts'] = \App\Models\Livecast::whereSiteId( $this->site->id )->get();
+		$data['categories'] = \App\Models\Category::whereSiteId( $this->site->id )->get();
+		$data['lessons'] = \App\Models\Lesson::whereSiteId( $this->site->id )->get();
+		$data['articles'] = \App\Models\SupportArticle::whereSiteId( $this->site->id )->get();
+
+		return $data;
+	}
 }
