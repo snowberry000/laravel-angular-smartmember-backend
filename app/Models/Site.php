@@ -522,7 +522,7 @@ class Site extends Root
 	public static function blacklistedSubdomains()
 	{
 		return [
-			'my', 'docs', 'www', 'api', 'about','aboutu','abuse','acme','ad','admanager','admin','admindashboard','administrator','ads','adsense','adult','adword','affiliate','affiliatepage','afp','alpha',
+			'my', 'www', 'api', 'about','aboutu','abuse','acme','ad','admanager','admin','admindashboard','administrator','ads','adsense','adult','adword','affiliate','affiliatepage','afp','alpha',
 			'anal','analytic','android','answer','anu','anus','ap','api','app','appengine','application','appnew','arse','asdf','a','as','ass','asset','asshole','atf','backup','ball','balls','ballsack','bank',
 			'base','bastard','beginner','beta','biatch','billing','binarie','binary','bitch','biz','blackberry','blog','blogsearch','bloody','blowjob','blowjobs','bollock','boner','boob','boobs','book',
 			'bugger','bum','butt','buttplug','buy','buzz','c','cache','calendar','cart','catalog','ceo','chart','chat','checkout','ci','cia','client','clitori','clitoris','cname','cnarne','cock','code',
