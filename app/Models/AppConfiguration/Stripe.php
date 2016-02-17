@@ -47,6 +47,7 @@ class Stripe extends AppConfiguration{
 		$new_data['access_token'] = $data['access_token'];
 		$new_data['remote_id'] = $data['stripe_user_id'];
 		$new_data['name'] = $data['name'];
+		$new_data['account_id'] = \Input::get('state');
 
 		$account = ConnectedAccount::firstOrCreate($new_data);
 		$account->save();
