@@ -119,3 +119,8 @@ ADD  `parent_id` BIGINT( 22 ) NOT NULL DEFAULT  '0' AFTER  `display`;
 UPDATE  `support_articles` SET display =  'default' WHERE display IS NULL AND deleted_at IS NULL;
 
 ALTER TABLE  `support_categories` ADD  `migrated` TINYINT NOT NULL DEFAULT 0;
+
+ALTER TABLE  `support_articles` ADD  `status` VARCHAR( 255 ) NOT NULL DEFAULT  'published' AFTER  `display` ,
+ADD INDEX (  `status` ) ;
+
+ALTER TABLE  `support_articles` CHANGE  `status`  `status` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT  'draft';
