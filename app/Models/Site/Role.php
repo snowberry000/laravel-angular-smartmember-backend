@@ -15,6 +15,7 @@ use App\Models\AccessLevel\Pass;
 use Config;
 use App\Models\EmailSubscriber;
 use App\Models\EmailQueue;
+use App\Models\Lesson;
 
 class Role extends Root{
     protected $table = 'sites_roles';
@@ -65,11 +66,12 @@ class Role extends Root{
         $roles = $roles->toArray();
         $sites = [];
 
-        foreach ($roles as $site){       
+        foreach ($roles as $site){
+                $lesson_count = Lesson::whereSiteId($site['site']['id'])->where('access_level_type','!=',4)->whereNull('deleted_at')->count();
                 $logo = \App\Models\SiteMetaData::whereSiteId($site['site']['id'])
                         ->whereKey('site_logo')
                         ->first();   
-
+                $site['site']['total_lessons'] = $lesson_count;
                 $site['site']['logo'] = $logo ? $logo->value : "";
                 $sites[] = $site;
         }
@@ -246,19 +248,19 @@ class Role extends Root{
                         {
                             case 1:
                                 if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-                                    $date = $date->addMinutes(5);
+                                    $date = $date->addMinute();
                                 else
                                     $date = $date->addHours($email->pivot->delay);
                                 break;
                             case 2:
                                 if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-                                    $date = $date->addMinutes(5);
+                                    $date = $date->addMinute();
                                 else
                                     $date = $date->addDays($email->pivot->delay);
                                 break;
                             case 3:
                                 if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-                                    $date = $date->addMinutes(5);
+                                    $date = $date->addMinute();
                                 else
                                     $date = $date->addMonths($email->pivot->delay);
                                 break;

@@ -136,3 +136,8 @@ CREATE TABLE IF NOT EXISTS `widget_locations` (
 
 INSERT INTO `widget_locations` (`widget_id`,`type`)
     SELECT `id`, 'everywhere' FROM `widgets` WHERE `deleted_at` IS NULL;
+
+ALTER TABLE  `support_articles` ADD  `status` VARCHAR( 255 ) NOT NULL DEFAULT  'published' AFTER  `display` ,
+ADD INDEX (  `status` ) ;
+
+ALTER TABLE  `support_articles` CHANGE  `status`  `status` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT  'draft';

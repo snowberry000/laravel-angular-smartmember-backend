@@ -159,4 +159,18 @@ class EmailSubscriber extends Root
 	}
 }
 
+EmailSubscriber::saving(function($model){
+	preg_match( '/[a-z0-9\.\_\-\+]{1,}@[a-z0-9\-]{2,}\.[a-z0-9\-\.]{2,}/i', $model->email, $matches );
 
+	if( !empty( $matches ) && !empty( $matches[0] ) )
+		$model->email = trim( $matches[0] );
+
+	$model->name = trim( $model->name );
+});
+
+EmailSubscriber::saved(function($model){
+	preg_match( '/[a-z0-9\.\_\-\+]{1,}@[a-z0-9\-]{2,}\.[a-z0-9\-\.]{2,}/i', $model->email, $matches );
+
+	if( empty( $matches ) || empty( $matches[0] ) )
+		$model->delete();
+});

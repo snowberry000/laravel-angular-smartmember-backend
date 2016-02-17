@@ -239,6 +239,30 @@ Post::saved(function($model){
 	}
 });
 
+Post::updated(function($model) {
+    if (\Input::has('remove_dripfeed'))
+    {
+        DripFeed::remove($model);
+    }
+    elseif (\Input::has('dripfeed_settings'))
+    {
+        \Log::info('set dripfeed');
+        DripFeed::set($model, \Input::get('dripfeed_settings'));
+    }
+    if (\Input::has("discussion_settings")){
+        $discussions = \Input::get("discussion_settings");
+
+        if($model->discussion_settings)
+            $model->discussion_settings->update($discussions);
+        else{
+            $discussions =  DiscussionSettings::create($discussions);
+            $model->discussion_settings()->associate($discussions);
+            $model->discussion_settings_id = $discussions->id;
+            $model->save();
+        }
+    }
+});
+
 Post::created(function($model){
     $model->author_id = \Auth::user()->id;
 

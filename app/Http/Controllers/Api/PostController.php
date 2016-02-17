@@ -168,7 +168,7 @@ class PostController extends SMController
 
 		foreach( self::AllowedColumns() as $key => $val )
 		{
-			if( \Input::has( $val ) )
+			if( \Input::has( $val ) || \Input::get($val) == '')
 				$input_fields[ $val ] = \Input::get( $val );
 		}
 
@@ -218,7 +218,6 @@ class PostController extends SMController
 			'post-title' => $model->title,
 			'post-id' => $model->id
 		) );
-
 		$model->fill( $this->SetAllowedInput() );
 		$model->save();
 

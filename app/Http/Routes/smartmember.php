@@ -160,6 +160,7 @@ Route::get('/accessLevel/sendMailAccessLevels',"Api\\AccessLevelController@sendM
 Route::get('/user/isSuperAdmin',"Api\\UserController@isSuperAdmin");
 Route::post('/user/saveFacebookGroupOption',"Api\\UserController@saveFacebookGroupOption");
 Route::post('/emailSubscriber/unsubscribe',"Api\\EmailSubscriberController@unsubscribe");
+Route::get('/emailSubscriber/clearWhiteSpaceFromEmails',"Api\\EmailSubscriberController@clearWhiteSpaceFromEmails");
 Route::post('/email/sendTest',"Api\\EmailController@sendTestEmail");
 Route::get('/listOfEmails',"Api\\EmailController@ListOfEmails");
 Route::get('/email/getSegments',"Api\\EmailController@getSegments");

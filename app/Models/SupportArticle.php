@@ -8,7 +8,10 @@ class SupportArticle extends Root
 
 	public function articles()
 	{
-		return $this->hasMany('App\Models\SupportArticle', 'parent_id');
+		if( \Input::has('status') && !empty( \Input::get('status') ) )
+			return $this->hasMany('App\Models\SupportArticle', 'parent_id')->whereStatus( \Input::get('status') );
+		else
+			return $this->hasMany('App\Models\SupportArticle', 'parent_id');
 	}
 
     public static function create(array $data = array())

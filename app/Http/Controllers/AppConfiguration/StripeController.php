@@ -75,7 +75,8 @@ class StripeController extends AppConfigurationController
         } else {
             $redirect_url = 'http://' . $site->domain;
         }
-        $redirect_url =  $redirect_url . '?stripe';
+
+        $redirect_url =  $redirect_url . ( !empty( $app_configuration_instance_id ) ? '/admin/apps/integration/stripe/configure/' . $app_configuration_instance_id : '/admin/apps/app_configurations/list' );
         header('Location: ' . $redirect_url);
         exit;
     }
