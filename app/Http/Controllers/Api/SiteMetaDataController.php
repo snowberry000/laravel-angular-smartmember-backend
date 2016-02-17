@@ -32,7 +32,7 @@ class SiteMetaDataController extends SMController
 
 		$query = $query->orderBy('id' , 'DESC');
 		$query = $query->whereNull('deleted_at');
-		$query = $query->whereNotIn( 'key', ['import_queue_locked', 'imports_queue_locked', 'last_email_sent']);
+		$query = $query->whereNotIn( 'key', ['import_queue_locked', 'imports_queue_locked', 'last_email_sent', 'email_queue_locked', 'email_recipient_queue_locked']);
 		foreach (Input::all() as $key => $value){
 			switch($key){
 				case 'q':

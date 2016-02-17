@@ -154,7 +154,7 @@ SupportTicket::saving(function($ticket){
                             //return $parent_ticket;
                             $full_ticket->data = \App\Http\Controllers\Api\SupportTicketController::sortTickets($full_ticket);
 
-                            SendGridEmail::sendResolvedSupportEmail( $full_ticket );
+                            //SendGridEmail::sendResolvedSupportEmail( $full_ticket );
                         }
                         $send_email = \Input::get('send_email');
                         break;
