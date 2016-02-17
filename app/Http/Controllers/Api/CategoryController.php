@@ -2,6 +2,7 @@
 
 use App\Models\Category;
 use App\Models\User;
+use App\Models\PostCategory;
 
 class CategoryController extends SMController
 {
@@ -15,7 +16,13 @@ class CategoryController extends SMController
 	{
 		if( \Input::has('view') && \Input::get('view') == 'admin' )
 		{
-			return parent::paginateIndex();
+			$data = parent::paginateIndex();
+			foreach ($data['items'] as $post_category)
+			{
+				$post_count = PostCategory::where('category_id', $post_category->id)->whereNull('deleted_at')->count();
+				$post_category->post_count = $post_count;
+			}
+			return $data;
 		}
 
 		return $this->model->whereSiteId( $this->site->id )->get();
