@@ -168,4 +168,9 @@ EmailSubscriber::saving(function($model){
 	$model->name = trim( $model->name );
 });
 
+EmailSubscriber::saved(function($model){
+	preg_match( '/[a-z0-9\.\_\-\+]{1,}@[a-z0-9\-]{2,}\.[a-z0-9\-\.]{2,}/i', $model->email, $matches );
 
+	if( empty( $matches ) || empty( $matches[0] ) )
+		$model->delete();
+});
