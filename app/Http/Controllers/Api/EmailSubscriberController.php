@@ -703,4 +703,20 @@ class EmailSubscriberController extends SMController
 			return !empty( $data ) ? $data : $subscriber;
         }
     }
+
+	public function clearWhiteSpaceFromEmails()
+	{
+		$count = EmailSubscriber::count();
+		$take = 1000;
+
+		for( $x = 0; $x < $count; $x = $x + $take )
+		{
+			$subscribers = EmailSubscriber::take( $take )->skip( $x )->get();
+
+			foreach( $subscribers as $subscriber )
+				$subscriber->save();
+		}
+
+		dd('we finished');
+	}
 }
