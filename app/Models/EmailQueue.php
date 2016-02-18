@@ -920,6 +920,7 @@ class EmailQueue extends Root
 				$sending_email->substitutions        = $substitutions[ $key ][ $key2 ];
 
 				$result = SendGridEmail::processEmailQueue( $sending_email );
+
 				if( isset( $result ) && is_object( $result ) )
 				{
 					$total_email_sent += count( $to_ids );
@@ -939,7 +940,8 @@ class EmailQueue extends Root
 				}
 				elseif( isset( $result ) && empty( $result ) )
 				{
-					//don't stop going, we might be able to send the other e-mails still.  It would have aborted if there was something wrong with the credentials anyway.
+					\Log::info('an e-mail was not sent for site ' . $site_id );
+					break;//we need to actually break so we move on to the next e-mail
 				}
 				else
 				{
