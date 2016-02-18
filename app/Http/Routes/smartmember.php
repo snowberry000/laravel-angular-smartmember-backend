@@ -278,6 +278,7 @@ Route::post('/linkedAccount/merge',"Api\\LinkedAccountController@merge");
 Route::post('/accessLevel/lock',"Api\\AccessLevelController@lock");
 
 Route::post('/widget/updateOrder', "Api\\WidgetController@updateOrder");
+Route::get('/widget/locationOptions', "Api\\WidgetController@locationOptions");
 
 Route::get('/supportAgents', "Api\\Site\RoleController@getSupportAgent");
 

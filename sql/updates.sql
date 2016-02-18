@@ -120,6 +120,23 @@ UPDATE  `support_articles` SET display =  'default' WHERE display IS NULL AND de
 
 ALTER TABLE  `support_categories` ADD  `migrated` TINYINT NOT NULL DEFAULT 0;
 
+CREATE TABLE IF NOT EXISTS `widget_locations` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `widget_id` bigint(20) NOT NULL,
+  `type` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `target` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`id`),
+  KEY (`widget_id`),
+  KEY (`type`),
+  KEY (`target`)
+) ENGINE=MyISAM AUTO_INCREMENT=155 DEFAULT CHARSET=latin1;
+
+INSERT INTO `widget_locations` (`widget_id`,`type`)
+    SELECT `id`, 'everywhere' FROM `widgets` WHERE `deleted_at` IS NULL;
+
 ALTER TABLE  `support_articles` ADD  `status` VARCHAR( 255 ) NOT NULL DEFAULT  'published' AFTER  `display` ,
 ADD INDEX (  `status` ) ;
 

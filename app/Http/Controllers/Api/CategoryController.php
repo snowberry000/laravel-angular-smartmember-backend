@@ -10,6 +10,7 @@ class CategoryController extends SMController
         parent::__construct();
         $this->model = new Category();
         $this->middleware('admin',['except'=>array('index','show')]);
+		$this->middleware('auth', ['except'=>array('index')]);
     }
 
 	public function index()
