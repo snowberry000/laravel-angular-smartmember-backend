@@ -599,8 +599,8 @@ class EmailQueue extends Root
 
     function lockQueue($site_id)
     {
-		$now = Carbon::now();
-		SiteMetaData::create(['site_id' => $site_id, 'key' => 'email_queue_locked', 'value' => $now->timestamp + 300 ]);
+		$now = time();
+		SiteMetaData::create(['site_id' => $site_id, 'key' => 'email_queue_locked', 'value' => $now + 1800 ]);
     }
 
     function unLockQueue($site_id)
@@ -613,10 +613,10 @@ class EmailQueue extends Root
 
     function isQueueLocked($site_id)
     {
-		$now = Carbon::now();
+		$now = time();
 		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('email_queue_locked')->first();
 
-		if (isset($email_queue_locked) && $email_queue_locked->value > $now->timestamp) {
+		if ( $email_queue_locked && $email_queue_locked->value > $now ) {
 			return true;
 		}
 
@@ -711,6 +711,18 @@ class EmailQueue extends Root
 
     private function queueHelper($site_id)
     {
+		$site = Site::find( $site_id );
+
+		if( !$site )
+		{
+			\DB::table('emails_queue')
+				->whereSiteId( $site_id )
+				->whereNull('deleted_at')
+				->update([ 'deleted_at' => Carbon::now() ]);
+
+			\App::abort( 403, "Site " . $site_id . " no longer exists and therefore we couldn't process the e-mail queue for it." );
+		}
+
 		$now = Carbon::now();
 
 		$site_meta = SiteMetaData::whereSiteId( $site_id )->whereKey('last_email_sent')->first();
@@ -938,13 +950,11 @@ class EmailQueue extends Root
 						EmailHistory::insert( $fields );
 					}
 				}
-				/*
 				elseif( isset( $result ) && empty( $result ) )
 				{
 					\Log::info('an e-mail was not sent for site ' . $site_id );
 					break;//we need to actually break so we move on to the next e-mail
 				}
-				*/
 				else
 				{
 					\App::abort( 403, "There is something wrong with our email system. Please email support and check back later" );

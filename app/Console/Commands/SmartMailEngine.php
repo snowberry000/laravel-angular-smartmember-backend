@@ -4,8 +4,9 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\EmailQueue;
-
+use Carbon\Carbon;
 use Exception;
+use PRedis;
 
 class SmartMailEngine extends Command
 {
@@ -40,11 +41,34 @@ class SmartMailEngine extends Command
      */
     public function handle()
     {
+		$now = Carbon::now();
+
+		$last_site = PRedis::get('last_site_email_queued_for');
+
         $sites = EmailQueue::distinct()
                 ->whereNotNull('site_id')
                 ->where('site_id', '!=', 0)
+				->where('send_at', '<=', Carbon::now() );
+
+		if( $last_site )
+			$sites = $sites->where('site_id', '>', $last_site );
+
+		$sites = $sites->orderBy('site_id', 'asc')
                 ->select('site_id')
                 ->lists('site_id');
+
+		if( !$sites )
+		{
+			PRedis::setex('last_site_email_queued_for', 24 * 60 * 60, 0);
+
+			$sites = EmailQueue::distinct()
+				->whereNotNull('site_id')
+				->where('site_id', '!=', 0)
+				->where('send_at', '<=', Carbon::now() )
+				->orderBy('site_id', 'asc')
+				->select('site_id')
+				->lists('site_id');
+		}
 
         // \Config::set('smartmail.debug', true);
 
@@ -54,15 +78,15 @@ class SmartMailEngine extends Command
             try
             {
                 \Log::info("Processing queue for " . $site);
-                $queue->processQueue($site, false);
+                $queue->processQueue($site, true);
             } 
             catch (Exception $e)
             {
-                \Log::info("Failed to process email queue for site " . $site . " " . $e->getMessage());
+                \Log::info("Failed to process email queue for site " . $site . ": " . $e->getMessage());
             }
 
+			PRedis::setex('last_site_email_queued_for', 24 * 60 * 60, $site);
             continue;
-            
         }
 
     }
