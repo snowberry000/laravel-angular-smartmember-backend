@@ -157,72 +157,12 @@ class Site extends Root
 
     public function getHeaderBackgroundColor()
     {
-        $color = \App\Models\SiteMetaData::whereSiteId($this->id)->whereKey('primary_theme_color')->first();
+        $color = \App\Models\SiteMetaData::whereSiteId($this->id)->whereKey('site_top_background_color')->first();
 
         if( $color )
             return $color->value;
-
-        $theme = \App\Models\SiteMetaData::whereSiteId($this->id)->whereKey('theme')->first();
-
-        if( $theme )
-            $theme = $theme->value;
-        else
-            $theme = 'default';
-
-        switch( $theme )
-        {
-            case 'default':
-                return '#222222';
-                break;
-            case 'cerulean':
-                return '#033c73';
-                break;
-            case 'cosmo':
-                return '#2780e3';
-                break;
-            case 'cyborg':
-                return '#222222';
-                break;
-            case 'darkly':
-                return '#00bc8c';
-                break;
-            case 'flatly':
-                return '#18bc9c';
-                break;
-            case 'journal':
-                return '#eb6864';
-                break;
-            case 'lumen':
-                return '#ffffff';
-                break;
-            case 'paper':
-                return '#2196f3';
-                break;
-            case 'readable':
-                return '#ffffff';
-                break;
-            case 'sandstone':
-                return '#93c54b';
-                break;
-            case 'simplex':
-                return '#d9230f';
-                break;
-            case 'slate':
-                return '#7a8288';
-                break;
-            case 'spacelab':
-                return '#446e9b';
-                break;
-            case 'superhero':
-                return '#df691a';
-                break;
-            case 'united':
-                return '#772953';
-                break;
-            case 'yeti':
-                return '#008cba';
-                break;
-        }
+		else
+			return '#222222';
     }
 
     public function clone_site($site_id , $clone_id , $user_id){
