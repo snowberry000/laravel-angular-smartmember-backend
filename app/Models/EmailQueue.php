@@ -937,6 +937,10 @@ class EmailQueue extends Root
 						EmailHistory::insert( $fields );
 					}
 				}
+				elseif( isset( $result ) && empty( $result ) )
+				{
+					//don't stop going, we might be able to send the other e-mails still.  It would have aborted if there was something wrong with the credentials anyway.
+				}
 				else
 				{
 					\App::abort( 403, "There is something wrong with our email system. Please email support and check back later" );
