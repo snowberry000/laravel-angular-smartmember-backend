@@ -938,11 +938,13 @@ class EmailQueue extends Root
 						EmailHistory::insert( $fields );
 					}
 				}
+				/*
 				elseif( isset( $result ) && empty( $result ) )
 				{
 					\Log::info('an e-mail was not sent for site ' . $site_id );
 					break;//we need to actually break so we move on to the next e-mail
 				}
+				*/
 				else
 				{
 					\App::abort( 403, "There is something wrong with our email system. Please email support and check back later" );
