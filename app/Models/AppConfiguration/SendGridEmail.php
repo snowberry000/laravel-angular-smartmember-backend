@@ -743,7 +743,10 @@ class SendGridEmail {
 		$from_name = !empty( $theEmail->original_email->mail_name ) ? $theEmail->original_email->mail_name : ( !empty( $emailSetting ) && !empty( $emailSetting->full_name ) ? $emailSetting->full_name : $from_address );
 		
 		if( empty( $from_address ) || empty( $reply_address ) || empty( $from_name ) )
-			\App::abort(403, "Make sure you have a from address, reply address, and from name set. From address: " . $from_address . ' and reply address: ' . $reply_address . ' and from name: ' . $from_name );
+		{
+			\Log::info( "E-mail with id: " . $theEmail->original_email->id . " not sent. Make sure you have a from address, reply address, and from name set. From address: " . $from_address . ' and reply address: ' . $reply_address . ' and from name: ' . $from_name );
+			return false;
+		}
 
             $email->setFromName($from_name)
             ->setFrom($from_address)
