@@ -59,6 +59,7 @@ class EmailJobController extends SMController
 
         $email_jobs = $query->get();
 		$email_integration = AppConfiguration::whereType('sendgrid')->whereSiteId( $this->site->id )->first();
+		$emailSetting = EmailSetting::where( 'site_id', $this->site->id )->first();
 
 		if( count( $email_jobs ) > 0 )
 		{
@@ -106,6 +107,11 @@ class EmailJobController extends SMController
 				if( empty( $email_integration ) || empty( $email_integration->password ) || empty( $email_integration->username ) && $email_job->status != "Sent Successfully" )
 				{
 					$email_job->sendgrid_account_check = true;
+				}
+
+				if( empty( $email_job->email->mail_sending_address ) && ( empty( $emailSetting ) || empty( $emailSetting->sending_address ) ) )
+				{
+					$email_job->sendgrid_setting_check = true;
 				}
 			}
 		}
