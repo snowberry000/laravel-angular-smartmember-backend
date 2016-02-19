@@ -885,88 +885,75 @@ class EmailQueue extends Root
 
         foreach ($emails as $key => $value)
 		{
-			$emailSetting = EmailSetting::where( 'site_id', $site_id )->first();
-
-			$from_address = !empty( $value->mail_sending_address ) ? $value->mail_sending_address : ( !empty( $emailSetting ) ? $emailSetting->sending_address : '' );
-			$reply_address = !empty( $value->mail_reply_address ) ? $value->mail_reply_address : ( !empty( $emailSetting ) && !empty( $emailSetting->replyto_address ) ? $emailSetting->replyto_address : $from_address );
-			$from_name = !empty( $value->mail_name ) ? $value->mail_name : ( !empty( $emailSetting ) && !empty( $emailSetting->full_name ) ? $emailSetting->full_name : $from_address );
-
-			if( !empty( $from_address ) && !empty( $reply_address ) && !empty( $from_name ) )
+			foreach( $value as $key2 => $value2 )
 			{
-				foreach( $value as $key2 => $value2 )
+				if( !isset( $emails_already_pulled[ $key ] ) )
 				{
-					if( !isset( $emails_already_pulled[ $key ] ) )
+					$email = Email::with( 'recipients' )->whereId( $key )->first();
+
+					if( !$email )
 					{
-						$email = Email::with( 'recipients' )->whereId( $key )->first();
-
-						if( !$email )
-						{
-							\DB::table( 'emails_queue' )
-								->whereEmailId( $key )
-								->whereNull( 'deleted_at' )
-								->update( [ 'deleted_at' => Carbon::now() ] );
-							continue;
-						}
-
-						if( $email->recipients )
-						{
-							foreach( $email->recipients as $key3 => $intro )
-							{
-								if( empty( $intros_already_pulled[ $intro->id ] ) )
-									$intros_already_pulled[ $intro->id ] = $intro;
-							}
-						}
-
-						$emails_already_pulled[ $key ] = $email;
-
-						$email->content = $this->injectTrackingIntoContent( $email->content, $site_id,
-																			$email->id, $queue[ $key ][ $key2 ][ 0 ][ 'job_id' ], $subscriber_id = '', $do_click_tracking = true, $key2 );
+						\DB::table( 'emails_queue' )
+							->whereEmailId( $key )
+							->whereNull( 'deleted_at' )
+							->update( [ 'deleted_at' => Carbon::now() ] );
+						continue;
 					}
 
-					$intro = !empty( $intros_already_pulled[ $key2 ] ) ? $intros_already_pulled[ $key2 ] : [ ];
-
-					$sending_email          = new Email();
-					$sending_email->site_id = $value2[ 'site_id' ];
-					unset( $value2[ 'site_id' ] );
-
-					$to                                  = array_keys( $value2 );
-					$to_ids                              = array_values( $value2 );
-					$sending_email->to                   = $to;
-					$sending_email->subject              = !empty( $intro ) && !empty( $intro->subject ) ? $intro->subject : $email->subject;
-					$sending_email->content              = ( !empty( $intro ) && !empty( $intro->intro ) ? $intro->intro : '' ) . $email->content;
-					$sending_email->id                   = $email->id;
-					$sending_email->original_email       = $email;
-					$sending_email->sendgrid_integration = $email->sendgrid_integration;
-					$sending_email->substitutions        = $substitutions[ $key ][ $key2 ];
-
-					$result = SendGridEmail::processEmailQueue( $sending_email );
-
-					if( isset( $result ) && is_object( $result ) )
+					if( $email->recipients )
 					{
-						$total_email_sent += count( $to_ids );
-						foreach( $to_ids as $to_id )
+						foreach( $email->recipients as $key3 => $intro )
 						{
-							EmailQueue::whereId( $to_id )->delete();
-						}
-						foreach( $queue[ $key ][ $key2 ] as $key3 => $value3 )
-						{
-							$fields                    = array();
-							$fields[ 'subscriber_id' ] = $value3[ 'subscriber_id' ];
-							$fields[ 'email_id' ]      = $key2;
-							$fields[ 'list_type' ]     = $value3[ 'list_type' ];
-							$fields[ 'job_id' ]        = $value3[ 'job_id' ];
-							EmailHistory::insert( $fields );
+							if( empty( $intros_already_pulled[ $intro->id ] ) )
+								$intros_already_pulled[ $intro->id ] = $intro;
 						}
 					}
-					else
+
+					$emails_already_pulled[ $key ] = $email;
+
+					$email->content = $this->injectTrackingIntoContent( $email->content, $site_id,
+																		$email->id, $queue[ $key ][ $key2 ][ 0 ][ 'job_id' ], $subscriber_id = '', $do_click_tracking = true, $key2 );
+				}
+
+				$intro = !empty( $intros_already_pulled[ $key2 ] ) ? $intros_already_pulled[ $key2 ] : [ ];
+
+				$sending_email          = new Email();
+				$sending_email->site_id = $value2[ 'site_id' ];
+				unset( $value2[ 'site_id' ] );
+
+				$to                                  = array_keys( $value2 );
+				$to_ids                              = array_values( $value2 );
+				$sending_email->to                   = $to;
+				$sending_email->subject              = !empty( $intro ) && !empty( $intro->subject ) ? $intro->subject : $email->subject;
+				$sending_email->content              = ( !empty( $intro ) && !empty( $intro->intro ) ? $intro->intro : '' ) . $email->content;
+				$sending_email->id                   = $email->id;
+				$sending_email->original_email       = $email;
+				$sending_email->sendgrid_integration = $email->sendgrid_integration;
+				$sending_email->substitutions        = $substitutions[ $key ][ $key2 ];
+
+				$result = SendGridEmail::processEmailQueue( $sending_email );
+
+				if( isset( $result ) && is_object( $result ) )
+				{
+					$total_email_sent += count( $to_ids );
+					foreach( $to_ids as $to_id )
 					{
-						\App::abort( 403, "There is something wrong with our email system. Please email support and check back later" );
+						EmailQueue::whereId( $to_id )->delete();
+					}
+					foreach( $queue[ $key ][ $key2 ] as $key3 => $value3 )
+					{
+						$fields                    = array();
+						$fields[ 'subscriber_id' ] = $value3[ 'subscriber_id' ];
+						$fields[ 'email_id' ]      = $key2;
+						$fields[ 'list_type' ]     = $value3[ 'list_type' ];
+						$fields[ 'job_id' ]        = $value3[ 'job_id' ];
+						EmailHistory::insert( $fields );
 					}
 				}
-			}
-			else
-			{
-				\Log::info( 'Failed to process e-mail ' . $key . ' for site ' . $site_id . ' because no from address was setup.' );
+				else
+				{
+					\App::abort( 403, "There is something wrong with our email system. Please email support and check back later" );
+				}
 			}
         }
         return array('data' => EmailQueue::whereSiteId($site_id)->skip(0)->take($per_run)->get(), 'last_email_sent' => $now->toDateTimeString(), 'total_email_sent' => $total_email_sent);
