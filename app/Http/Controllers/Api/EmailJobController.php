@@ -108,11 +108,6 @@ class EmailJobController extends SMController
 				{
 					$email_job->sendgrid_account_check = true;
 				}
-
-				if( empty( $email_job->email->mail_sending_address ) && ( empty( $emailSetting ) || empty( $emailSetting->sending_address ) ) )
-				{
-					$email_job->sendgrid_setting_check = true;
-				}
 			}
 		}
 
