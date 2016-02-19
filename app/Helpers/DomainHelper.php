@@ -64,6 +64,22 @@ class DomainHelper
         }
     }
 
+	public static function getDomain()
+	{
+		//Check for domain mapping
+
+		if (!empty($_SERVER["HTTP_REFERER"]) && strpos($_SERVER["HTTP_REFERER"], "smartmember") === false && strpos($_SERVER["HTTP_REFERER"], "smember") === false) {
+			$domain = explode("//", $_SERVER["HTTP_REFERER"]);
+			$domain = explode("/", $domain[1]);
+			$domain = array_shift($domain);
+			$site = Site::whereDomain($domain)->first();
+			if( $site )
+				return $site->domain;
+		}
+
+		return false;
+	}
+
     public static function getRealIP()
     {
         if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {

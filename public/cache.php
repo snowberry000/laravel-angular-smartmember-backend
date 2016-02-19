@@ -34,7 +34,30 @@ function getFormattedRequest(){
     return $request_uri;
 }
 
+function getDomain(){
+	$headers = getallheaders();
+
+	$domain = false;
+
+	if (isset($headers['origin'])) {
+		$domain = $headers['origin'];
+	} else if (isset($_SERVER["HTTP_REFERER"])) {
+		$domain = $_SERVER["HTTP_REFERER"];
+	}
+
+	if( $domain )
+	{
+		$domain_bits = explode( '//', $domain );
+
+		if( !empty( $domain_bits[1] ) )
+			$domain = str_replace( '/', '', $domain_bits[1] );
+	}
+
+	return $domain;
+}
+
 function getKey(){
+	$domain = getDomain();
 	$subdomain = getSubdomain();
 	$require_uri = getFormattedRequest();
 	$headers = getallheaders();
@@ -46,13 +69,34 @@ function getKey(){
 
         $key .= ":" . $access_token;
     }
+
     return $key;
+}
+
+function getDomainKey(){
+	$domain = getDomain();
+	$require_uri = getFormattedRequest();
+	$headers = getallheaders();
+
+	$key = $domain . ":" . $require_uri;
+	if (isset($headers["Authorization"])){
+		$authorization = explode(" ",$headers["Authorization"]);
+		list($type,$access_token) = $authorization;
+
+		$key .= ":" . $access_token;
+	}
+
+	return $key;
 }
 
 
 if ($_SERVER["REQUEST_METHOD"] == "GET"){
     $client = new Predis\Client();
-    $data = $client->get(getKey());
+    $data = $client->get(getDomainKey());
+
+	if( !$data )
+    	$data = $client->get(getKey());
+
     if ($data){
         header('Content-Type: application/json');
         echo $data;
