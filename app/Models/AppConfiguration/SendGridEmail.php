@@ -739,13 +739,28 @@ class SendGridEmail {
         }
 
 		$from_address = !empty( $theEmail->original_email->mail_sending_address ) ? $theEmail->original_email->mail_sending_address : ( !empty( $emailSetting ) ? $emailSetting->sending_address : '' );
+
+		if( empty( $from_address ) )
+		{
+			$site_owner_role = Role::whereSiteId( $site_id )->whereType('owner')->first();
+
+			if( $site_owner_role )
+			{
+				$site_owner = User::find( $site_owner_role->user_id );
+
+				if( $site_owner )
+				{
+					$from_address = $site_owner->email;
+				}
+			}
+		}
+
 		$reply_address = !empty( $theEmail->original_email->mail_reply_address ) ? $theEmail->original_email->mail_reply_address : ( !empty( $emailSetting ) && !empty( $emailSetting->replyto_address ) ? $emailSetting->replyto_address : $from_address );
 		$from_name = !empty( $theEmail->original_email->mail_name ) ? $theEmail->original_email->mail_name : ( !empty( $emailSetting ) && !empty( $emailSetting->full_name ) ? $emailSetting->full_name : $from_address );
 		
 		if( empty( $from_address ) || empty( $reply_address ) || empty( $from_name ) )
 		{
-			\Log::info( "E-mail with id: " . $theEmail->original_email->id . " not sent. Make sure you have a from address, reply address, and from name set. From address: " . $from_address . ' and reply address: ' . $reply_address . ' and from name: ' . $from_name );
-			return false;
+			\App::abort( 403, "E-mail with id: " . $theEmail->original_email->id . " not sent. Make sure you have a from address, reply address, and from name set. From address: " . $from_address . ' and reply address: ' . $reply_address . ' and from name: ' . $from_name );
 		}
 
             $email->setFromName($from_name)
