@@ -531,6 +531,17 @@ class Role extends Root{
 					'dpp2' => 'Smart Member 2.0',
 					'dpp3' => 'Smart Member 2.0'
 				)
+			),
+			'ad-respark-members' => array(
+				'products' => array(
+					4144
+				),
+				'site' => 44,
+				'granted-levels' => array(
+					'dpp1' => 'Smart Member 2.0',
+					'dpp2' => 'Smart Member 2.0',
+					'dpp3' => 'Smart Member 2.0'
+				)
 			)
 		);
 	}
