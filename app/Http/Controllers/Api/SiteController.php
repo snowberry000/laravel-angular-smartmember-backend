@@ -196,9 +196,8 @@ class SiteController extends SMController
         return isset($data->facebook_group_id) ? $data->facebook_group_id : '' ;
     }
 
-    public function details() 
+    public function details()
     {
-
         if(!$this->site && \Domain::getSubdomain()!='my')
           \App::abort(406,'No such subdomain exists');
         else if(\Domain::getSubdomain()=='my')

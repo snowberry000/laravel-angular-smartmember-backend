@@ -10,8 +10,7 @@ use SMCache;
 class BeforeGetRequest
 {
     public function handle($request, Closure $next)
-    {	
-
+    {
     	if ($_SERVER["REQUEST_METHOD"] != "GET"){
     		return $next($request);
     	}
