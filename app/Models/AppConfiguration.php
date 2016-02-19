@@ -105,9 +105,23 @@ class AppConfiguration extends Root
 	}
 }
 
+AppConfiguration::saved(function($model){
+	if( $model->type == 'sendgrid' && !$model->disabled )
+	{
+		$now = time();
+
+		$meta_items = SiteMetaData::whereSiteId( $model->site_id )->whereKey( 'email_queue_locked' )->where( 'value', '>', $now )->get();
+
+		if( $meta_items )
+		{
+			foreach( $meta_items as $meta_item )
+				$meta_item->delete();
+		}
+	}
+});
+
 AppConfiguration::deleted(function($app_configuration_instance){
 
-    //$company->permalink = Company::setPermalink($company);
     $routes[] = 'site_details';
     
     SMCache::reset($routes);
@@ -116,7 +130,6 @@ AppConfiguration::deleted(function($app_configuration_instance){
 
 AppConfiguration::saving(function($app_configuration_instance){
 
-    //$company->permalink = Company::setPermalink($company);
     $routes[] = 'site_details';
     
     SMCache::reset($routes);

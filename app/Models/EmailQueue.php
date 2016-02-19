@@ -600,7 +600,7 @@ class EmailQueue extends Root
     function lockQueue($site_id)
     {
 		$now = time();
-		SiteMetaData::create(['site_id' => $site_id, 'key' => 'email_queue_locked', 'value' => $now + 1800 ]);
+		SiteMetaData::create(['site_id' => $site_id, 'key' => 'email_queue_locked', 'value' => $now + ( 60 * 60 * 12 ) ]);
     }
 
     function unLockQueue($site_id)
@@ -712,6 +712,18 @@ class EmailQueue extends Root
     private function queueHelper($site_id)
     {
 		$site = Site::find( $site_id );
+
+		$sendgrid_settings = AppConfiguration::where( function( $query ) use ($site_id) {
+								$query->whereSiteId( $site_id );
+							})
+							->whereType('sendgrid')
+							->whereDisabled(0)
+							->orderBy('default','desc')
+							->select( [ 'username', 'password' ] )
+							->first();
+
+		if ( empty($sendgrid_settings) || !isset($sendgrid_settings->username) || !isset($sendgrid_settings->password) )
+			\App::abort(403, "Make sure you have set up E-mail Settings and at least one Sendgrid Integration");
 
 		if( !$site )
 		{
@@ -885,6 +897,13 @@ class EmailQueue extends Root
 
         foreach ($emails as $key => $value)
 		{
+			if( $value->sendgrid_integration )
+			{
+				$sendgrid_settings = AppConfiguration::whereId( $value->sendgrid_integration)->where(function($q) use ($site_id){
+					$q->orwhere('site_id',$site_id);
+				})->whereType('sendgrid')->whereDisabled(0)->select( [ 'username', 'password' ] )->first();
+			}
+
 			foreach( $value as $key2 => $value2 )
 			{
 				if( !isset( $emails_already_pulled[ $key ] ) )
@@ -921,15 +940,16 @@ class EmailQueue extends Root
 				$sending_email->site_id = $value2[ 'site_id' ];
 				unset( $value2[ 'site_id' ] );
 
-				$to                                  = array_keys( $value2 );
-				$to_ids                              = array_values( $value2 );
-				$sending_email->to                   = $to;
-				$sending_email->subject              = !empty( $intro ) && !empty( $intro->subject ) ? $intro->subject : $email->subject;
-				$sending_email->content              = ( !empty( $intro ) && !empty( $intro->intro ) ? $intro->intro : '' ) . $email->content;
-				$sending_email->id                   = $email->id;
-				$sending_email->original_email       = $email;
-				$sending_email->sendgrid_integration = $email->sendgrid_integration;
-				$sending_email->substitutions        = $substitutions[ $key ][ $key2 ];
+				$to                                  	   = array_keys( $value2 );
+				$to_ids                              	   = array_values( $value2 );
+				$sending_email->to                   	   = $to;
+				$sending_email->subject              	   = !empty( $intro ) && !empty( $intro->subject ) ? $intro->subject : $email->subject;
+				$sending_email->content              	   = ( !empty( $intro ) && !empty( $intro->intro ) ? $intro->intro : '' ) . $email->content;
+				$sending_email->id                   	   = $email->id;
+				$sending_email->original_email       	   = $email;
+				$sending_email->sendgrid_integration 	   = $email->sendgrid_integration;
+				$sending_email->substitutions        	   = $substitutions[ $key ][ $key2 ];
+				$sending_email->sendgrid_app_configuration = $sendgrid_settings;
 
 				$result = SendGridEmail::processEmailQueue( $sending_email );
 

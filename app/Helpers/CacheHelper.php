@@ -23,6 +23,7 @@ class CacheHelper
 	public static function reset( $routes = [ ] )
 	{
 		$subdomain = DomainHelper::getSubdomain();
+		$domain = DomainHelper::getDomain();
 		$keys      = [ ];
 		foreach( $routes as $route )
 		{
@@ -32,6 +33,12 @@ class CacheHelper
 
 			$keys[] = $subdomain . ':_' . $route;
 			$keys[] = $subdomain . ':_' . $route . ':*';
+
+			if( $domain )
+			{
+				$keys[] = $subdomain . ':_' . $route;
+				$keys[] = $subdomain . ':_' . $route . ':*';
+			}
 		}
 		self::clear( $keys );
 	}
