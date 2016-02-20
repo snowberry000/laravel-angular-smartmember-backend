@@ -36,8 +36,8 @@ class CacheHelper
 
 			if( $domain )
 			{
-				$keys[] = $subdomain . ':_' . $route;
-				$keys[] = $subdomain . ':_' . $route . ':*';
+				$keys[] = $domain . ':_' . $route;
+				$keys[] = $domain . ':_' . $route . ':*';
 			}
 		}
 		self::clear( $keys );
