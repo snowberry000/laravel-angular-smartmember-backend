@@ -723,7 +723,7 @@ class EmailQueue extends Root
 							->first();
 
 		if ( empty($sendgrid_settings) || !isset($sendgrid_settings->username) || !isset($sendgrid_settings->password) )
-			\App::abort(403, "Make sure you have set up E-mail Settings and at least one Sendgrid Integration");
+			\App::abort(403, "Make sure you have set up at least one Sendgrid Integration");
 
 		if( !$site )
 		{
@@ -897,13 +897,6 @@ class EmailQueue extends Root
 
         foreach ($emails as $key => $value)
 		{
-			if( $value->sendgrid_integration )
-			{
-				$sendgrid_settings = AppConfiguration::whereId( $value->sendgrid_integration)->where(function($q) use ($site_id){
-					$q->orwhere('site_id',$site_id);
-				})->whereType('sendgrid')->whereDisabled(0)->select( [ 'username', 'password' ] )->first();
-			}
-
 			foreach( $value as $key2 => $value2 )
 			{
 				if( !isset( $emails_already_pulled[ $key ] ) )
@@ -947,9 +940,17 @@ class EmailQueue extends Root
 				$sending_email->content              	   = ( !empty( $intro ) && !empty( $intro->intro ) ? $intro->intro : '' ) . $email->content;
 				$sending_email->id                   	   = $email->id;
 				$sending_email->original_email       	   = $email;
+
+				if( $email->sendgrid_integration )
+				{
+					$custom_sendgrid_settings = AppConfiguration::whereId( $value->sendgrid_integration)->where(function($q) use ($site_id){
+						$q->orwhere('site_id',$site_id);
+					})->whereType('sendgrid')->whereDisabled(0)->select( [ 'username', 'password' ] )->first();
+				}
+
 				$sending_email->sendgrid_integration 	   = $email->sendgrid_integration;
 				$sending_email->substitutions        	   = $substitutions[ $key ][ $key2 ];
-				$sending_email->sendgrid_app_configuration = $sendgrid_settings;
+				$sending_email->sendgrid_app_configuration = !empty( $custom_sendgrid_settings ) ? $custom_sendgrid_settings : $sendgrid_settings;
 
 				$result = SendGridEmail::processEmailQueue( $sending_email );
 
