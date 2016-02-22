@@ -710,23 +710,7 @@ class SendGridEmail {
 
 		$emailSetting = EmailSetting::where( 'site_id', $site_id )->first();
 
-		if( $theEmail->sendgrid_integration )
-		{
-			$sendgrid_settings = AppConfiguration::whereId( $theEmail->sendgrid_integration)->where(function($q) use ($site_id){
-				$q->orwhere('site_id',$site_id);
-			})->whereType('sendgrid')->whereDisabled(0)->select( [ 'username', 'password' ] )->first();
-		}
-
-		if( empty( $sendgrid_settings ) )
-		{
-			$sendgrid_settings = AppConfiguration::where( function( $query ) use ($site_id)
-			{
-				$query->whereSiteId( $site_id );
-			})->whereType('sendgrid')->whereDisabled(0)->orderBy('default','desc')->select( [ 'username', 'password' ] )->first();
-		}
-
-		if ( empty($sendgrid_settings) || !isset($sendgrid_settings->username) || !isset($sendgrid_settings->password) )
-			\App::abort(403, "Make sure you have set up E-mail Settings and at least one Sendgrid Integration");
+		$sendgrid_settings = $theEmail->sendgrid_app_configuration;
 
         $html_version_of_message = SendGridEmail::ConvertMessageToHtml($theEmail->content);
         $text_version_of_message = SendGridEmail::ConvertMessageToText($theEmail->content);
