@@ -169,6 +169,19 @@ AccessLevel::deleting(function($access_level){
     SMCache::reset($routes);
 });
 
+AccessLevel::saved(function($access_level){
+    $keys = \Input::get('grants');
+    
+    $door = array('_id' => $access_level->id , 'name' => $access_level->name ,
+                  'company_id' => \Auth::id() , 'type' => 'locked' ,
+                  'keys' => $keys
+                );
+    $door['keys'][] = $access_level->id;
+
+    \DB::connection('mongodb')->collection('door')->where('_id', $access_level->id)
+                       ->update($door, ['upsert' => true]);
+});
+
 /*AccessLevel::creating(function($access_level){
     
     $keys = array();

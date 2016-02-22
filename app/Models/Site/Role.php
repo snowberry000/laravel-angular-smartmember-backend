@@ -627,4 +627,66 @@ Role::deleted(function($pass){
     }
 
     \SMCache::clear($keys);
+
+   
+});
+
+Role::saved(function($role){
+    $company_id = \Auth::id();
+    if(isset($role->access_level_id)){
+        $access_level = AccessLevel::find($role->access_level_id);
+        $grants = $access_level->grants;
+        $keys = array_pluck($grants , 'grant_id');
+        $keys[] = $role->access_level_id;
+
+        foreach ($keys as $i => $key) {
+            $key_data = array('key_id' => $key , 'user_id' => $role->user_id , 'company_id' => $company_id);
+            \DB::connection('mongodb')->collection('key_member')->where('key_id', $key)->where('company_id' , $company_id)->where('user_id' , $role->user_id)->update($key_data, ['upsert' => true]);
+        }
+    }
+
+    $query = array('user_id' => strval($role->user_id) , 'site_ids' => strval($role->site_id) , 'company_id' => strval($company_id));
+    //dd($query);
+    $role_data = \DB::connection('mongodb')->collection('member')->raw()->findOne($query);
+    // $role_data = \DB::connection('mongodb')->collection('member')->where('site_id', intval($role->site_id))->where('company_id' , $company_id)->where('user_id' , '1')->first();
+    if($role_data){
+        $sites = $member->sites;
+        $site_ids = $member->site_ids;
+        $sites[$data['site_id']]['roles'][] = $data['type'];
+        if(!in_array($data['site_id'], $site_ids)){
+            $site_ids[] = $data['site_id'];
+        }
+        $member->sites = $sites;
+        $member->site_ids = $site_ids;
+        $member->save();
+    }
+});
+
+Role::deleted(function($role){
+    $company_id = \Auth::id();
+    if(isset($role->access_level_id)){
+        $access_level = AccessLevel::find($role->access_level_id);
+        $grants = $access_level->grants;
+        $keys = array_pluck($grants , 'grant_id');
+        $keys[] = $role->access_level_id;
+
+        foreach ($keys as $i => $key) {
+            $key_data = array('key_id' => $key , 'user_id' => $role->user_id , 'company_id' => $company_id);
+            \DB::connection('mongodb')->collection('key_member')->where('key_id', $key)->where('company_id' , $company_id)->where('user_id' , $role->user_id)->delete();
+        }
+    }
+
+    $query = array('user_id' => strval($role->user_id) , 'site_ids' => strval($role->site_id) , 'company_id' => strval($company_id));
+    $role_data = \DB::connection('mongodb')->collection('member')->raw()->findOne($query);
+    if($role_data){
+        $sites = $role_data['sites'];
+        $sites[$role->site_id]['roles'] = array_diff( $sites[$role->site_id]['roles'], array($role->type));
+        $role_data['site_ids'] = array_diff( $role_data['site_ids'] , array($role->site_id));
+        $role_data['sites'] = $sites;
+        dd($role_data);
+        \DB::connection('mongodb')->collection('member')->raw(function($collection) use ($role_data){
+            $collection->update(['_id' => $role_data['_id']],array('$set' => $role_data));
+        });
+    }
+    
 });
