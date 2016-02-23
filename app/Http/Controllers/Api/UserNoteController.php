@@ -4,7 +4,7 @@ use App\Http\Controllers\ApiController;
 use App\Models\UserNote;
 use App\Models\User;
 use App\Models\Lesson;
-
+use Input;
 class UserNoteController extends SMController
 {
     public function __construct()
@@ -24,7 +24,43 @@ class UserNoteController extends SMController
     }
 
     public function index(){
-    	$notes = parent::paginateIndex();
+        $page_size = config("vars.default_page_size");
+        $query = $this->model;
+
+        $query = $query->orderBy('id' , 'DESC');
+        $query = $query->whereNull('deleted_at');
+        $query = $query->whereNotNull('note');
+        foreach (Input::all() as $key => $value){
+            switch($key){
+                case 'q':
+                    if (Input::get('q')){
+                        $query = $this->model->applySearchQuery($query,$value);
+                    }
+                    break;
+                case 'view':
+                case 'p':
+                case 'bypass_paging':
+                    break;
+                default:
+                    if( !empty( $value ) || $value === 0 || $value === "0" )
+                        $query->where($key,'=',$value);
+            }
+        }
+
+        $notes = [];
+
+        if(isset($params['distinct']) && $params['distinct'])
+            $notes['total_count'] = $query->distinct()->count('user_id');
+        else
+            $notes['total_count'] = $query->count();
+        if( !Input::has('bypass_paging') || !Input::get('bypass_paging') )
+            $query = $query->take($page_size);
+
+        if( Input::has('p') )
+            $query->skip((Input::get('p')-1)*$page_size);
+
+        $notes['items'] = $query->get();
+
     	foreach ($notes['items'] as $note) {
     		$note->user = User::find($note->user_id);
     		$note->lesson = Lesson::find($note->lesson_id);

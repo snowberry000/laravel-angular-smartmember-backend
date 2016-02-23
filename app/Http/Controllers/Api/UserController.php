@@ -91,6 +91,11 @@ class UserController extends SMController
                 $model->sm_access = $user->hasSMPass();
 				$model->setup_wizard_complete = intval( $model->setup_wizard_complete );
 
+				$help_role = Role::whereSiteId( 2056 )->where('type','!=','member')->whereUserId( $model->id )->first();
+
+				if( $help_role )
+					$model->sm_support = true;
+
                 return $model;
             }
         }    	

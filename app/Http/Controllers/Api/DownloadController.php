@@ -37,10 +37,10 @@ class DownloadController extends SMController
         }
 
         
-        $downloads = array_values(array_sort($downloads, function($value)
-        {
-            return $value['sort_order'];
-        }));
+       // $downloads = array_values(array_sort($downloads, function($value)
+       // {
+       //     return $value['sort_order'];
+       // }));
 
         $returnDownloads=[];
         $length = count($downloads);
@@ -187,7 +187,7 @@ class DownloadController extends SMController
             \App::abort('403','You do not have access to this resource');
 
         $user_id = (\App\Helpers\SMAuthenticate::set()) ? Auth::user()->id : 0;
-        $history = DownloadHistory::create(array('user_id'=> $user_id ));
+        $history = DownloadHistory::create(array('user_id'=> $user_id, 'site_id' => $download->site_id));
         $download->history()->save($history);
         $download->save();
         if($download->media_item && $download->media_item->site_id == $download->site_id && $download->media_item->aws_key==""){

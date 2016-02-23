@@ -47,26 +47,24 @@ class EmailAutoResponder extends Root
 			$emails = $data['emails'];
 			unset($data['emails']);
 		}
-
 		$lists = [];
 		$access_levels = [];
 		$sites = [];
-		if (array_key_exists('lists', $data))
+		if (array_key_exists('post_lists', $data))
 		{
-			$lists = $data['lists'];
-			unset($data['lists']);
+			$lists = $data['post_lists'];
+			unset($data['post_lists']);
 		}
-		if (array_key_exists('access_levels', $data))
+		if (array_key_exists('post_access_levels', $data))
 		{
-			$access_levels = $data['access_levels'];
-			unset($data['access_levels']);
+			$access_levels = $data['post_access_levels'];
+			unset($data['post_access_levels']);
 		}
-		if (array_key_exists('sites', $data))
+		if (array_key_exists('post_sites', $data))
 		{
-			$sites = $data['sites'];
-			unset($data['sites']);
+			$sites = $data['post_sites'];
+			unset($data['post_sites']);
 		}
-
 		$data['processed_at'] = null;
 		$responder = parent::create($data);
 
@@ -135,15 +133,21 @@ class EmailAutoResponder extends Root
 				{
 					case 1:
 						if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-							$date = $date->addMinutes(5);
+							$date = $date->addMinute();
 						else
 							$date = $date->addHours($email->pivot->delay);
 						break;
 					case 2:
-						$date = $date->addDays($email->pivot->delay);
+						if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+							$date = $date->addMinute();
+						else
+							$date = $date->addDays($email->pivot->delay);
 						break;
 					case 3:
-						$date = $date->addMonths($email->pivot->delay);
+						if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+							$date = $date->addMinute();
+						else
+							$date = $date->addMonths($email->pivot->delay);
 						break;
 				}
 				if ($date->timestamp > Carbon::now()->timestamp)
@@ -171,15 +175,21 @@ class EmailAutoResponder extends Root
 				{
 					case 1:
 						if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-							$date = $date->addMinutes(5);
+							$date = $date->addMinute();
 						else
 							$date = $date->addHours($email->pivot->delay);
 						break;
 					case 2:
-						$date = $date->addDays($email->pivot->delay);
+						if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+							$date = $date->addMinute();
+						else
+							$date = $date->addDays($email->pivot->delay);
 						break;
 					case 3:
-						$date = $date->addMonths($email->pivot->delay);
+						if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+							$date = $date->addMinute();
+						else
+							$date = $date->addMonths($email->pivot->delay);
 						break;
 				}
 				if ($date->timestamp > Carbon::now()->timestamp)
@@ -216,15 +226,21 @@ class EmailAutoResponder extends Root
 				switch ($email->pivot->unit) {
 					case 1:
 						if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-							$date = $date->addMinutes(5);
+							$date = $date->addMinute();
 						else
 							$date = $date->addHours($email->pivot->delay);
 						break;
 					case 2:
-						$date = $date->addDays($email->pivot->delay);
+						if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+							$date = $date->addMinute();
+						else
+							$date = $date->addDays($email->pivot->delay);
 						break;
 					case 3:
-						$date = $date->addMonths($email->pivot->delay);
+						if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+							$date = $date->addMinute();
+						else
+							$date = $date->addMonths($email->pivot->delay);
 						break;
 
 				}

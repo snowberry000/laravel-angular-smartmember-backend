@@ -73,9 +73,10 @@ class User extends Root implements AuthenticatableContract
     {
 		if( empty( $value ) )
 		{
-			$email_hash = md5(trim($this->email));
-			$this->email_hash = $email_hash;
-			$this->save();
+            $user = User::find($this->id);
+            $email_hash = md5(trim($this->email));
+            $user->email_hash = $email_hash;
+			$user->save();
 		}
 		else
 		{
@@ -88,9 +89,9 @@ class User extends Root implements AuthenticatableContract
     public function options($meta_key = null)
     {
         if (!empty($meta_key))
-            return $this->hasMany("App\\Models\\UserOptions", "user_id")->where('meta_key', $meta_key);
+            return $this->hasMany("App\Models\UserOptions", "user_id")->where('meta_key', $meta_key);
 
-        return $this->hasMany("App\\Models\\UserOptions", "user_id");
+        return $this->hasMany("App\Models\UserOptions", "user_id");
     }
 
 	public function meta($site = null)
@@ -102,10 +103,10 @@ class User extends Root implements AuthenticatableContract
 			else
 				$site_id = $site->id;
 
-			return $this->hasMany( "App\\Models\\UserMeta", "user_id" )->whereSiteId( $site_id );
+			return $this->hasMany( "App\Models\UserMeta", "user_id" )->whereSiteId( $site_id );
 		}
 
-		return $this->hasMany("App\\Models\\UserMeta", "user_id");
+		return $this->hasMany("App\Models\UserMeta", "user_id");
 	}
 
     public static function randomPassword($length=12)

@@ -32,7 +32,7 @@ class SiteMetaDataController extends SMController
 
 		$query = $query->orderBy('id' , 'DESC');
 		$query = $query->whereNull('deleted_at');
-		$query = $query->whereNotIn( 'key', ['import_queue_locked', 'imports_queue_locked', 'last_email_sent']);
+		$query = $query->whereNotIn( 'key', ['import_queue_locked', 'imports_queue_locked', 'last_email_sent', 'email_queue_locked', 'email_recipient_queue_locked']);
 		foreach (Input::all() as $key => $value){
 			switch($key){
 				case 'q':
@@ -172,7 +172,9 @@ class SiteMetaDataController extends SMController
             'facebook_conversion_pixel',
             'bing_id',
             'bing_webmaster_tag',
-            'google_webmaster_tag'
+            'google_webmaster_tag',
+            'active_campaign_id',
+            'fb_share_description',
         );
 
         if( in_array( $pageMetaData->key,$no_script_areas ) )
@@ -229,7 +231,7 @@ class SiteMetaDataController extends SMController
     {
         if( isset( $this->site->id ) )
         {
-            $data = SiteMetaData::whereSiteId($this->site->id)->whereIn("key",array('google_analytics_id','facebook_retargetting_pixel','facebook_conversion_pixel','bing_id','google_webmaster_tag','bing_webmaster_tag'))->get();
+            $data = SiteMetaData::whereSiteId($this->site->id)->whereIn("key",array('google_analytics_id','facebook_retargetting_pixel','facebook_conversion_pixel','bing_id','google_webmaster_tag','bing_webmaster_tag','active_campaign_id','fb_share_description'))->get();
             $tracking_code = array();
             if( !empty( $data ) )
             {
@@ -247,6 +249,10 @@ class SiteMetaDataController extends SMController
                         $tracking_code[ 'google_webmaster_tag' ] = $val[ 'value' ];
                     elseif( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'bing_webmaster_tag' && !empty( $val[ 'value' ] ) )
                         $tracking_code[ 'bing_webmaster_tag' ] = $val[ 'value' ];
+                    elseif (!empty( $val[ 'key' ] ) && $val[ 'key' ] == 'active_campaign_id' && !empty( $val['value'] ) )
+                        $tracking_code[ 'active_campaign_id' ] = $val[ 'value' ];
+                    elseif (!empty( $val[ 'key' ] ) && $val[ 'key' ] == 'fb_share_description' && !empty( $val['value'] ) )
+                        $tracking_code[ 'fb_share_description' ] = $val[ 'value' ];
                 }
             }
 

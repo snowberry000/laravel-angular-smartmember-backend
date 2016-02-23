@@ -599,8 +599,8 @@ class EmailQueue extends Root
 
     function lockQueue($site_id)
     {
-		$now = Carbon::now();
-		SiteMetaData::create(['site_id' => $site_id, 'key' => 'email_queue_locked', 'value' => $now->timestamp + 300 ]);
+		$now = time();
+		SiteMetaData::create(['site_id' => $site_id, 'key' => 'email_queue_locked', 'value' => $now + ( 60 * 60 * 12 ) ]);
     }
 
     function unLockQueue($site_id)
@@ -613,10 +613,10 @@ class EmailQueue extends Root
 
     function isQueueLocked($site_id)
     {
-		$now = Carbon::now();
+		$now = time();
 		$email_queue_locked = SiteMetaData::whereSiteId($site_id)->whereKey('email_queue_locked')->first();
 
-		if (isset($email_queue_locked) && $email_queue_locked->value > $now->timestamp) {
+		if ( $email_queue_locked && $email_queue_locked->value > $now ) {
 			return true;
 		}
 
@@ -711,6 +711,30 @@ class EmailQueue extends Root
 
     private function queueHelper($site_id)
     {
+		$site = Site::find( $site_id );
+
+		$sendgrid_settings = AppConfiguration::where( function( $query ) use ($site_id) {
+								$query->whereSiteId( $site_id );
+							})
+							->whereType('sendgrid')
+							->whereDisabled(0)
+							->orderBy('default','desc')
+							->select( [ 'username', 'password' ] )
+							->first();
+
+		if ( empty($sendgrid_settings) || !isset($sendgrid_settings->username) || !isset($sendgrid_settings->password) )
+			\App::abort(403, "Make sure you have set up at least one Sendgrid Integration");
+
+		if( !$site )
+		{
+			\DB::table('emails_queue')
+				->whereSiteId( $site_id )
+				->whereNull('deleted_at')
+				->update([ 'deleted_at' => Carbon::now() ]);
+
+			\App::abort( 403, "Site " . $site_id . " no longer exists and therefore we couldn't process the e-mail queue for it." );
+		}
+
 		$now = Carbon::now();
 
 		$site_meta = SiteMetaData::whereSiteId( $site_id )->whereKey('last_email_sent')->first();
@@ -724,7 +748,7 @@ class EmailQueue extends Root
         $per_run = 4000;
         $queue_items = EmailQueue::whereSiteId($site_id)->where('send_at', '<', Carbon::now())->skip(0)->take($per_run)->get();
         $debug = EmailQueue::whereSiteId($site_id)->where('send_at', '<', Carbon::now())->skip(0)->take($per_run)->toSql();
-        \Log::info($debug);
+        \Log::info( 'site ' . $site_id . ': ' . $debug);
         \Log::info(Carbon::now('America/Chicago'));
         $emails_already_pulled = array();
         $intros_already_pulled = array();
@@ -735,7 +759,16 @@ class EmailQueue extends Root
 
         foreach ($queue_items as $queue_item) 
         {
-			preg_match_all("|%[a-zA-Z0-9-_]+%|U", $queue_item->email->content, $matches, PREG_PATTERN_ORDER);
+			if( $queue_item->email )
+				preg_match_all("|%[a-zA-Z0-9-_]+%|U", $queue_item->email->content, $matches, PREG_PATTERN_ORDER);
+			else
+			{
+				\DB::table('emails_queue')
+					->whereEmailId( $queue_item->email_id )
+					->whereNull('deleted_at')
+					->update([ 'deleted_at' => Carbon::now() ]);
+				continue;
+			}
 
 			$additional_meta = [];
 
@@ -755,11 +788,21 @@ class EmailQueue extends Root
 				}
 			}
 
-            if( $queue_item->list_type == 'segment' && !isset($queue_item->user->email)) 
-                continue;
+            if( $queue_item->list_type == 'segment' && ( !$queue_item->user || !$queue_item->user->email ) )
+			{
+				if( !$queue_item->user )
+					$queue_item->delete();
 
-            if ($queue_item->list_type != 'segment' && !isset($queue_item->subscriber->email))
-                continue;
+				continue;
+			}
+
+            if ($queue_item->list_type != 'segment' && ( !$queue_item->subscriber || !$queue_item->subscriber->email ) )
+			{
+				if( !$queue_item->subscriber )
+					$queue_item->delete();
+
+				continue;
+			}
 
             if( $queue_item->list_type == 'segment')
                 $emails[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro'][$queue_item->user->email] = $queue_item->id;
@@ -861,7 +904,13 @@ class EmailQueue extends Root
 					$email = Email::with( 'recipients' )->whereId( $key )->first();
 
 					if( !$email )
+					{
+						\DB::table( 'emails_queue' )
+							->whereEmailId( $key )
+							->whereNull( 'deleted_at' )
+							->update( [ 'deleted_at' => Carbon::now() ] );
 						continue;
+					}
 
 					if( $email->recipients )
 					{
@@ -878,23 +927,33 @@ class EmailQueue extends Root
 																		$email->id, $queue[ $key ][ $key2 ][ 0 ][ 'job_id' ], $subscriber_id = '', $do_click_tracking = true, $key2 );
 				}
 
-				$intro = !empty( $intros_already_pulled[ $key2 ] ) ? $intros_already_pulled[ $key2 ] : [];
+				$intro = !empty( $intros_already_pulled[ $key2 ] ) ? $intros_already_pulled[ $key2 ] : [ ];
 
-				$sending_email             = new Email();
-				$sending_email->site_id    = $value2[ 'site_id' ];
+				$sending_email          = new Email();
+				$sending_email->site_id = $value2[ 'site_id' ];
 				unset( $value2[ 'site_id' ] );
 
-				$to                                  = array_keys( $value2 );
-				$to_ids                              = array_values( $value2 );
-				$sending_email->to                   = $to;
-				$sending_email->subject              = !empty( $intro->subject ) ? $intro->subject : $email->subject;
-				$sending_email->content              = ( !empty( $intro->intro ) ? $intro->intro : '' ) . $email->content;
-				$sending_email->id                   = $email->id;
-				$sending_email->original_email		 = $email;
-				$sending_email->sendgrid_integration = $email->sendgrid_integration;
-				$sending_email->substitutions        = $substitutions[ $key ][ $key2 ];
+				$to                                  	   = array_keys( $value2 );
+				$to_ids                              	   = array_values( $value2 );
+				$sending_email->to                   	   = $to;
+				$sending_email->subject              	   = !empty( $intro ) && !empty( $intro->subject ) ? $intro->subject : $email->subject;
+				$sending_email->content              	   = ( !empty( $intro ) && !empty( $intro->intro ) ? $intro->intro : '' ) . $email->content;
+				$sending_email->id                   	   = $email->id;
+				$sending_email->original_email       	   = $email;
+
+				if( $email->sendgrid_integration )
+				{
+					$custom_sendgrid_settings = AppConfiguration::whereId( $value->sendgrid_integration)->where(function($q) use ($site_id){
+						$q->orwhere('site_id',$site_id);
+					})->whereType('sendgrid')->whereDisabled(0)->select( [ 'username', 'password' ] )->first();
+				}
+
+				$sending_email->sendgrid_integration 	   = $email->sendgrid_integration;
+				$sending_email->substitutions        	   = $substitutions[ $key ][ $key2 ];
+				$sending_email->sendgrid_app_configuration = !empty( $custom_sendgrid_settings ) ? $custom_sendgrid_settings : $sendgrid_settings;
 
 				$result = SendGridEmail::processEmailQueue( $sending_email );
+
 				if( isset( $result ) && is_object( $result ) )
 				{
 					$total_email_sent += count( $to_ids );

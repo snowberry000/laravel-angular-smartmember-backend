@@ -106,7 +106,7 @@ class Site extends Root
 
     public function links()
     {
-        return $this->hasManu('App\Models\Link', 'site_id');
+        return $this->hasMany('App\Models\Link', 'site_id');
     }
 
     public static function getShareData($subdomain){
@@ -157,72 +157,12 @@ class Site extends Root
 
     public function getHeaderBackgroundColor()
     {
-        $color = \App\Models\SiteMetaData::whereSiteId($this->id)->whereKey('primary_theme_color')->first();
+        $color = \App\Models\SiteMetaData::whereSiteId($this->id)->whereKey('site_top_background_color')->first();
 
         if( $color )
             return $color->value;
-
-        $theme = \App\Models\SiteMetaData::whereSiteId($this->id)->whereKey('theme')->first();
-
-        if( $theme )
-            $theme = $theme->value;
-        else
-            $theme = 'default';
-
-        switch( $theme )
-        {
-            case 'default':
-                return '#222222';
-                break;
-            case 'cerulean':
-                return '#033c73';
-                break;
-            case 'cosmo':
-                return '#2780e3';
-                break;
-            case 'cyborg':
-                return '#222222';
-                break;
-            case 'darkly':
-                return '#00bc8c';
-                break;
-            case 'flatly':
-                return '#18bc9c';
-                break;
-            case 'journal':
-                return '#eb6864';
-                break;
-            case 'lumen':
-                return '#ffffff';
-                break;
-            case 'paper':
-                return '#2196f3';
-                break;
-            case 'readable':
-                return '#ffffff';
-                break;
-            case 'sandstone':
-                return '#93c54b';
-                break;
-            case 'simplex':
-                return '#d9230f';
-                break;
-            case 'slate':
-                return '#7a8288';
-                break;
-            case 'spacelab':
-                return '#446e9b';
-                break;
-            case 'superhero':
-                return '#df691a';
-                break;
-            case 'united':
-                return '#772953';
-                break;
-            case 'yeti':
-                return '#008cba';
-                break;
-        }
+		else
+			return '#222222';
     }
 
     public function clone_site($site_id , $clone_id , $user_id){
@@ -507,10 +447,22 @@ class Site extends Root
         return array('success' => $result);
     }
 
+	public function support_email()
+	{
+		$meta_item = $this->meta_data()->whereKey('support_email_address')->first();
+
+		if( $meta_item )
+			return $meta_item->value;
+		else
+		{
+			return "noreply@" . ( !empty( $this->domain ) ? $this->domain : $this->subdomain . '.smartmember.com' );
+		}
+	}
+
 	public static function blacklistedSubdomains()
 	{
 		return [
-			'my', 'docs', 'www', 'api', 'about','aboutu','abuse','acme','ad','admanager','admin','admindashboard','administrator','ads','adsense','adult','adword','affiliate','affiliatepage','afp','alpha',
+			'my', 'www', 'api', 'about','aboutu','abuse','acme','ad','admanager','admin','admindashboard','administrator','ads','adsense','adult','adword','affiliate','affiliatepage','afp','alpha',
 			'anal','analytic','android','answer','anu','anus','ap','api','app','appengine','application','appnew','arse','asdf','a','as','ass','asset','asshole','atf','backup','ball','balls','ballsack','bank',
 			'base','bastard','beginner','beta','biatch','billing','binarie','binary','bitch','biz','blackberry','blog','blogsearch','bloody','blowjob','blowjobs','bollock','boner','boob','boobs','book',
 			'bugger','bum','butt','buttplug','buy','buzz','c','cache','calendar','cart','catalog','ceo','chart','chat','checkout','ci','cia','client','clitori','clitoris','cname','cnarne','cock','code',

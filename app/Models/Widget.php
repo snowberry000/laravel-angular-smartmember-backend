@@ -6,17 +6,26 @@ use SMCache;
 class Widget extends Root
 {
     protected $table = "widgets";
+	protected $with = ['meta_data', 'locations', 'banner'];
 
-    public function site(){
+    public function site()
+	{
         return $this->belongsTo('App\Models\Site');
     }
 
-	public function banner(){
+	public function banner()
+	{
 		return $this->hasOne('App\Models\SiteAds', 'id', 'target_id' );
 	}
 
-	public function meta_data(){
+	public function meta_data()
+	{
 		return $this->hasMany('App\Models\WidgetMeta');
+	}
+
+	public function locations()
+	{
+		return $this->hasMany('App\Models\WidgetLocation');
 	}
 }
 

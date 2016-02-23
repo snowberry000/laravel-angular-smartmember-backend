@@ -4,6 +4,7 @@
 class Post extends Root
 {
     protected $table = 'posts';
+	protected $with = ['categories'];
 
     public function site()
     {
@@ -40,7 +41,7 @@ class Post extends Root
 
     public function categories()
     {
-        return $this->belongsToMany('App\Models\Category','posts_categories','post_id','category_id');
+		return $this->belongsToMany('App\Models\Category', 'posts_categories', 'post_id', 'category_id')->withTimestamps()->wherePivot( 'deleted_at', null )->distinct();
     }
 
     public function discussion_settings(){
@@ -56,6 +57,7 @@ class Post extends Root
         $discussions = [];
         $categories = [];
         $tags = [];
+        $dripfeed = [];
         $seo = null;
         unset($post_data['timeLeft']);
         unset($post_data['site']);
@@ -206,6 +208,66 @@ class Post extends Root
 
 Post::creating(function($model){
     \App\Models\Permalink::handleReservedWords($model);
+});
+
+Post::saved(function($model){
+	if( \Input::has('chosen_categories') )
+	{
+		$category_ids = [];
+
+		foreach( \Input::get('chosen_categories') as $key => $val )
+		{
+			$category_ids[] = $val;
+
+			$category = PostCategory::wherePostId( $model->id )->whereId( $val )->first();
+
+			if( $category )
+				continue;
+
+			$category = PostCategory::create( ['post_id' => $model->id, 'category_id' => $val ] );
+		}
+
+		$extra_categories = PostCategory::wherePostId( $model->id );
+
+		if( !empty( $category_ids ) )
+			$extra_categories = $extra_categories->whereNotIn( 'category_id', $category_ids );
+
+		$extra_categories = $extra_categories->get();
+
+		foreach( $extra_categories as $extra_category )
+			$extra_category->delete();
+	}
+    if (\Input::has('seo_settings'))
+    {
+        $seo = \Input::get('seo_settings');
+        if ($seo){
+            SeoSetting::savePage($seo, $model->site_id, 4, $model->id);
+        }
+    }
+});
+
+Post::updated(function($model) {
+    if (\Input::has('remove_dripfeed'))
+    {
+        DripFeed::remove($model);
+    }
+    elseif (\Input::has('dripfeed_settings'))
+    {
+        \Log::info('set dripfeed');
+        DripFeed::set($model, \Input::get('dripfeed_settings'));
+    }
+    if (\Input::has("discussion_settings")){
+        $discussions = \Input::get("discussion_settings");
+
+        if($model->discussion_settings)
+            $model->discussion_settings->update($discussions);
+        else{
+            $discussions =  DiscussionSettings::create($discussions);
+            $model->discussion_settings()->associate($discussions);
+            $model->discussion_settings_id = $discussions->id;
+            $model->save();
+        }
+    }
 });
 
 Post::created(function($model){

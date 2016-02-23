@@ -59,6 +59,7 @@ class EmailJobController extends SMController
 
         $email_jobs = $query->get();
 		$email_integration = AppConfiguration::whereType('sendgrid')->whereSiteId( $this->site->id )->first();
+		$emailSetting = EmailSetting::where( 'site_id', $this->site->id )->first();
 
 		if( count( $email_jobs ) > 0 )
 		{

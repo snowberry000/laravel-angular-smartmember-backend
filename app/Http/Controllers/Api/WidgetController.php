@@ -3,6 +3,7 @@
 use App\Http\Controllers\ApiController;
 use App\Models\Widget;
 use App\Models\WidgetMeta;
+use App\Models\WidgetLocation;
 
 class WidgetController extends SMController
 {
@@ -15,7 +16,7 @@ class WidgetController extends SMController
 
 	public function index()
 	{
-		$query = $this->model->with(['meta_data','banner']);
+		$query = $this->model;
 
 		$query = $query->orderBy('sort_order' , 'ASC');
 		foreach (\Input::all() as $key => $value){
@@ -56,6 +57,9 @@ class WidgetController extends SMController
 		if( \Input::has('meta') )
 			WidgetMeta::set( $stored, \Input::get('meta') );
 
+		if( \Input::has('location_data') )
+			WidgetLocation::set( $stored, \Input::get('location_data') );
+
 		return $this->model->with(['meta_data','banner'])->find( $stored->id );
 	}
 
@@ -78,6 +82,9 @@ class WidgetController extends SMController
 		if( \Input::has('meta') )
 			WidgetMeta::set( $model, \Input::get('meta') );
 
+		if( \Input::has('location_data') )
+			WidgetLocation::set( $model, \Input::get('location_data') );
+
 		return $this->model->with(['meta_data','banner'])->find( $model->id );
 	}
 
@@ -98,5 +105,19 @@ class WidgetController extends SMController
 		}
 
 		return ['success'];
+	}
+
+	public function locationOptions()
+	{
+		$data = [];
+
+		$data['posts'] = \App\Models\Post::whereSiteId( $this->site->id )->get();
+		$data['pages'] = \App\Models\CustomPage::whereSiteId( $this->site->id )->get();
+		$data['livecasts'] = \App\Models\Livecast::whereSiteId( $this->site->id )->get();
+		$data['categories'] = \App\Models\Category::whereSiteId( $this->site->id )->get();
+		$data['lessons'] = \App\Models\Lesson::whereSiteId( $this->site->id )->get();
+		$data['articles'] = \App\Models\SupportArticle::whereSiteId( $this->site->id )->get();
+
+		return $data;
 	}
 }

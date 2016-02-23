@@ -28,7 +28,7 @@ class SiteController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth", ['except' => array('details', 'getLatestOfAllContent')]);
+        $this->middleware("auth", ['except' => array('details', 'getLatestOfAllContent','getTicketCount')]);
         $this->middleware("smember", ['only' => array('store')]);
         $this->model = new Site();
 
@@ -42,7 +42,12 @@ class SiteController extends SMController
 		}
 		elseif( \Input::has('cloneable') && \Input::get('cloneable') == 1 )
 		{
-			return \Auth::user()->sitesWithCapability('clone_site');
+            $dfy_sites = $this->model->where('cloneable', 1)->whereNull('deleted_at')->orderBy('id', 'DESC')->get();
+			return
+                array(
+                'sites' => \Auth::user()->sitesWithCapability('clone_site'),
+                'dfy_sites' => $dfy_sites
+                );
 		}
 		else
 		{
@@ -191,9 +196,8 @@ class SiteController extends SMController
         return isset($data->facebook_group_id) ? $data->facebook_group_id : '' ;
     }
 
-    public function details() 
+    public function details()
     {
-
         if(!$this->site && \Domain::getSubdomain()!='my')
           \App::abort(406,'No such subdomain exists');
         else if(\Domain::getSubdomain()=='my')
@@ -246,7 +250,7 @@ class SiteController extends SMController
         }
 
         $data->is_admin = $this->is_admin;
-
+        $data->total_lessons = Lesson::whereSiteId($site_id)->where('access_level_type','!=',4)->whereNull('deleted_at')->count();
         return $data;
     }
 

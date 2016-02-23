@@ -160,6 +160,7 @@ Route::get('/accessLevel/sendMailAccessLevels',"Api\\AccessLevelController@sendM
 Route::get('/user/isSuperAdmin',"Api\\UserController@isSuperAdmin");
 Route::post('/user/saveFacebookGroupOption',"Api\\UserController@saveFacebookGroupOption");
 Route::post('/emailSubscriber/unsubscribe',"Api\\EmailSubscriberController@unsubscribe");
+Route::get('/emailSubscriber/clearWhiteSpaceFromEmails',"Api\\EmailSubscriberController@clearWhiteSpaceFromEmails");
 Route::post('/email/sendTest',"Api\\EmailController@sendTestEmail");
 Route::get('/listOfEmails',"Api\\EmailController@ListOfEmails");
 Route::get('/email/getSegments',"Api\\EmailController@getSegments");
@@ -200,6 +201,7 @@ Route::get('/blogPostByPermalink/{id}','Api\\PostController@getByPermalinkForBlo
 Route::get('/downloadByPermalink/{id}',"Api\\DownloadController@getByPermalink");
 Route::get('/livecastByPermalink/{id}',"Api\\LivecastController@getByPermalink");
 Route::get('/articleByPermalink/{id}',"Api\\SupportArticleController@getByPermalink");
+Route::get('/migrateToArticles',"Api\\SupportCategoryController@migrateToArticles");
 Route::get('/importJob/active', "Api\\ImportJobController@countActiveJob");
 //Route::get('/regenerateToken',"Auth\\AuthController@regenerateAccessToken");
 Route::get('/sharedKey/associatedKey', "Api\\AccessLevelShareKeyController@getAssociatedKey");
@@ -276,6 +278,7 @@ Route::post('/linkedAccount/merge',"Api\\LinkedAccountController@merge");
 Route::post('/accessLevel/lock',"Api\\AccessLevelController@lock");
 
 Route::post('/widget/updateOrder', "Api\\WidgetController@updateOrder");
+Route::get('/widget/locationOptions', "Api\\WidgetController@locationOptions");
 
 Route::get('/supportAgents', "Api\\Site\RoleController@getSupportAgent");
 

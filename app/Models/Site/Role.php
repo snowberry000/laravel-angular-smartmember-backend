@@ -15,6 +15,7 @@ use App\Models\AccessLevel\Pass;
 use Config;
 use App\Models\EmailSubscriber;
 use App\Models\EmailQueue;
+use App\Models\Lesson;
 
 class Role extends Root{
     protected $table = 'sites_roles';
@@ -65,11 +66,12 @@ class Role extends Root{
         $roles = $roles->toArray();
         $sites = [];
 
-        foreach ($roles as $site){       
+        foreach ($roles as $site){
+                $lesson_count = Lesson::whereSiteId($site['site']['id'])->where('access_level_type','!=',4)->whereNull('deleted_at')->count();
                 $logo = \App\Models\SiteMetaData::whereSiteId($site['site']['id'])
                         ->whereKey('site_logo')
                         ->first();   
-
+                $site['site']['total_lessons'] = $lesson_count;
                 $site['site']['logo'] = $logo ? $logo->value : "";
                 $sites[] = $site;
         }
@@ -218,47 +220,56 @@ class Role extends Root{
 
     public static function scheduleResponder($pass)
     {
-        if ($pass->access_level_id)
+        if ($pass->type != 'owner')
         {
-            $autoresponders_ac = EmailAutoResponder::whereHas('accessLevels', function($query) use ($pass) {
-                $query->where('access_level_id', $pass->access_level_id);
-            });
-            $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
-                $query->where('site_id', $pass->site_id);
-            })->union($autoresponders_ac->getQuery())->get();
-        } else {
-            $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
-                $query->where('site_id', $pass->site_id);
-            })->get();
-        }
-        if ($autoresponders->count() > 0)
-        {
-            foreach ($autoresponders as $autoresponder)
+            if ($pass->access_level_id )
             {
-                $emails = $autoresponder->emails;
-                $subscriber = User::find($pass->user_id);
-                $date = Carbon::parse($pass->created_at );
-                foreach ($emails as $email)
+                $autoresponders_ac = EmailAutoResponder::whereHas('accessLevels', function($query) use ($pass) {
+                    $query->where('access_level_id', $pass->access_level_id);
+                });
+                $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
+                    $query->where('site_id', $pass->site_id);
+                })->union($autoresponders_ac->getQuery())->get();
+            } else {
+                $autoresponders = EmailAutoResponder::whereHas('sites', function($query) use ($pass) {
+                    $query->where('site_id', $pass->site_id);
+                })->get();
+            }
+            if ($autoresponders->count() > 0)
+            {
+                foreach ($autoresponders as $autoresponder)
                 {
-                    switch ($email->pivot->unit)
+                    $emails = $autoresponder->emails;
+                    $subscriber = User::find($pass->user_id);
+                    $date = Carbon::parse($pass->created_at );
+                    foreach ($emails as $email)
                     {
-                        case 1:
-                            if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
-                                $date = $date->addMinutes(5);
-                            else
-                                $date = $date->addHours($email->pivot->delay);
-                            break;
-                        case 2:
-                            $date = $date->addDays($email->pivot->delay);
-                            break;
-                        case 3:
-                            $date = $date->addMonths($email->pivot->delay);
-                            break;
-                    }
-                    if ($date->timestamp > Carbon::now()->timestamp)
-                    {
-                        $email->send_at = $date;
-                        EmailQueue::enqueueAutoResponderEmail($email, $subscriber, 'segment');
+                        switch ($email->pivot->unit)
+                        {
+                            case 1:
+                                if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+                                    $date = $date->addMinute();
+                                else
+                                    $date = $date->addHours($email->pivot->delay);
+                                break;
+                            case 2:
+                                if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+                                    $date = $date->addMinute();
+                                else
+                                    $date = $date->addDays($email->pivot->delay);
+                                break;
+                            case 3:
+                                if ($email->pivot->delay == 0 || $email->pivot->delay == '0')
+                                    $date = $date->addMinute();
+                                else
+                                    $date = $date->addMonths($email->pivot->delay);
+                                break;
+                        }
+                        if ($date->timestamp > Carbon::now()->timestamp)
+                        {
+                            $email->send_at = $date;
+                            EmailQueue::enqueueAutoResponderEmail($email, $subscriber, 'segment');
+                        }
                     }
                 }
             }
@@ -515,6 +526,17 @@ class Role extends Root{
 					2973
 				),
 				'site' => 6192,
+				'granted-levels' => array(
+					'dpp1' => 'Smart Member 2.0',
+					'dpp2' => 'Smart Member 2.0',
+					'dpp3' => 'Smart Member 2.0'
+				)
+			),
+			'ad-respark-members' => array(
+				'products' => array(
+					4144
+				),
+				'site' => 44,
 				'granted-levels' => array(
 					'dpp1' => 'Smart Member 2.0',
 					'dpp2' => 'Smart Member 2.0',

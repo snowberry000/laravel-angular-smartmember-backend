@@ -103,3 +103,41 @@ ALTER TABLE  `opens` ADD  `identifier` VARCHAR( 255 ) NULL AFTER  `ip` ;
 ALTER TABLE  `clicks` ADD  `segment_id` BIGINT NULL AFTER  `ip` ;
 
 ALTER TABLE  `support_tickets` ADD  `escalated_site_id` BIGINT NULL AFTER  `site_id` ;
+
+TRUNCATE `categories`;
+TRUNCATE `tags`;
+TRUNCATE `posts_categories`;
+TRUNCATE `posts_tags`;
+
+ALTER TABLE  `categories` ADD  `permalink` VARCHAR( 255 ) NOT NULL DEFAULT  '' AFTER  `text` ,
+ADD INDEX (  `permalink` ) ;
+ALTER TABLE  `categories` CHANGE  `text`  `title` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ;
+
+ALTER TABLE  `support_articles` ADD  `display` VARCHAR( 255 ) NULL DEFAULT 'default' AFTER  `permalink` ,
+ADD  `parent_id` BIGINT( 22 ) NOT NULL DEFAULT  '0' AFTER  `display`;
+
+UPDATE  `support_articles` SET display =  'default' WHERE display IS NULL AND deleted_at IS NULL;
+
+ALTER TABLE  `support_categories` ADD  `migrated` TINYINT NOT NULL DEFAULT 0;
+
+CREATE TABLE IF NOT EXISTS `widget_locations` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `widget_id` bigint(20) NOT NULL,
+  `type` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `target` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`id`),
+  KEY (`widget_id`),
+  KEY (`type`),
+  KEY (`target`)
+) ENGINE=MyISAM AUTO_INCREMENT=155 DEFAULT CHARSET=latin1;
+
+INSERT INTO `widget_locations` (`widget_id`,`type`)
+    SELECT `id`, 'everywhere' FROM `widgets` WHERE `deleted_at` IS NULL;
+
+ALTER TABLE  `support_articles` ADD  `status` VARCHAR( 255 ) NOT NULL DEFAULT  'published' AFTER  `display` ,
+ADD INDEX (  `status` ) ;
+
+ALTER TABLE  `support_articles` CHANGE  `status`  `status` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT  'draft';
