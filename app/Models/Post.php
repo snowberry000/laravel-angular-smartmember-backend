@@ -237,6 +237,13 @@ Post::saved(function($model){
 		foreach( $extra_categories as $extra_category )
 			$extra_category->delete();
 	}
+    if (\Input::has('seo_settings'))
+    {
+        $seo = \Input::get('seo_settings');
+        if ($seo){
+            SeoSetting::savePage($seo, $model->site_id, 4, $model->id);
+        }
+    }
 });
 
 Post::updated(function($model) {

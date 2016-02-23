@@ -78,7 +78,8 @@ class SupportTicketController extends SMController
 		{
 			$response['count'] = $query->whereParentId(0)->count();
 			$response['tickets'] = $query->skip((Input::get('p')-1)*config("vars.default_page_size"))->with(array('agent'))->orderBy('updated_at' , 'DESC')->whereParentId(0)->get();
-			foreach ($response['tickets'] as $key => $value) {
+			$response['agents'] = $query->with(array('agent'))->whereParentId(0)->groupBy('agent_id')->get(["agent_id"]);
+            foreach ($response['tickets'] as $key => $value) {
 			   // $response['tickets'][$key]['lastReply']=SupportTicket::whereParentId($value->id)->orderBy('updated_at' , 'DESC')->first(['updated_at','created_at']);
 
 				if( !empty( $response['tickets'][$key]->agent ) && empty( $response['tickets'][$key]->agent->profile_image ) )
