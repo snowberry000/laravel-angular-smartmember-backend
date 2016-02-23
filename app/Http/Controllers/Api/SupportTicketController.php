@@ -27,6 +27,14 @@ class SupportTicketController extends SMController
 
     public function index()
 	{
+
+        if(Input::has('orderBy')){
+            $dateOrder = Input::get('orderBy'); // Get search order.
+            Input::merge(array('orderBy' => null)); // Replace Input::get('orderBy') with NULL.
+        }else{
+            $dateOrder = 'desc';
+        }
+
         $user = \Auth::user();
 
         $query = $this->filter();
@@ -77,7 +85,7 @@ class SupportTicketController extends SMController
 		if($p!=null)
 		{
 			$response['count'] = $query->whereParentId(0)->count();
-			$response['tickets'] = $query->skip((Input::get('p')-1)*config("vars.default_page_size"))->with(array('agent'))->orderBy('updated_at' , 'DESC')->whereParentId(0)->get();
+			$response['tickets'] = $query->skip((Input::get('p')-1)*config("vars.default_page_size"))->with(array('agent'))->orderBy('created_at' , $dateOrder)->whereParentId(0)->get();
 			$response['agents'] = $query->with(array('agent'))->whereParentId(0)->groupBy('agent_id')->get(["agent_id"]);
             foreach ($response['tickets'] as $key => $value) {
 			   // $response['tickets'][$key]['lastReply']=SupportTicket::whereParentId($value->id)->orderBy('updated_at' , 'DESC')->first(['updated_at','created_at']);
@@ -544,7 +552,8 @@ class SupportTicketController extends SMController
                 case 'sortBy':
                     break;
                 default:
-                    $query->where($key,'=',$value);
+                    if(!empty($value ))
+                        $query->where($key,'=',$value);
             }
         }
 
