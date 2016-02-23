@@ -141,3 +141,5 @@ ALTER TABLE  `support_articles` ADD  `status` VARCHAR( 255 ) NOT NULL DEFAULT  '
 ADD INDEX (  `status` ) ;
 
 ALTER TABLE  `support_articles` CHANGE  `status`  `status` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT  'draft';
+
+ALTER TABLE  `events` ADD  `company_id` BIGINT NULL AFTER  `site_id` ;

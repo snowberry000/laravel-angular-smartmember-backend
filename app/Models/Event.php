@@ -10,7 +10,7 @@ class Event extends Root
 {
     protected $table = "events";
 	protected $with = ['meta'];
-	public $saveable_columns = [ 'site_id', 'event_name', 'user_id', 'email', 'count', 'deleted_at', 'created_at', 'updated_at' ];
+	public $saveable_columns = [ 'site_id', 'event_name', 'user_id', 'email', 'count', 'company_id', 'deleted_at', 'created_at', 'updated_at' ];
 
 	public function meta()
 	{
@@ -19,7 +19,7 @@ class Event extends Root
 
 	public static function create(array $data = array())
 	{
-		$data = Input::only( [ 'site_id', 'event_name', 'user_id', 'email', 'count' ] );
+		$data = Input::only( [ 'site_id', 'event_name', 'user_id', 'email', 'count', 'company_id' ] );
 		return parent::create( $data );
 	}
 

@@ -88,6 +88,14 @@ class EventController extends SMController
 
 	public function store()
 	{
+		if( \Input::has('email') && !empty( \Input::get('email') ) )
+		{
+			$user = User::whereEmail( \Input::get('email') )->first();
+
+			if( $user )
+				\Input::merge( ['user_id' => $user->id ] );
+		}
+
 		if( SMAuthenticate::set() && !\Input::has('user_id') )
 			\Input::merge( ['user_id' => \Auth::user()->id ] );
 
@@ -111,6 +119,9 @@ class EventController extends SMController
 			$model = $model->whereSiteId( \Input::get('site_id') );
 		else
 			$model = $model->whereSiteId( 0 );
+
+		if( \Input::has('company_id') )
+			$model = $model->whereCompanyId( \Input::get('company_id' ) );
 
 		$model = $model->whereUserId( \Input::get('user_id') )->first();
 
