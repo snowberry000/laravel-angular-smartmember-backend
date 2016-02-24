@@ -20,9 +20,12 @@ function getSubdomain(){
 
     if (isset($domain)) {
         $explode = explode(".", $domain);
-        $subdomain = explode("//", $explode[0]);
-		if( !empty( $subdomain[1] ) )
-        	return $subdomain[1];
+		if( strpos( $domain, '.smartmember.' ) !== false )
+		{
+			$subdomain = explode( "//", $explode[ 0 ] );
+			if( !empty( $subdomain[ 1 ] ) )
+				return $subdomain[ 1 ];
+		}
     }
 }
 
@@ -57,20 +60,26 @@ function getDomain(){
 }
 
 function getKey(){
-	$domain = getDomain();
 	$subdomain = getSubdomain();
-	$require_uri = getFormattedRequest();
-	$headers = getallheaders();
 
-	$key = $subdomain . ":" . $require_uri;
-	if (isset($headers["Authorization"])){
-        $authorization = explode(" ",$headers["Authorization"]);
-        list($type,$access_token) = $authorization;
+	if( $subdomain )
+	{
+		$require_uri = getFormattedRequest();
+		$headers     = getallheaders();
 
-        $key .= ":" . $access_token;
-    }
+		$key = $subdomain . ":" . $require_uri;
+		if( isset( $headers[ "Authorization" ] ) )
+		{
+			$authorization = explode( " ", $headers[ "Authorization" ] );
+			list( $type, $access_token ) = $authorization;
 
-    return $key;
+			$key .= ":" . $access_token;
+		}
+
+		return $key;
+	}
+
+	return false;
 }
 
 function getDomainKey(){
@@ -94,8 +103,10 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
     $client = new Predis\Client();
     $data = $client->get(getDomainKey());
 
-	if( !$data )
-    	$data = $client->get(getKey());
+	$subdomain_key = getKey();
+
+	if( !$data && $subdomain_key )
+    	$data = $client->get( $subdomain_key );
 
     if ($data){
         header('Content-Type: application/json');
