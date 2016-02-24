@@ -132,9 +132,11 @@ class RoleController extends SMController
             $access_levels = \Input::get('access_levels');
 
         $expiry = \Input::has('expired_at') ? \Input::get('expired_at') : '0';
+        $email_welcome = \Input::has('email_welcome') ? \Input::get('email_welcome') : 0;
+        $email_ac = \Input::has('email_ac') ? \Input::get('email_ac') : 0;
 
         //$count = User::importUsers($users, array_keys($access_levels), $expiry, $this->site);
-        ImportQueue::enqueue($users, array_keys($access_levels), $expiry, $this->site);
+        ImportQueue::enqueue($users, array_keys($access_levels), $expiry, $this->site, $email_welcome, $email_ac);
         //return $count;
     }
 
