@@ -143,3 +143,5 @@ ADD INDEX (  `status` ) ;
 ALTER TABLE  `support_articles` CHANGE  `status`  `status` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT  'draft';
 
 ALTER TABLE  `events` ADD  `company_id` BIGINT NULL AFTER  `site_id` ;
+ALTER TABLE  `imports_queue` ADD  `email_welcome` BOOLEAN NULL AFTER  `job_id` ;
+ALTER TABLE  `imports_queue` ADD  `email_ac` BOOLEAN NULL AFTER  `job_id` ;

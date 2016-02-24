@@ -217,14 +217,13 @@ Post::saved(function($model){
 
 		foreach( \Input::get('chosen_categories') as $key => $val )
 		{
-			$category_ids[] = $val;
+            if (!in_array($val, $category_ids))
+			    $category_ids[] = $val;
 
-			$category = PostCategory::wherePostId( $model->id )->whereId( $val )->first();
+			$category = PostCategory::wherePostId( $model->id )->whereCategoryId( $val )->first();
 
-			if( $category )
-				continue;
-
-			$category = PostCategory::create( ['post_id' => $model->id, 'category_id' => $val ] );
+			if( !$category )
+                $category = PostCategory::create( ['post_id' => $model->id, 'category_id' => $val ] );
 		}
 
 		$extra_categories = PostCategory::wherePostId( $model->id );
