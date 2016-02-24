@@ -499,7 +499,7 @@ class EmailSubscriberController extends SMController
         if (\Input::has('site_id'))
         {
             $site_id = \Input::get('site_id');
-            $turn_optin_settings = SiteMetaData::whereSiteId($site_id)->whereKey('turn_optin_to_member')->first();
+            $turn_optin_settings = true;//SiteMetaData::whereSiteId($site_id)->whereKey('turn_optin_to_member')->first();
             if ($turn_optin_settings)
             {
                 $user = User::firstOrNew(['email' => $email]);
