@@ -166,12 +166,12 @@ class SupportTicketController extends SMController
         $advanced_info = [];
 
         if( $this->site )
-            $access_passes = Pass::with(['accessLevel' , 'site'])->whereSiteId($this->site->id)->whereUserId($model->user_id)->get();
+            $access_passes = Role::with('accessLevel')->whereSiteId($this->site->id)->whereUserId($model->user_id)->whereNotNull('access_level_id')->get();
+        if ($access_passes->count() > 0)
+            $advanced_info['access_levels'] = $access_passes->lists('accessLevel');
         else
-            $access_passes = Pass::with(['accessLevel' , 'site'])->whereUserId($model->user_id)->get();
+            $advanced_info['access_levels'] = [];
 
-        $advanced_info['sites'] = $access_passes->lists('site');
-        $advanced_info['access_levels'] = $access_passes->lists('accessLevel');
         $admin_roles = Role::whereUserId($model->user_id)->where('type','!=','member')->get();
 
         $member_roles = Role::whereUserId($model->user_id)->where('type','member')->get();
