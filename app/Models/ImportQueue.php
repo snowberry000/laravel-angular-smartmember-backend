@@ -20,7 +20,7 @@ class ImportQueue extends Root
         return $this->belongsTo('App\Models\Site');
     }
 
-	public static function enqueue($emails, $access_levels, $expiry, $site)
+	public static function enqueue($emails, $access_levels, $expiry, $site, $email_welcome = 0, $email_ac = 0)
 	{
 		$import_job = new ImportJob();
 		$import_job->site_id = $site->id;
@@ -38,6 +38,8 @@ class ImportQueue extends Root
 			$toQueue['site_id'] = $site->id;
 			$toQueue['expiry'] = $expiry;
 			$toQueue['job_id'] = $import_job->id;
+			$toQueue['email_welcome'] = $email_welcome;
+			$toQueue['email_ac'] = $email_ac;
 
 			$queue[] = $toQueue;
 		}
@@ -203,7 +205,7 @@ class ImportQueue extends Root
 				$site->save();
 			}
 
-			if( !empty( $granted_passes ) )
+			if( !empty( $granted_passes ) && $queue_item->email_ac)
 			{
 				SendGridEmail::sendAccessPassEmail($granted_passes);
 			}
@@ -212,11 +214,10 @@ class ImportQueue extends Root
 				if( empty( $password ) )
 					$password = '';
 
-				if( !$alreadyExists )
+				if( !$alreadyExists && $queue_item->email_welcome)
 				{
 					SendGridEmail::sendNewUserSiteEmail($user, $site, $password );
 				}
-
 			}
 			$queue_item->delete();
 		}
