@@ -27,6 +27,8 @@ function getSubdomain(){
 				return $subdomain[ 1 ];
 		}
     }
+
+	return false;
 }
 
 function getFormattedRequest(){
