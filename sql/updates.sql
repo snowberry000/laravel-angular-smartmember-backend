@@ -145,3 +145,5 @@ ALTER TABLE  `support_articles` CHANGE  `status`  `status` VARCHAR( 255 ) CHARAC
 ALTER TABLE  `events` ADD  `company_id` BIGINT NULL AFTER  `site_id` ;
 ALTER TABLE  `imports_queue` ADD  `email_welcome` BOOLEAN NULL AFTER  `job_id` ;
 ALTER TABLE  `imports_queue` ADD  `email_ac` BOOLEAN NULL AFTER  `job_id` ;
+
+ALTER TABLE  `app_configurations` ADD  `migrated` TINYINT NOT NULL DEFAULT 0;
