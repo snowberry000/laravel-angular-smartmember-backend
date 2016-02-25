@@ -14,18 +14,16 @@ class SiteAds extends Root
 
 SiteAds::deleting(function($ads){
 
-    //$company->permalink = Company::setPermalink($company);
-    $routes[] = 'site_details';
-    
-    //SMCache::reset($routes);
-    return $ads;
+	$routes[] = 'site_details';
+
+	\SMCache::reset($routes);
+	return $ads;
 });
 
 SiteAds::saving(function($ads){
 
-    //$company->permalink = Company::setPermalink($company);
-    $routes[] = 'site_details';
-    
-    //SMCache::reset($routes);
-    return $ads;
+	$routes[] = 'site_details';
+
+	\SMCache::reset($routes);
+	return $ads;
 });
