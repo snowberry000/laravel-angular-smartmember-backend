@@ -366,7 +366,7 @@ class AuthController extends Controller
         $user->reset_token = md5($email . rand(10000,99999));
         $user->save();
 
-        SendGridEmail::sendForgotPasswordEmail($user, $this->site);
+        // SendGridEmail::sendForgotPasswordEmail($user, $this->site);
 
         return array('success'=>true , 'message'=>'Password reset token sent to email');
     }
