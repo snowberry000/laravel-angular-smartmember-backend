@@ -10,7 +10,7 @@ class Event extends Root
 {
     protected $table = "events";
 	protected $with = ['meta'];
-	public $saveable_columns = [ 'site_id', 'event_name', 'user_id', 'email', 'count', 'company_id', 'deleted_at', 'created_at', 'updated_at' ];
+	public $saveable_columns = [ 'site_id', 'event_name', 'user_id', 'email', 'count', 'deleted_at', 'created_at', 'updated_at' ];
 
 	public function meta()
 	{
@@ -19,7 +19,7 @@ class Event extends Root
 
 	public static function create(array $data = array())
 	{
-		$data = Input::only( [ 'site_id', 'event_name', 'user_id', 'email', 'count', 'company_id' ] );
+		$data = Input::only( [ 'site_id', 'event_name', 'user_id', 'email', 'count' ] );
 		return parent::create( $data );
 	}
 
@@ -107,7 +107,7 @@ class Event extends Root
 					}
 
 					$meta_item->value = is_array( $val ) || is_object( $val ) ? json_encode( $val ) : $val;
-					// $meta_item->save();
+					$meta_item->save();
 				}
 			}
 
@@ -122,6 +122,27 @@ class Event extends Root
 				$val->forceDelete();
 		}
 	}
+
+	public static function getDistinctEvents($site_ids){
+        $data = \DB::table('events')
+            ->distinct('event_name')
+            ->select(['event_name'])
+            ->whereIn('site_id',$site_ids)
+            ->get();
+
+        $keys = [];
+
+        foreach ($data as $datum){
+            $keys[] = [
+                'name' => $datum->event_name,
+                'attribute' => 'updated_at',
+                'type' => 'date',
+                'table' => 'events',
+            ];
+        }    
+
+        return $keys;
+    }
 }
 
 Event::saved( function( $model ) {

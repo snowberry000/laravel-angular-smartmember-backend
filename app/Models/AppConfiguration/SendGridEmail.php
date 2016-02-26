@@ -276,12 +276,12 @@ class SendGridEmail {
 
         self::sendEmail($email, true, $site);
 
-		\App\Models\Event::Log( 'sent-forgot-password', array(
-			'user_id' => $user->id,
-			'site_id' => $site && $site->id ? $site->id : 0,
-			'email' => $user->email,
-			'extra meta test' => 'whatever'
-		) );
+		// \App\Models\Event::Log( 'sent-forgot-password', array(
+		// 	'user_id' => $user->id,
+		// 	'site_id' => $site && $site->id ? $site->id : 0,
+		// 	'email' => $user->email,
+		// 	'extra meta test' => 'whatever'
+		// ) );
     }
 
     public static function sendPurchaseEmail($transaction, $pass=false, $cbreceipt=false)
