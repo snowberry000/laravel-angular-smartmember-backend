@@ -198,9 +198,9 @@ class SiteController extends SMController
 
     public function details()
     {
-        if(!$this->site && \Domain::getSubdomain()!='my')
+        if(!$this->site && \Domain::getSubdomain()!='my' && \Domain::getSubdomain()!='app')
           \App::abort(406,'No such subdomain exists');
-        else if(\Domain::getSubdomain()=='my')
+        else if( \Domain::getSubdomain()=='my' || \Domain::getSubdomain() == 'app' )
         {
             return [];
         }
