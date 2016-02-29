@@ -359,7 +359,7 @@ class AuthController extends Controller
     {
         $email = Input::get('email');
 
-        $user = User::whereEmail($email)->first();
+        $user = User::withTrashed()->whereEmail($email)->first();
         if(!$user){
             return array('success'=>false , 'message'=>'no such email found');
         }
@@ -375,12 +375,27 @@ class AuthController extends Controller
         if(!Input::get('reset_token'))
             \App::abort(403, "Reset token was not valid");  
 
-        $user = User::whereResetToken(Input::get('reset_token'))->first();
+        $user = User::withTrashed()->whereResetToken(Input::get('reset_token'))->first();
         if($user){
             $user->password = Input::get('password');
             $user->refreshToken();
             $user->refreshEmailHash();
             $user->save();
+
+            $main_account_linked = LinkedAccount::whereLinkedEmail($user->email)->where('verified',1)->first();
+            if ($main_account_linked)
+            {
+                $main_account = User::find($main_account_linked->user_id);
+                $main_account->password = Input::get('password');
+                $main_account->refreshToken();
+                $main_account->refreshEmailHash();
+                $main_account->save();
+                \App\Models\Event::Log( 'reset-password', array(
+                    'site_id' => 0,
+                    'user_id' => $main_account->id,
+                    'email' => $main_account->email
+                ) );
+            }
 
 			\App\Models\Event::Log( 'reset-password', array(
 				'site_id' => 0,
