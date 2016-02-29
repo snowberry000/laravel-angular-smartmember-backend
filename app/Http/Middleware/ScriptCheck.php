@@ -47,7 +47,8 @@ class ScriptCheck
 			'[a-z\:\\/\.]*?\.evsuite\.com\\/player[a-z0-9\:\\/\.\?\=\&\-\_]*?',
 			'(?:https?:)?\\/\\/app\.voicestak\.com\\/assets\\/js\\/fancybox\.js',
 			'(?:https?:)?\\/\\/app\.voicestak\.com\\/assets\\/js\\/voice-stack\.js',
-			'(?:https?:)?\\/\\/fast\.wistia\.com\\/[a-z0-9\:\\/\.\?\=\&\-\_]*?'
+			'(?:https?:)?\\/\\/fast\.wistia\.com\\/[a-z0-9\:\\/\.\?\=\&\-\_]*?',
+			'(?:https?:)?\\/\\/cdn\.optimizely\.com\\/js\\/[a-z0-9\:\\/\.\?\=\&\-\_]*?',
 		];
 	}
 
