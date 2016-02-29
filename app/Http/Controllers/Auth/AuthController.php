@@ -359,14 +359,27 @@ class AuthController extends Controller
     {
         $email = Input::get('email');
 
-        $user = User::withTrashed()->whereEmail($email)->first();
-        if(!$user){
+        $user = User::whereEmail($email)->first();
+        $linked_account = LinkedAccount::whereLinkedEmail($email)->where('verified', 1)->first();
+        if(!$user && !$linked_account){
             return array('success'=>false , 'message'=>'no such email found');
         }
         $user->reset_token = md5($email . rand(10000,99999));
         $user->save();
+        $custom_token = "";
+        if ($linked_account)
+        {
+            $main_user = User::find($linked_account->user_id);
+            if ($main_user)
+            {
+                $main_user->reset_token =  md5($email . rand(10000,99999));
+                $custom_token = $main_user->reset_token;
+                $main_user->save();
+                SendGridEmail::sendForgotPasswordEmail($main_user, $this->site);
+            }
+        }
 
-        SendGridEmail::sendForgotPasswordEmail($user, $this->site);
+        SendGridEmail::sendForgotPasswordEmail($user, $this->site, $custom_token);
 
         return array('success'=>true , 'message'=>'Password reset token sent to email');
     }
