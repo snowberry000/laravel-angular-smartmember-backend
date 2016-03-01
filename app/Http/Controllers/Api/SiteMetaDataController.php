@@ -229,7 +229,7 @@ class SiteMetaDataController extends SMController
 
     public function getTrackingCode()
     {
-        if (\Input::has('domain') && strpos(\Input::get('domain'), "smartmember" === FALSE))
+        if (\Input::has('domain') && strpos(\Input::get('domain'), ".smartmember." === FALSE))
         {
             $site = Site::whereDomain(\Input::get('domain'))->first();
 
