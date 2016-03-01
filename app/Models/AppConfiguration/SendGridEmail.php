@@ -235,7 +235,7 @@ class SendGridEmail {
 		) );
     }
 
-    public static function sendForgotPasswordEmail($user, $site)
+    public static function sendForgotPasswordEmail($user, $site, $custom_token = "")
     {
         //$site = \Domain::getSite();
 
@@ -252,9 +252,9 @@ class SendGridEmail {
         if (!empty($site->domain))
         {
             \Log::info('This is the custom domain');
-            $reset_link = 'http://' . strtolower($site->domain) .  '/sign/reset/' . $user->reset_token;
+            $reset_link = 'http://' . strtolower($site->domain) .  '/sign/reset/' . ($custom_token != '' ? $custom_token : $user->reset_token);
         } else {
-            $reset_link = \Domain::appRoute (\Domain::getSubdomain(), '/sign/reset/' . $user->reset_token);
+            $reset_link = \Domain::appRoute (\Domain::getSubdomain(), '/sign/reset/' . ($custom_token != '' ? $custom_token : $user->reset_token));
         }
 
         $data = array();
