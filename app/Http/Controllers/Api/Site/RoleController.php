@@ -33,7 +33,8 @@ class RoleController extends SMController
 
 		if( !empty( $site_id ) )
 		{
-			$agents = Role::getFullMembersWithCapability( $site_id, 'manage_support_tickets' );
+			$site_ids = explode( ',', $site_id );
+			$agents = Role::getFullMembersWithCapability( $site_ids, 'manage_support_tickets' );
 			return array( 'items' => $agents, 'total_count' => count( $agents ) );
 		}
 		else
