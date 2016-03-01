@@ -112,6 +112,9 @@ class SMAuthenticate
                     case 'days':
                         $diff = $dripfeed->duration * 86400;
                         break;
+                    case 'weeks':
+                        $diff = $dripfeed->duration * 86400 * 7;
+                        break;
                     case 'months':
                         $diff = $dripfeed->duration * 86400 * 30;
                         break;
@@ -210,6 +213,9 @@ class SMAuthenticate
             case 'days':
                 $diff = $dripfeed->duration * 86400;
                 break;
+            case 'weeks':
+                $diff = $dripfeed->duration * 86400 * 7;
+                break;
             case 'months':
                 $diff = $dripfeed->duration * 86400 * 30;
                 break;
@@ -262,60 +268,6 @@ class SMAuthenticate
                     return false;
                 }
                 break;
-        }
-    }
-
-    //check if the content is available or not
-    //true means content is available
-    //false means it is not available
-    public static function checkDripFeed($model, $access_level_type, $pass = null)
-    {
-        $dripfeed = DripFeed::whereSiteId($model->site_id)->whereTargetId($model->id)->whereType($model->getTable())->first();
-        $diff = 0;
-        if ($dripfeed)
-        {
-            switch ( $dripfeed->interval )
-            {
-                case 'hours':
-                    $diff = $dripfeed->duration * 3600;
-                    break;
-                case 'days':
-                    $diff = $dripfeed->duration * 86400;
-                    break;
-                case 'months':
-                    $diff = $dripfeed->duration * 86400 * 30;
-                    break;
-            }
-            //if this is the module
-            //if !logged in and access level is public
-            switch ($access_level_type) {
-                //if access level is public
-                case 2:
-                    if (Carbon::now()->timestamp - strtotime($pass->created_at) >= $diff)
-                        return true;
-                    else
-                        return false;
-                    break;
-
-                //if access level is free members
-                case 3:
-                    $roles = Role::with('type')->whereHas('type' , function($query){
-                        $query->whereRoleType(6)
-                            ->distinct();
-                    })->whereUserId(\Auth::user()->id)->whereSiteId($model->site->id)->first();
-                    if ($roles)
-                    {
-                        if (Carbon::now()->timestamp - strtotime($roles->created_at) >= $diff)
-                            return true;
-                        else
-                            return false;
-                    } else {
-                        return false;
-                    }
-                    break;
-            }
-        } else {
-            return true;
         }
     }
 
