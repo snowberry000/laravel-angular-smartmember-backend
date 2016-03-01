@@ -108,7 +108,7 @@ class Role extends Root{
 		return $users;
 	}
 
-    public static function getFullMembersWithCapability($site_id, $capability){
+    public static function getFullMembersWithCapability($site_ids, $capability){
         $roles = [];
         $system_roles = Config::get('roles.roles');
 
@@ -116,12 +116,15 @@ class Role extends Root{
             if( in_array( $capability, $val ) )
                 $roles[] = $key;
 
-        $custom_roles = Capability::whereCapability($capability)->whereSiteId($site_id)->get();
+		if( !is_array( $site_ids ) )
+			$site_ids = [ $site_ids ];
+
+        $custom_roles = Capability::whereCapability($capability)->whereIn( 'site_id', $site_ids )->get();
 
         foreach( $custom_roles as $custom_role )
             $roles[] = $custom_role->type;
-
-        $users = Role::with(['user','accessLevel'])->whereIn('type', $roles)->whereSiteId($site_id)->get();
+		
+        $users = Role::with(['user','accessLevel'])->whereIn('type', $roles)->whereIn( 'site_id', $site_ids )->distinct()->get();
 
         return $users;
     }

@@ -229,57 +229,61 @@ class SiteMetaDataController extends SMController
 
     public function getTrackingCode()
     {
-        if( isset( $this->site->id ) )
+
+        if (\Input::has('domain') && strpos(\Input::get('domain'), 'smartmember.') === FALSE)
         {
-            $data = SiteMetaData::whereSiteId($this->site->id)->whereIn("key",array('google_analytics_id','facebook_retargetting_pixel','facebook_conversion_pixel','bing_id','google_webmaster_tag','bing_webmaster_tag','active_campaign_id','fb_share_description'))->get();
-            $tracking_code = array();
-            if( !empty( $data ) )
-            {
-                foreach( $data as $key => $val )
-                {
-                    if( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'google_analytics_id' && !empty( $val[ 'value' ] ) )
-                        $tracking_code[ 'google_analytics_id' ] = $val[ 'value' ];
-                    elseif( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'facebook_retargetting_pixel' && !empty( $val[ 'value' ] ) )
-                        $tracking_code[ 'facebook_retargetting_pixel' ] = $val[ 'value' ];
-                    elseif( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'facebook_conversion_pixel' && !empty( $val[ 'value' ] ) )
-                        $tracking_code[ 'facebook_conversion_pixel' ] = $val[ 'value' ];
-                    elseif( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'bing_id' && !empty( $val[ 'value' ] ) )
-                        $tracking_code[ 'bing_id' ] = $val[ 'value' ];
-                    elseif( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'google_webmaster_tag' && !empty( $val[ 'value' ] ) )
-                        $tracking_code[ 'google_webmaster_tag' ] = $val[ 'value' ];
-                    elseif( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'bing_webmaster_tag' && !empty( $val[ 'value' ] ) )
-                        $tracking_code[ 'bing_webmaster_tag' ] = $val[ 'value' ];
-                    elseif (!empty( $val[ 'key' ] ) && $val[ 'key' ] == 'active_campaign_id' && !empty( $val['value'] ) )
-                        $tracking_code[ 'active_campaign_id' ] = $val[ 'value' ];
-                    elseif (!empty( $val[ 'key' ] ) && $val[ 'key' ] == 'fb_share_description' && !empty( $val['value'] ) )
-                        $tracking_code[ 'fb_share_description' ] = $val[ 'value' ];
-                }
+            $site = Site::whereDomain(\Input::get('domain'))->first();
+            $data = SiteMetaData::whereSiteId($site->id)->whereIn("key",array('google_analytics_id','facebook_retargetting_pixel','facebook_conversion_pixel','bing_id','google_webmaster_tag','bing_webmaster_tag','active_campaign_id','fb_share_description'))->get();
+        } else {
+            if( isset( $this->site->id ) ) {
+                $data = SiteMetaData::whereSiteId($this->site->id)->whereIn("key", array('google_analytics_id', 'facebook_retargetting_pixel', 'facebook_conversion_pixel', 'bing_id', 'google_webmaster_tag', 'bing_webmaster_tag', 'active_campaign_id', 'fb_share_description'))->get();
             }
-
-            if (\Input::has('permalink'))
+        }
+        $tracking_code = array();
+        if( !empty( $data ) )
+        {
+            foreach( $data as $key => $val )
             {
-                $permalink = \Input::get('permalink');
-                if ($permalink != '')
-                {
-                    $permalink_rec = Permalink::whereSiteId($this->site->id)->wherePermalink($permalink)->first();
-
-                    if (isset($permalink_rec->id) && $permalink_rec->type == "bridge_bpages")
-                    {
-                        $meta = BridgePage::getMeta($permalink_rec->permalink,6,$this->site);
-                        if ($meta)
-                        {
-                            $tracking_code[ 'facebook_retargetting_pixel' ] = !empty( $meta[ 'fb_retargeting_pixel_id' ] ) ? $meta[ 'fb_retargeting_pixel_id' ] : '';
-                            $tracking_code[ 'fb_conversion_tracking_pixel_id' ] = !empty( $meta[ 'fb_conversion_tracking_pixel_id' ] ) ? $meta[ 'fb_conversion_tracking_pixel_id' ] : '';
-                        }
-                    }
-                }
+                if( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'google_analytics_id' && !empty( $val[ 'value' ] ) )
+                    $tracking_code[ 'google_analytics_id' ] = $val[ 'value' ];
+                elseif( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'facebook_retargetting_pixel' && !empty( $val[ 'value' ] ) )
+                    $tracking_code[ 'facebook_retargetting_pixel' ] = $val[ 'value' ];
+                elseif( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'facebook_conversion_pixel' && !empty( $val[ 'value' ] ) )
+                    $tracking_code[ 'facebook_conversion_pixel' ] = $val[ 'value' ];
+                elseif( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'bing_id' && !empty( $val[ 'value' ] ) )
+                    $tracking_code[ 'bing_id' ] = $val[ 'value' ];
+                elseif( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'google_webmaster_tag' && !empty( $val[ 'value' ] ) )
+                    $tracking_code[ 'google_webmaster_tag' ] = $val[ 'value' ];
+                elseif( !empty( $val[ 'key' ] ) && $val[ 'key' ] == 'bing_webmaster_tag' && !empty( $val[ 'value' ] ) )
+                    $tracking_code[ 'bing_webmaster_tag' ] = $val[ 'value' ];
+                elseif (!empty( $val[ 'key' ] ) && $val[ 'key' ] == 'active_campaign_id' && !empty( $val['value'] ) )
+                    $tracking_code[ 'active_campaign_id' ] = $val[ 'value' ];
+                elseif (!empty( $val[ 'key' ] ) && $val[ 'key' ] == 'fb_share_description' && !empty( $val['value'] ) )
+                    $tracking_code[ 'fb_share_description' ] = $val[ 'value' ];
             }
-
-            return $tracking_code;
         }
 
 
+        if (\Input::has('permalink'))
+        {
+            $permalink = \Input::get('permalink');
+            if ($permalink != '')
+            {
+                $permalink_rec = Permalink::whereSiteId($this->site->id)->wherePermalink($permalink)->first();
 
+                if (isset($permalink_rec->id) && $permalink_rec->type == "bridge_bpages")
+                {
+                    $meta = BridgePage::getMeta($permalink_rec->permalink,6,$this->site);
+                    if ($meta)
+                    {
+                        $tracking_code[ 'facebook_retargetting_pixel' ] = !empty( $meta[ 'fb_retargeting_pixel_id' ] ) ? $meta[ 'fb_retargeting_pixel_id' ] : '';
+                        $tracking_code[ 'fb_conversion_tracking_pixel_id' ] = !empty( $meta[ 'fb_conversion_tracking_pixel_id' ] ) ? $meta[ 'fb_conversion_tracking_pixel_id' ] : '';
+                    }
+                }
+            }
+        }
+
+        return $tracking_code;
     }
 
     public function wizard()
