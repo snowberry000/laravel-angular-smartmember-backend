@@ -116,7 +116,7 @@ class Email extends Root
         $parts = explode(".", $domain);
         $tld = array_pop($parts);
         $rootDomain = array_pop($parts) . "." . $tld;
-        if (strpos($domain, "smartmember") === false){
+        if ( \Domain::isCustomDomain( $domain ) ){
             $rootDomain = "smartmember.com";
         }
 
