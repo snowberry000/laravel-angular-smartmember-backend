@@ -201,7 +201,7 @@ class BridgePageController extends SMController
 
     public function checkHomepageBridgepage($domain)
     {
-        if (strpos($domain, "smartmember") === FALSE)
+        if ( \Domain::isCustomDomain( $domain ) )
         {
             $site = Site::whereDomain($domain)->first();
             if ($site)
