@@ -24,6 +24,21 @@ class DomainHelper
         return $path;
     }
 
+	public static function isCustomDomain( $domain )
+	{
+		return !preg_match( '/^(?:http(?:s)?\:)?(?:\/\/)?(?:[a-z0-9\-]{1,63})?\.smartmember\.(?:com|in|dev|soy|pro|co)(?:\/(?:.*)?)?$/i', $domain );
+	}
+
+	public static function domainParts( $domain )
+	{
+		preg_match( '/^(?:http(?:s)?\:)?(?:\/\/)?([a-z0-9\-]{1,63})?\.smartmember\.(?:com|in|dev|soy|pro|co)(?:\/(?:.*)?)?$/i', $domain, $matches );
+
+		if( !empty( $matches ) )
+			return $matches;
+		else
+			return false;
+	}
+
     public static function apiPath($route)
     {
         return \Config::get('app.url') . $route;
@@ -47,7 +62,7 @@ class DomainHelper
 
         //Check for domain mapping
 
-        if (!empty($_SERVER["HTTP_REFERER"]) && strpos($_SERVER["HTTP_REFERER"], "smartmember") === false && strpos($_SERVER["HTTP_REFERER"], "smember") === false) {
+        if (!empty($_SERVER["HTTP_REFERER"]) && self::isCustomDomain( $_SERVER["HTTP_REFERER"] ) ) {
             $domain = explode("//", $_SERVER["HTTP_REFERER"]);
             $domain = explode("/", $domain[1]);
             $domain = array_shift($domain);
@@ -68,7 +83,7 @@ class DomainHelper
 	{
 		//Check for domain mapping
 
-		if (!empty($_SERVER["HTTP_REFERER"]) && strpos($_SERVER["HTTP_REFERER"], "smartmember") === false && strpos($_SERVER["HTTP_REFERER"], "smember") === false) {
+		if (!empty($_SERVER["HTTP_REFERER"]) && self::isCustomDomain( $_SERVER["HTTP_REFERER"] ) ) {
 			$domain = explode("//", $_SERVER["HTTP_REFERER"]);
 			$domain = explode("/", $domain[1]);
 			$domain = array_shift($domain);
@@ -149,7 +164,7 @@ class DomainHelper
             	return $site;
         }
 
-		if (!empty($_SERVER["HTTP_REFERER"]) && strpos($_SERVER["HTTP_REFERER"], "smartmember") === false && strpos($_SERVER["HTTP_REFERER"], "smember") === false)
+		if (!empty($_SERVER["HTTP_REFERER"]) && self::isCustomDomain( $_SERVER["HTTP_REFERER"] ) )
 		{
 			$domain = explode( "//", $_SERVER[ "HTTP_REFERER" ] );
 			$domain = explode( "/", $domain[ 1 ] );
