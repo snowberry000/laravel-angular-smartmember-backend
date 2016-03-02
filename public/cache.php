@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__.'/../vendor/predis/predis/autoload.php';
 
+function isCustomDomain( $domain )
+{
+	return !preg_match( '/^(?:http(?:s)?\:)?(?:\/\/)?(?:[a-z0-9\-]{1,63})?\.smartmember\.(?:com|in|dev|soy|pro|co)(?:\/(?:.*)?)?$/i', $domain );
+}
+
 function getSubdomain(){
 	$headers = getallheaders();
 
@@ -20,7 +25,7 @@ function getSubdomain(){
 
     if (isset($domain)) {
         $explode = explode(".", $domain);
-		if( strpos( $domain, '.smartmember.' ) !== false )
+		if( !isCustomDomain( $domain ) )
 		{
 			$subdomain = explode( "//", $explode[ 0 ] );
 			if( !empty( $subdomain[ 1 ] ) )
