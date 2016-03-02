@@ -230,11 +230,13 @@ class SiteMetaDataController extends SMController
     public function getTrackingCode()
     {
 
-        if (\Input::has('domain') && strpos(\Input::get('domain'), 'smartmember.') === FALSE)
+        if (\Input::has('domain') && \Domain::isCustomDomain( \Input::get('domain') ) )
         {
             $site = Site::whereDomain(\Input::get('domain'))->first();
             $data = SiteMetaData::whereSiteId($site->id)->whereIn("key",array('google_analytics_id','facebook_retargetting_pixel','facebook_conversion_pixel','bing_id','google_webmaster_tag','bing_webmaster_tag','active_campaign_id','fb_share_description'))->get();
-        } else {
+        }
+		else
+		{
             if( isset( $this->site->id ) ) {
                 $data = SiteMetaData::whereSiteId($this->site->id)->whereIn("key", array('google_analytics_id', 'facebook_retargetting_pixel', 'facebook_conversion_pixel', 'bing_id', 'google_webmaster_tag', 'bing_webmaster_tag', 'active_campaign_id', 'fb_share_description'))->get();
             }
