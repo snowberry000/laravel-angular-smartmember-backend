@@ -150,7 +150,7 @@ class UtilityController extends Controller
     public function getMeta(){
         $subdomain = Input::get("subdomain");
         $domain = Input::get("domain");
-        if( $domain && strpos( $domain, '.smartmember.' ) === false )
+        if( $domain && \Domain::isCustomDomain( $domain ) )
 			$site = \App\Models\Site::whereDomain( $domain )->first();
 
 		if( empty( $site ) && $subdomain )
@@ -160,8 +160,13 @@ class UtilityController extends Controller
 			return array('success'=>'failure');
 
         $url = explode("/", Input::get('url'));
-        $permalink = array_shift($url);
-        $permalink = array_shift($url);
+        $permalink = array_pop($url);
+
+		if( empty( $permalink ) && !empty( $url ) )
+			$permalink = array_pop( $url );
+
+		if( strpos( $permalink, '?' ) !== false )
+			$permalink = substr( $permalink, 0, strpos( $permalink, '?' ) );
 
 		if( !empty( $permalink ) )
         	$permalink = Permalink::whereSiteId($site->id)->wherePermalink($permalink)->first();
