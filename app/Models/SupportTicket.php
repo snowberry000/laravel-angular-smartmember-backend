@@ -55,7 +55,8 @@ class SupportTicket extends Root
 
 		 $query->where(function($query) use ($value){
 			// $q->whereId( $value );
-			$query->where( 'subject', 'like', '%' . $value . '%')->orWhere( 'user_email', 'like', '%' . $value . '%')->orWhere( 'user_name', 'like', '%' . $value . '%');
+            $value = addcslashes ( $value , '+*?.,\\%^$\#[]{}()' );
+			$query->whereId( $value )->orWhere( 'subject', 'like', '%' . $value . '%')->orWhere( 'user_email', 'like', '%' . $value . '%')->orWhere( 'user_name', 'like', '%' . $value . '%');
 		      
         });
 
