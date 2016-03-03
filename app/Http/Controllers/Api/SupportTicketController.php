@@ -98,7 +98,7 @@ class SupportTicketController extends SMController
 		if($p!=null)
 		{
 			$response['count'] = $query->whereParentId(0)->count();
-            if(\Input::get('q'))
+            if(\Input::get('q') || \Input::get('q')==0)
                 $response['items'] = $query->skip((Input::get('p')-1)*config("vars.default_page_size"))->with(array('agent'))->orderBy('created_at' , $dateOrder)->whereParentId(0)->get();
 			$response['tickets'] = $query->skip((Input::get('p')-1)*config("vars.default_page_size"))->with(array('agent'))->orderBy('created_at' , $dateOrder)->whereParentId(0)->get();
 			$response['agents'] = $query->with(array('agent'))->whereParentId(0)->groupBy('agent_id')->get(["agent_id"]);
