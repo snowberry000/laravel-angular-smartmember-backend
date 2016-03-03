@@ -27,7 +27,16 @@ class SupportTicketController extends SMController
 
     public function index()
 	{
-
+         $urlValues= Input::all();
+        // dd($urlValues);
+         foreach( $urlValues as $key => $val )
+         {
+             if($val=='')
+             {
+                 return array("count" => 0,"tickets"=>[],"agents"=>[]);
+             }
+         }
+         
         if(Input::has('orderBy')){
             $dateOrder = Input::get('orderBy'); // Get search order.
             Input::merge(array('orderBy' => null)); // Replace Input::get('orderBy') with NULL.
