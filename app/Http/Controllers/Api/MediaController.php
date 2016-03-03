@@ -11,7 +11,7 @@ class MediaController extends SMController
     }
 
     public function index(){
-    	Input::merge(['site_id' => $this->site->id]);
+    	// Input::merge(['site_id' => $this->site->id]);
     	return parent::paginateIndex();
     }
 
