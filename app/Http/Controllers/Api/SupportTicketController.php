@@ -93,7 +93,7 @@ class SupportTicketController extends SMController
 
 
 		$p = \Input::get('p');
-        if(\Input::get('q'))
+        if(\Input::get('q') || \Input::get('q')==0)
             $p=1;
 		if($p!=null)
 		{
