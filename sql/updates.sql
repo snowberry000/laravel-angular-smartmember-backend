@@ -149,3 +149,8 @@ ALTER TABLE  `imports_queue` ADD  `email_ac` BOOLEAN NULL AFTER  `job_id` ;
 ALTER TABLE  `app_configurations` ADD  `migrated` TINYINT NOT NULL DEFAULT 0;
 ALTER TABLE  `connected_accounts` ADD  `migrated` TINYINT NOT NULL DEFAULT 0;
 ALTER TABLE  `transactions` ADD  `migrated` TINYINT NOT NULL DEFAULT 0;
+ALTER TABLE  `sites` ADD  `migrated` TINYINT NOT NULL DEFAULT 0;
+ALTER TABLE  `permalinks` CHANGE  `target_id`  `target_id` VARCHAR( 255 ) NOT NULL ;
+ALTER TABLE  `lessons` ADD  `migrated` TINYINT NOT NULL DEFAULT 0;
+ALTER TABLE  `modules` ADD  `migrated` TINYINT NOT NULL DEFAULT 0;
+ALTER TABLE  `permalinks` ADD  `parent_id` varchar(255) NULL DEFAULT null;
