@@ -163,25 +163,24 @@ class RoleController extends SMController
 		return $response;
 	}
 
-    public function getCSV()
+     public function getCSV()
     {
         $site_id = $this->site->id;
         $query = $this->model->with(["user","accessLevel"]);
         $query = $query->orderBy('id','desc')->whereNull('deleted_at')->whereSiteId($site_id);
         $roles = $query->get();
         //$roles = array_unique($roles );
-
         $arrayCSV = array();
-
         foreach ($roles as $role) {
-            $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] [] =  $role->accessLevel['name'];
-            $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] = array_unique($arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel']);
-            //$arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel']  =  $role['created_at']::parse()->format('d/m/Y'));
+            if(!empty($role->accessLevel['name']))
+            {
+                $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] [] =  $role->accessLevel['name'];
+                // $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] [] =  $role->accessLevel['name'].','.$role['created_at']::parse()->format('d/m/Y');
+
+                $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] = array_unique($arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel']);
+            }
         }
-
-
         $output = array(); 
-
         foreach ($arrayCSV as $key => $value) {
             $tempArr = explode("!@~&", $key);
             if (strlen(trim($tempArr[0].$tempArr[1]))<=0){
@@ -192,7 +191,5 @@ class RoleController extends SMController
         }
         $this->outputCSV($output);
     }
-
     
-
 }
