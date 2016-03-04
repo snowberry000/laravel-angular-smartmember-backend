@@ -1,5 +1,7 @@
 <?php namespace App\Models;
 
+use App\Models\ShortCode;
+
 class Livecast extends Root
 {
     protected $table = 'livecasts';
@@ -33,6 +35,11 @@ class Livecast extends Root
 
     public function dripfeed() {
         return $this->hasOne('App\Models\DripFeed', 'target_id', 'id')->whereType('livecasts');
+    }
+
+    public function getContentAttribute($value)
+    {
+        return ShortCode::replaceShortcode($value);
     }
 
     public static function create(array $livecast_data = array()){

@@ -1,5 +1,6 @@
 <?php namespace App\Models;
 
+use App\Models\ShortCode;
 
 class CustomPage extends Root
 {
@@ -25,10 +26,13 @@ class CustomPage extends Root
         return $this->hasMany('App\Models\SeoSetting', 'target_id', 'id')->whereLinkType(1);
     }
 
+    public function getContentAttribute($value)
+    {
+        return ShortCode::replaceShortcode($value);
+    }
 
 	public function applySearchQuery($q, $value)
 	{
-
 		return $q->where('title', 'like','%' . $value . "%");
 	}
     
