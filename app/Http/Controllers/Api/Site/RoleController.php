@@ -171,7 +171,7 @@ class RoleController extends SMController
         if(\Input::get('access_level_id'))
             $query = $query->where('access_level_id','=',\Input::get('access_level_id'));
         if(\Input::get('q'))
-            $query = $this->model->applySearchQuery($query,$value);
+            $query = $this->model->applySearchQuery($query,\Input::get('q'));
 
         $roles = $query->get();
 
