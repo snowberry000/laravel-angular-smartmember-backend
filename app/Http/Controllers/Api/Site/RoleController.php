@@ -171,7 +171,7 @@ class RoleController extends SMController
         if(\Input::get('access_level_id'))
             $query = $query->where('access_level_id','=',\Input::get('access_level_id'));
         if(\Input::get('q'))
-            $query = $this->model->applySearchQuery($query,$value);
+            $query = $this->model->applySearchQuery($query,\Input::get('q'));
 
         $roles = $query->get();
 
@@ -182,7 +182,7 @@ class RoleController extends SMController
             $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'accessLevel'] = array_unique($arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'accessLevel']);
             $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'role'] [] =  $role['type'];
             $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'role'] = array_unique($arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'role']);
-
+            $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'date'] =  $role['created_at']->toDateString();
         }
 
         // return count($arrayCSV)
@@ -192,7 +192,7 @@ class RoleController extends SMController
             $name = $tempArr[0];
             $email = $tempArr[1];
             $dataType = $tempArr[2];
-            if($dataType=='role')
+            if($dataType=='role' || $dataType=='date')
                 continue;
 
             if (strlen(trim($name.$email))<=0){
@@ -201,11 +201,12 @@ class RoleController extends SMController
 
             $accessLevelArray = $value;
             $rolesArray = $arrayCSV[$name.'!@~&'.$email.'!@~&role'];
+            $created_at = $arrayCSV[$name.'!@~&'.$email.'!@~&date'];
 
             $accessLevels = rtrim(implode(',', $accessLevelArray), ',');
             $roles = rtrim(implode(',', $rolesArray ), ',');
 
-            $output [] = array($name,$email,$roles,$accessLevels);   
+            $output [] = array($name,$email,$roles,$accessLevels,$created_at);   
         }
         $this->outputCSV($output);
     }
