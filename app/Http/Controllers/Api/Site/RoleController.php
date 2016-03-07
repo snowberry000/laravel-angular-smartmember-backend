@@ -182,6 +182,7 @@ class RoleController extends SMController
             $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'accessLevel'] = array_unique($arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'accessLevel']);
             $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'role'] [] =  $role['type'];
             $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'role'] = array_unique($arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'role']);
+
         }
 
         // return count($arrayCSV)
