@@ -168,34 +168,44 @@ class RoleController extends SMController
         $site_id = $this->site->id;
         $query = $this->model->with(["user","accessLevel"]);
         $query = $query->orderBy('id','desc')->whereNull('deleted_at')->whereSiteId($site_id);
+        if(\Input::get('access_level_id'))
+            $query = $query->where('access_level_id','=',\Input::get('access_level_id'));
+        if(\Input::get('q'))
+            $query = $this->model->applySearchQuery($query,$value);
+
         $roles = $query->get();
-        //$roles = array_unique($roles );
+
         $arrayCSV = array();
+        
         foreach ($roles as $role) {
-            // if(!empty($role->accessLevel['name']))
-            // {
-                // $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] [] =  $role->accessLevel['name'];
-                if(!empty($role->accessLevel['name']))
-                {
-                    $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] [] =  $role->accessLevel['name'].','.$role['created_at']->toDateString();
-                    $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] = array_unique($arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel']);
-                }
-                else
-                {
-                    $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] [] =  $role['created_at']->toDateString();
-                    $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel'] = array_unique($arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.$role['type'].'!@~&'.'accessLevel']);
-                }
-                
-            // }
+            $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'accessLevel'] [] =  $role->accessLevel['name'];
+            $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'accessLevel'] = array_unique($arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'accessLevel']);
+            $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'role'] [] =  $role['type'];
+            $arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'role'] = array_unique($arrayCSV [$role->user['first_name']." ".$role->user['last_name'].'!@~&'.$role->user['email'].'!@~&'.'role']);
+
         }
+
+        // return count($arrayCSV)
         $output = array(); 
         foreach ($arrayCSV as $key => $value) {
             $tempArr = explode("!@~&", $key);
-            if (strlen(trim($tempArr[0].$tempArr[1]))<=0){
+            $name = $tempArr[0];
+            $email = $tempArr[1];
+            $dataType = $tempArr[2];
+            if($dataType=='role')
                 continue;
-            }
-            $tempValue = rtrim(implode(',', $value), ',');
-            $output [] = array($tempArr[0],$tempArr[1],$tempArr[2],$tempValue);   
+
+            // if (strlen(trim($name.$email))<=0){
+            //     continue;
+            // }
+
+            $accessLevelArray = $value;
+            $rolesArray = $arrayCSV[$name.'!@~&'.$email.'!@~&role'];
+
+            $accessLevels = rtrim(implode(',', $accessLevelArray), ',');
+            $roles = rtrim(implode(',', $rolesArray ), ',');
+
+            $output [] = array($name,$email,$roles,$accessLevels);   
         }
         $this->outputCSV($output);
     }
