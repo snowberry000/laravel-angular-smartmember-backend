@@ -45,12 +45,14 @@ class LessonController extends SMController
 			$error = array("message" => 'This site does not exist. Please check URL.', "code" => 500);
 			return response()->json($error)->setStatusCode(500);
 		}
-
+		$drafted = \Input::get('drafted');
+		//dd($drafted);
+		\Input::merge(array('drafted' => null));
 		\Input::merge(array('site_id' => $this->site->id));
 		$return = parent::paginateIndex();
 		foreach ($return['items'] as $i=>$lesson) {
 			if($lesson->access_level_type==4){
-				if (!\App\Helpers\SMAuthenticate::set() || !\SMRole::hasAccess($this->site->id,'view_private_content') ){
+				if (!\App\Helpers\SMAuthenticate::set() || !\SMRole::hasAccess($this->site->id,'view_private_content') || ($drafted=='false' || $drafted===false)){
 					unset($return['items'][$i]);
 				}
 			}
@@ -61,6 +63,7 @@ class LessonController extends SMController
 			}
 			$lesson->access_level = AccessLevel::find($lesson->access_level_id);
 		}
+		$return['total_count'] = count($return['items']);
 
 		return $return;
 	}
