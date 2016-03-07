@@ -195,9 +195,9 @@ class RoleController extends SMController
             if($dataType=='role')
                 continue;
 
-            // if (strlen(trim($name.$email))<=0){
-            //     continue;
-            // }
+            if (strlen(trim($name.$email))<=0){
+                continue;
+            }
 
             $accessLevelArray = $value;
             $rolesArray = $arrayCSV[$name.'!@~&'.$email.'!@~&role'];
