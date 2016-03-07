@@ -121,7 +121,7 @@ class SegmentTool
 		$attributes['access_pass'] = [
 						'model' => function($model, $sites, $params) {
 										$access_levels = AccessLevel::whereIn('name', $params)->whereIn('site_id', $sites)->select('id')->lists('id');
-										return $model->whereHas('access_passess', function($q) use ($access_levels) {
+										return $model->whereHas('role', function($q) use ($access_levels) {
 											$q->whereIn('access_level_id', $access_levels);
 										});
 
@@ -147,8 +147,8 @@ class SegmentTool
 
 		$attributes['site'] = 					 [
 						'model' => function($model, $sites, $params) {
-										return $model->whereHas('role_type', function($q) use ($sites) {
-												$q->where('user_roles.role_type', 6);
+										return $model->whereHas('role', function($q) use ($sites) {
+												$q->where('type', 'member');
 												$q->whereIn('site_id', $sites);
 											});
 									},
