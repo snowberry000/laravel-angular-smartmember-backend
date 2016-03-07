@@ -16,6 +16,7 @@ class CategoryController extends SMController
         $this->model = new Category();
 
         $this->middleware("auth", ['only' => ['store','destroy','update'] ]); 
+        $this->middleware("access", ['only' => ['getByPermalink'] ]); 
     }
 
     public function index(){
@@ -26,10 +27,8 @@ class CategoryController extends SMController
 
         if (in_array("admin", $roles) || in_array("owner", $roles)){
             return parent::index();
-        }else if (in_array("member", $roles)){
-            $this->model = Category::whereIn('access_level_type',[1,3]);
-        }else {
-            Input::merge(['access_level_type'=> 1]); // Show only public content
+        }else{
+            $this->model = Category::whereIn('access_level_type',[1,2,3]);
         }
 
         return parent::index();
