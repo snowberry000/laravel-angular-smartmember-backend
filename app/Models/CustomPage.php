@@ -1,6 +1,5 @@
 <?php namespace App\Models;
 
-
 class CustomPage extends Root
 {
     protected $table = 'custom_pages';
@@ -25,10 +24,8 @@ class CustomPage extends Root
         return $this->hasMany('App\Models\SeoSetting', 'target_id', 'id')->whereLinkType(1);
     }
 
-
 	public function applySearchQuery($q, $value)
 	{
-
 		return $q->where('title', 'like','%' . $value . "%");
 	}
     

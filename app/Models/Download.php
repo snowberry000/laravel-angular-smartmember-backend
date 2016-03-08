@@ -1,5 +1,7 @@
 <?php namespace App\Models;
 
+use App\Models\ShortCode;
+
 class Download extends Root
 {
     protected $table = 'download_center';
@@ -32,6 +34,10 @@ class Download extends Root
         return $this->hasOne('App\Models\DripFeed', 'target_id', 'id')->whereType('download_center');
     }
 
+    public function getContentAttribute($value)
+    {
+        return ShortCode::replaceShortcode($value);
+    }
 
     public function history_count()
     {

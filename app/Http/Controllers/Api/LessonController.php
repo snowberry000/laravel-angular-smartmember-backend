@@ -17,6 +17,7 @@ use App\Models\AccessLevel\Pass;
 use App\Models\AccessLevel;
 use App\Models\Post;
 use App\Models\Permalink;
+use App\Models\ShortCode;
 use Auth;
 use Input;
 use Carbon\Carbon;
@@ -77,7 +78,7 @@ class LessonController extends SMController
         \App::abort('404','Lesson not found');
     }
 
-    public function show($model)
+    public function show($model, $parse_shortcode = false)
     {
         if($model->discussion_settings_id == 0){
             $this->model->addDiscussionSettings($model);
@@ -89,7 +90,9 @@ class LessonController extends SMController
         $model = $model->with("access_level", "seo_settings","discussion_settings","module","dripfeed")->find($model->id);
 
         $model = $this->model->getStatistics($model);
-        return parent::show($model);
+		if ($parse_shortcode)
+			$model->content = ShortCode::replaceShortcode($model->content);
+        return $model;
     }
 
     public function store()
@@ -251,7 +254,7 @@ class LessonController extends SMController
             $lesson = Lesson::whereId($id)->whereSiteId( $this->site->id )->first();
 
         if(isset($lesson)){
-            return $this->show($lesson);
+            return $this->show($lesson, true);
         }
 
         \App::abort('408','That lesson could not be found');

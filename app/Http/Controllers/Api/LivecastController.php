@@ -3,6 +3,7 @@
 use App\Http\Controllers\ApiController;
 use App\Models\Livecast;
 use App\Models\Permalink;
+use App\Models\ShortCode;
 
 
 class LivecastController extends SMController
@@ -38,12 +39,14 @@ class LivecastController extends SMController
         return $stored;
     }
 
-    public function show($model){
+    public function show($model, $parse_shortcode = false){
         if($model->discussion_settings_id == 0){
             $this->model->addDiscussionSettings($model);
         }
         
         $model = $this->model->with("seo_settings","discussion_settings","access_level","dripfeed")->whereId($model->id)->first();
+		if ($parse_shortcode)
+			$model->content = ShortCode::replaceShortcode($model->content);
         return $model;
     }
 
@@ -84,7 +87,10 @@ class LivecastController extends SMController
 
         $livecast = Livecast::wherePermalink($id)->whereSiteId($this->site->id)->first();
         if($livecast)
-            return $this->show($livecast);
+		{
+			return $this->show($livecast, true);
+		}
+
         \App::abort('404','Livecast not found');
     }
 }
