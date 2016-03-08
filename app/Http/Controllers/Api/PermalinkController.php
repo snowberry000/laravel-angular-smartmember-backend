@@ -55,7 +55,14 @@ class PermalinkController extends SMController
     	}
 
     	\App::abort(405,"This is not a valid URL. Please check your URL.");
-
-
     }
+
+	public function checkPermalink()
+	{
+		$dummy_model = (object) [ 'site_id' => \Input::get('site_id'), 'id' => false ];
+
+		$return = [ 'permalink' => $this->model->handleDuplicate( \Input::get('permalink'), $dummy_model ) ];
+
+		return $return;
+	}
 }

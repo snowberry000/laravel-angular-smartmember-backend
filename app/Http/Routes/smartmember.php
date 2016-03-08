@@ -187,6 +187,7 @@ Route::get('/post/getMostUsed/{site_id}',"Api\\PostController@getMostUsed");
 Route::post('/jvzoo/{hash}',"Api\\AffiliateController@processJVZooData");
 
 Route::get('/permalink/{permalink}',"Api\\PermalinkController@getByPermalink");
+Route::post('/checkPermalink',"Api\\PermalinkController@checkPermalink");
 
 Route::get('/get/download/{id}',"Api\\DownloadController@getDownload");
 Route::get('/lessonByPermalink/{id}',"Api\\LessonController@getByPermalink");
