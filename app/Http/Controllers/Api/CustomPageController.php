@@ -3,6 +3,7 @@
 use App\Http\Controllers\ApiController;
 use App\Models\CustomPage;
 use App\Models\Permalink;
+use App\Models\ShortCode;
 
 class CustomPageController extends SMController
 {
@@ -28,13 +29,16 @@ class CustomPageController extends SMController
         return $this->model->whereSiteId($this->site->id)->get();
     }
 
-    public function show($model){
+    public function show($model, $parse_shortcode = false)
+    {
 
         if($model->discussion_settings_id == 0){
             $this->model->addDiscussionSettings($model);
         }
 
         $model = $this->model->with("seo_settings","discussion_settings","access_level")->whereId($model->id)->first();
+        if ($parse_shortcode)
+            $model->content = ShortCode::replaceShortcode($model->content);
         return $model;
     }
 
@@ -94,7 +98,7 @@ class CustomPageController extends SMController
 
         $page = CustomPage::wherePermalink($id)->whereSiteId($this->site->id)->first();
         if($page)
-            return $this->show($page);
+            return $this->show($page, true);
         \App::abort('404','Page not found');
     }
 }

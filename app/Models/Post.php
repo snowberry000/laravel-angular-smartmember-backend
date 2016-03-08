@@ -1,6 +1,5 @@
 <?php namespace App\Models;
 
-
 class Post extends Root
 {
     protected $table = 'posts';

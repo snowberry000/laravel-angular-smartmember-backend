@@ -31,7 +31,6 @@ class Lesson extends Root
         return $this->hasOne('App\Models\DripFeed', 'target_id', 'id')->whereType('lessons');
     }
 
-
     public function discussion_settings(){
         return $this->belongsTo('App\Models\DiscussionSettings');
     }
