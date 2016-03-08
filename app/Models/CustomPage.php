@@ -1,7 +1,5 @@
 <?php namespace App\Models;
 
-use App\Models\ShortCode;
-
 class CustomPage extends Root
 {
     protected $table = 'custom_pages';
@@ -24,11 +22,6 @@ class CustomPage extends Root
     
     public function seo_settings(){
         return $this->hasMany('App\Models\SeoSetting', 'target_id', 'id')->whereLinkType(1);
-    }
-
-    public function getContentAttribute($value)
-    {
-        return ShortCode::replaceShortcode($value);
     }
 
 	public function applySearchQuery($q, $value)
