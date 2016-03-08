@@ -667,7 +667,7 @@ class EmailSubscriberController extends SMController
 			    {
 				    return redirect(\Input::get('redirect_url'));
 			    } else {
-				    return !empty( $data ) ? $data : $subscriber;
+                    return 'Thank You for subscribing!';
 			    }
 		    }
 
@@ -701,7 +701,7 @@ class EmailSubscriberController extends SMController
         {
             return redirect(\Input::get('redirect_url'));
         } else {
-			return !empty( $data ) ? $data : $subscriber;
+            return 'Thank You for subscribing!';
         }
     }
 
@@ -717,7 +717,5 @@ class EmailSubscriberController extends SMController
 			foreach( $subscribers as $subscriber )
 				$subscriber->save();
 		}
-
-		dd('we finished');
 	}
 }
