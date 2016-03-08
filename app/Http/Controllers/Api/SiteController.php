@@ -72,8 +72,8 @@ class SiteController extends SMController
     }
 
     public function store(){
-        if(preg_match('/[^a-z_\-0-9]/i', Input::get('subdomain'))){
-          \App::abort(403,"This subdomain is not in a valid format. Only Alphanumeric is allowed");
+        if(preg_match('/[^a-z\-0-9]/i', Input::get('subdomain'))){
+          \App::abort(403,"This subdomain is not in a valid format. Only Alphanumeric and '-' is allowed");
         }
 
         $user = Auth::user();
