@@ -136,9 +136,22 @@ class RoleController extends SMController
         $email_welcome = \Input::has('email_welcome') ? \Input::get('email_welcome') : 0;
         $email_ac = \Input::has('email_ac') ? \Input::get('email_ac') : 0;
 
-        //$count = User::importUsers($users, array_keys($access_levels), $expiry, $this->site);
         ImportQueue::enqueue($users, array_keys($access_levels), $expiry, $this->site, $email_welcome, $email_ac);
-        //return $count;
+
+    }
+
+    private function getHighestRole($roles){
+        $keys = array_keys($roles);
+        for ($i=0; $i < count($keys); $i++) { 
+            if( $roles[$keys[$i]] == 'owner')
+                return 'owner';
+            else if(  $roles[$keys[$i]] == 'admin')
+                return 'admin';
+            else if(  $roles[$keys[$i]] == 'support')
+                return 'support';   
+        }
+
+        return 'member';
     }
 
     public function removeUserFromSite(){
@@ -204,7 +217,7 @@ class RoleController extends SMController
             $created_at = $arrayCSV[$name.'!@~&'.$email.'!@~&date'];
 
             $accessLevels = rtrim(implode(',', $accessLevelArray), ',');
-            $roles = rtrim(implode(',', $rolesArray ), ',');
+            $roles = $this->getHighestRole($rolesArray);
 
             $output [] = array($name,$email,$roles,$accessLevels,$created_at);   
         }

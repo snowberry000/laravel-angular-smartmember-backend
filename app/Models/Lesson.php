@@ -4,7 +4,6 @@ use App\Models\UserNote;
 use PRedis;
 use App\Http\Controllers\Api\SiteController;
 use SMCache;
-use App\Models\ShortCode;
 
 class Lesson extends Root
 {
@@ -30,11 +29,6 @@ class Lesson extends Root
     public function dripfeed()
     {
         return $this->hasOne('App\Models\DripFeed', 'target_id', 'id')->whereType('lessons');
-    }
-
-    public function getContentAttribute($value)
-    {
-        return ShortCode::replaceShortcode($value);
     }
 
     public function discussion_settings(){

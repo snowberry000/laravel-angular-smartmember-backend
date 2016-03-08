@@ -460,29 +460,30 @@ class EmailSubscriberController extends SMController
 
         $output = fopen('php://output','w');
 
-        fputcsv( $output, [ 'Name','E-mail']);
+        fputcsv( $output, [ 'Name','E-mail','E-mail List']);
         foreach ($subscribers as $subscriber)
         {
-            //$lists = array();
             $user = User::whereEmail($subscriber['email'])->first();
+            $email_subscriber = $this->model->with('emailLists')->whereEmail($subscriber['email'])->whereNull('deleted_at')->first();
             /*if( !empty( $subscriber->emailLists ) && count( $subscriber->emailLists ) > 0 )
             {
                 foreach( $subscriber->emailLists as $list )
                     $lists[] = $list->name;
             }*/
+            // \Log::info(array_pluck($email_subscriber['emailLists'],'name'));
+            // \Log::info($email_subscriber['emailLists'],'name'));
             if($user && ( !empty( $user->first_name ) || !empty( $user->last_name ) ) )
 			{
                 $subscriber['name'] = $user->first_name . ' ' . $user->last_name;
             }
 			else
 			{
-				$email_subscriber = $this->model->whereEmail($subscriber['email'])->first();
-
+				//$email_subscriber = $this->model->whereEmail($subscriber['email'])->first();
 				if( $email_subscriber )
 					$subscriber['name'] = $email_subscriber->name;
 			}
             //return $subscriber;
-            fputcsv($output, [ ( !empty( $subscriber['name'] ) ? $subscriber['name'] : '' ), $subscriber['email']]);
+            fputcsv($output, [ ( !empty( $subscriber['name'] ) ? $subscriber['name'] : '' ), $subscriber['email'],implode(',', array_unique(array_pluck($email_subscriber['emailLists'],'name')))]);
         }
 
         fclose($output);

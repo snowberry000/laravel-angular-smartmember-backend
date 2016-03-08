@@ -1,7 +1,5 @@
 <?php namespace App\Models;
 
-use App\Models\ShortCode;
-
 class Post extends Root
 {
     protected $table = 'posts';
@@ -47,11 +45,6 @@ class Post extends Root
 
     public function discussion_settings(){
         return $this->belongsTo('App\Models\DiscussionSettings');
-    }
-
-    public function getContentAttribute($value)
-    {
-        return ShortCode::replaceShortcode($value);
     }
 
     public function dripfeed()

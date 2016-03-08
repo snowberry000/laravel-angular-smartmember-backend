@@ -5,7 +5,8 @@ class ShortCode
 
     //protected $table = 'swapspots';
     private static $short_code_tags = array(
-        'fbsdk' => 'self::insert_facebook_sdk'
+        'fb_page_plugin' => 'self::insert_facebook_page_plugin',
+        'fb_comments' => 'self::insert_facebook_comment_plugin'
     );
 
     public static function replaceShortcode($content)
@@ -361,14 +362,78 @@ class ShortCode
 	    return '/([\w-]+)\s*=\s*"([^"]*)"(?:\s|$)|([\w-]+)\s*=\s*\'([^\']*)\'(?:\s|$)|([\w-]+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
     }
 
-    public static function insert_facebook_sdk($atts) {
-        return '<script>(function(d, s, id) {
+    public static function shortcode_atts($pairs, $atts, $shortcode = '')
+    {
+        $atts = (array)$atts;
+        $out = array();
+        foreach ($pairs as $name => $default) {
+            if (array_key_exists($name, $atts))
+            {
+                $out[$name] = $atts[$name];
+            } else {
+                $out[$name] = $default;
+            }
+        }
+        return $out;
+    }
+
+    public static function insert_facebook_page_plugin($atts) {
+        $atts = self::shortcode_atts(
+            array(
+                'small-header' => 'false',
+                'adapt-container-width' => 'true',
+                'hide-cover' => 'false',
+                'show-facepile' => 'true',
+                'page-url' => '',
+                'width' => '',
+                'height' => ''
+            ), $atts, 'fb_page_plugin'
+        );
+        if ($atts['width'] != '')
+            $width = ' data-width="' . $atts['width'] . '" ';
+        else
+            $width = '';
+
+        if ($atts['height'] != '')
+            $height = ' data-height="' . $atts['height'] . '" ';
+        else
+            $height = '';
+
+        $out = '<div id="fb-root"></div><script>(function(d, s, id) {
   var js, fjs = d.getElementsByTagName(s)[0];
   if (d.getElementById(id)) return;
   js = d.createElement(s); js.id = id;
   js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.5";
   fjs.parentNode.insertBefore(js, fjs);
 }(document, \'script\', \'facebook-jssdk\'));</script>';
+        $out .= '<div class="fb-page" data-href="' . $atts['page-url'] . '" data-tabs="timeline" data-small-header="' . $atts['small-header'] . '" data-adapt-container-width="' . $atts['adapt-container-width'] . '" data-hide-cover="' . $atts['hide-cover'] .  '" data-show-facepile="' . $atts['show-facepile'] . '"' . $width . $height . '></div>';
+        return $out;
     }
 
+    public static function insert_facebook_comment_plugin($atts) {
+        $atts = self::shortcode_atts(
+            array(
+                'num-posts' => '5',
+                'order-by' => 'social',
+                'page-url' => '',
+                'width' => '',
+
+            ), $atts, 'fb_comments'
+        );
+
+        if ($atts['width'] != '')
+            $width = ' data-width="' . $atts['width'] . '" ';
+        else
+            $width = '';
+
+        $out = '<div id="fb-root"></div><script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.5";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, \'script\', \'facebook-jssdk\'));</script>';
+        $out .= '<div class="fb-comments" data-href="' . $atts['page-url'] . '" data-order-by="' . $atts['order-by'] . '" data-numposts="' . $atts['num-posts'] . '"' . $width . '></div>';
+        return $out;
+    }
 }
