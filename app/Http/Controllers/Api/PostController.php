@@ -10,6 +10,7 @@ use App\Models\Comment;
 use App\Models\Tag;
 use App\Models\Site;
 use App\Models\User;
+use App\Models\ShortCode;
 
 
 class PostController extends SMController
@@ -239,6 +240,7 @@ class PostController extends SMController
         {
             $post->author = User::find($post->author_id);
             $post->author->email_hash = md5($post->author->email);
+			$post->content = ShortCode::replaceShortcode($post->content);
             return $post;
         }
         \App::abort('404','Post not found');
