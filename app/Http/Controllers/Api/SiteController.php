@@ -1,5 +1,6 @@
 <?php namespace App\Http\Controllers\Api;
 
+use App\Models\ShortCode;
 use App\Models\SupportArticle;
 use App\Models\TeamRole;
 use App\Models\Site\Role;
@@ -210,6 +211,16 @@ class SiteController extends SMController
 		$data = Site::with(
 			"menu_items", "footer_menu_items", "meta_data", "ad", "widgets", "widgets.meta_data", "widgets.banner"
 		)->whereId( $site_id )->first();
+        foreach ($data->widgets as $widget)
+        {
+            foreach ($widget->meta_data as $single_meta_data)
+            {
+                if ($single_meta_data->key == 'content')
+                {
+                    $single_meta_data->value = ShortCode::replaceShortcode($single_meta_data->value);
+                }
+            }
+        }
 
 		$data->header_background_color = $this->site->getHeaderBackgroundColor();
 
