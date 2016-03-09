@@ -46,29 +46,27 @@ class EmailSubscriberController extends SMController
             $emailList_id = \Input::get('emaillist_id');
         }
 		$total_count = 0;
+        $account_id = \Auth::user()->id;
         $page_size = config("vars.default_page_size");
         $query = $this->model;
         $query = $query->orderBy('id' , 'DESC');
-        $query = $query->with('user','emailLists');
-		$account_id = \Auth::user()->id;
-        $query = $query->whereHas('emailLists', function($q) use ($account_id, $emailList_id){
+        $query = $query->with('user');
+        $query = $query->withAndWhereHas('emailLists', function($q) use ($account_id, $emailList_id) {
             $q->where('email_lists.account_id',$account_id);
             if ($emailList_id)
             {
-               $q->where('email_listledger.list_id', $emailList_id);
+                $q->where('email_listledger.list_id', $emailList_id);
             }
         });
         $query = $query->whereAccountId($account_id);
         $query = $query->select('id' , 'created_at')->selectRaw('email COLLATE utf8_general_ci as email')->selectRaw('name COLLATE utf8_general_ci as name')->selectRaw('"Subscriber" as status');
-        $site_ids = [$this->site->id];
-
-        $members = User::whereHas('role', function($q) use ($site_ids) {
+        $site_id = $this->site->id;
+        $members = User::whereHas('role', function($q) use ($site_id) {
             $q->where('sites_roles.type', 'member');
-            $q->whereIn('site_id', $site_ids);
+            $q->where('sites_roles.site_id', $site_id);
         })
-            ->has('subscriber','<',1)
-            ->select('id' , 'created_at')->selectRaw('email COLLATE utf8_general_ci as email')->selectRaw('CONCAT( first_name,  " ", last_name ) COLLATE utf8_general_ci AS name' )->selectRaw('"Member" as status');
-
+            //->has('subscriber','<',1)
+        ->select('id' , 'created_at')->selectRaw('email COLLATE utf8_general_ci as email')->selectRaw('CONCAT( first_name,  " ", last_name ) COLLATE utf8_general_ci AS name' )->selectRaw('"Member" as status');
 		if( \Input::has('q') && !empty( \Input::get('q') ) )
 		{
 			$members = $members->where(function($q){

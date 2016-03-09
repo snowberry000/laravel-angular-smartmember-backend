@@ -33,6 +33,11 @@ class EmailSubscriber extends Root
 		});
 	}
 
+	public function scopeWithAndWhereHas($query, $relation, $constraint){
+		return $query->whereHas($relation, $constraint)
+				->with([$relation => $constraint]);
+	}
+
 	public static function getHash($email) 
 	{
 		$hash = $email.'_'.microtime();
