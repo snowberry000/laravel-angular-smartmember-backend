@@ -311,6 +311,12 @@ class SiteController extends SMController
         if(!\Auth::check())
             return [];
         $user_id = \Auth::user()->id;
+     
+        if(Input::has('p')){
+            $current_page = Input::get('p');
+        }else{
+            $current_page = 1;
+        }
 
 		if( $user_id == 1 )
 		{
@@ -322,10 +328,9 @@ class SiteController extends SMController
 		}
 
         $sites = Role::getSites($user_id);
-
         $data = [];
-
         $count = count($sites);
+
         for ($i = 0 ; $i < $count ; $i++) {
             $site = $sites[$i];
 
@@ -341,9 +346,12 @@ class SiteController extends SMController
                 $data[] = $site;  
 			}
         }
-        $data = array_pluck($data , 'site');
+        
+        $data['items'] = array_pluck($data , 'site');
+        $data['total_count'] = count($data['items']);
+        $data['items'] = array_slice($data['items'], (($current_page - 1)*25),25);
 
-        return $data;
+        return array('items'=> $data['items'], 'total_count' => $data['total_count']);
     }
     
     public function getSummary() 
