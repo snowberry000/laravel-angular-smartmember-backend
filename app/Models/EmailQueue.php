@@ -817,6 +817,7 @@ class EmailQueue extends Root
                 $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%hash%'][] =  $queue_item->user->email_hash;
                 $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%subscriber_id%'][] = $queue_item->user->id;
                 $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%subscriber_name%'][] = $queue_item->user->first_name;
+				$substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%subscriber_email%'][] = $queue_item->user->email;
                 $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%list_type%'][] = "segment";
 
 				if( !empty( $additional_meta ) )
@@ -851,6 +852,7 @@ class EmailQueue extends Root
                 $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%hash%'][] =  $queue_item->subscriber->hash;
                 $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%subscriber_id%'][] = $queue_item->subscriber->id;
                 $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%subscriber_name%'][] = $queue_item->subscriber->name;
+				$substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%subscriber_email%'][] = $queue_item->subscriber->email;
                 $substitutions[$queue_item->email_id][ $queue_item->email_recipient_id ? $queue_item->email_recipient_id : 'no_intro']['%list_type%'][] = "user";
 
 				if( !empty( $additional_meta ) )
