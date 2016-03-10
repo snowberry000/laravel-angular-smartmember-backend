@@ -6,7 +6,8 @@ class ShortCode
     //protected $table = 'swapspots';
     private static $short_code_tags = array(
         'fb_page_plugin' => 'self::insert_facebook_page_plugin',
-        'fb_comments' => 'self::insert_facebook_comment_plugin'
+        'fb_comments' => 'self::insert_facebook_comment_plugin',
+        'amazon_related_product_widget' => 'self::insert_amazon_related_product_widget'
     );
 
     public static function replaceShortcode($content)
@@ -435,5 +436,36 @@ class ShortCode
 }(document, \'script\', \'facebook-jssdk\'));</script>';
         $out .= '<div class="fb-comments" data-href="' . $atts['page-url'] . '" data-order-by="' . $atts['order-by'] . '" data-numposts="' . $atts['num-posts'] . '"' . $width . '></div>';
         return $out;
+    }
+
+    public static function insert_amazon_related_product_widget($atts) {
+
+        $atts = self::shortcode_atts(
+            array(
+                'assoc-placement' => 'adunit0',
+                'tracking-id' => '',
+                'link-id' => '',
+                'emphasize-categories' => '',
+                'default-category' => '',
+                'fallback-mode-value' => '',
+
+            ), $atts, 'amazon_related_product_widget'
+        );
+
+        return '<script type="text/javascript">
+                amzn_assoc_placement = "' . $atts['assoc-placement'] . '";
+                amzn_assoc_enable_interest_ads = "true";
+                amzn_assoc_tracking_id = "' . $atts['tracking-id'] . '";
+                amzn_assoc_ad_mode = "auto";
+                amzn_assoc_ad_type = "smart";
+                amzn_assoc_marketplace = "amazon";
+                amzn_assoc_region = "US";
+                amzn_assoc_linkid = "' . $atts['link-id'] . '";
+                amzn_assoc_emphasize_categories = "' . $atts['emphasize-categories'] . '";
+                amzn_assoc_default_category = "' . $atts['default-category'] . '";
+                amzn_assoc_fallback_mode = {"type":"search","value":"' . $atts['fallback-mode-value'] .  '"};
+                </script>
+                <script src="//z-na.amazon-adsystem.com/widgets/onejs?MarketPlace=US" type="text/javascript"></script>
+                <div id="amzn_assoc_ad_div_' . $atts['assoc-placement'] . '_0"></div>';
     }
 }

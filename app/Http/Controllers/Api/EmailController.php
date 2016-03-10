@@ -66,6 +66,7 @@ class EmailController extends SMController
 		$content = Email::AddUnsubscribeToContent( $content, $this->site->id );
 		$content = Open::AddPixelToContent($content);
 		$content = str_replace( '%subscriber_name%', !empty( \Auth::user()->first_name ) ? \Auth::user()->first_name : '[USER NAME WILL APPEAR HERE]', $content );
+		$content = str_replace( '%subscriber_email%', !empty( \Auth::user()->email ) ? \Auth::user()->email : '[USER EMAIL WILL APPEAR HERE]', $content );
 
 		preg_match_all("|%[a-zA-Z0-9-_]+%|U", $content, $matches, PREG_PATTERN_ORDER);
 
@@ -128,7 +129,7 @@ class EmailController extends SMController
 				if( !empty( $intro['intro'] ) )
 				{
 					$intro['intro'] = str_replace( '%subscriber_name%', !empty( \Auth::user()->first_name ) ? \Auth::user()->first_name : '[USER NAME WILL APPEAR HERE]', $intro['intro'] );
-
+					$intro['intro'] = str_replace( '%subscriber_email%', !empty( \Auth::user()->email ) ? \Auth::user()->email : '[USER EMAIL WILL APPEAR HERE]', $intro['intro'] );
 					preg_match_all("|%[a-zA-Z0-9-_]+%|U", $intro['intro'], $matches, PREG_PATTERN_ORDER);
 
 					$additional_meta = [];
