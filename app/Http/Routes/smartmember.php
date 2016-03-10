@@ -210,6 +210,7 @@ Route::get('/sharedKey/associatedKey', "Api\\AccessLevelShareKeyController@getAs
 Route::get('/generateShareKey', "Api\\AccessLevelShareKeyController@generateShareKey");
 Route::get('/accessLevel/getGrantedShareAccessLevel', "Api\\AccessLevelShareKeyController@getGrantedShareAccessLevels");
 Route::post('/user/changePassword',"Api\\UserController@changePassword");
+Route::post('/user/verifyUser',"Api\\UserController@verifyUser");
 Route::post('/user/setCompany',"Api\\UserController@setCompany");
 Route::post('/user/resendVerification',"Api\\UserController@resendVerificationCode");
 Route::get('/user/transactionAccount/{id}',"Api\\UserController@transactionAccount");
