@@ -508,7 +508,6 @@ class SendGridEmail {
         $view = \View::make("email.user.linkaccount", $data)->render();
 
 		$from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
-
         $email->addTo($data['email'])
               ->setFrom( $from )
               ->setSubject("Verify Account Link Request")
@@ -526,6 +525,7 @@ class SendGridEmail {
 		$emailSetting = EmailSetting::where( 'site_id', $site->id )->first();
 
         $email->addTo($email_address)
+            ->setFromName(!empty($emailSetting->full_name) ? $emailSetting->full_name : 'Test email')
             ->setFrom( !empty( $emailSetting->sending_address ) ? $emailSetting->sending_address : "noreply@smartmember.com")
             ->setSubject($subject)
             ->setHtml( $message );
