@@ -106,7 +106,7 @@ class AccessLevel extends Root
                 $site_grant = AccessLevel::whereId($grant)->whereSiteId($data['site_id'])->first();
                 if (!isset($site_grant))
                 {
-                    $shared_grants[] = $site_grant->id;
+                    $shared_grants[] = $grant;
                     unset($grants[$key]);
                 } else {
                     $this->grants()->save( new Grant( [ 'grant_id' => $grant ] ) );
