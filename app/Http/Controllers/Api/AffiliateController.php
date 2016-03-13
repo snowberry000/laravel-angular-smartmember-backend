@@ -263,7 +263,7 @@ class AffiliateController extends SMController
             // user email
             $bits = explode('<br>', $value->find('td', 1)->innertext);
 
-            $fields['jvzoo_user_email'] = trim($bits[count($bits) - 1]);
+            $fields['jvzoo_user_email'] = trim($bits[count($bits) - 2]);
 
             // user country
             $bits = explode('</a> (', $value->find('td', 1)->innertext);
