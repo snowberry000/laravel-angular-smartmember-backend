@@ -17,6 +17,7 @@ class Permalink extends Root
             $text = str_replace(" ", "-", trim(\Input::get('permalink')));
         }
     	$text = self::handleDuplicate($text,$model);
+		$text = preg_replace('#[^a-z0-9-_]#i','',$text);
 
 		if( $permalink )
 		{
