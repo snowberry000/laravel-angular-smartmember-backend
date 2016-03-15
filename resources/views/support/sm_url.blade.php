@@ -15,6 +15,18 @@
                     <tr>
                         <td valign="bottom" style="border-collapse:collapse;padding:20px 16px 12px;">
                             <div style="text-align:center">
+                                ID: 
+                                @if( !empty( $sm_id ) )
+                                    <?= $sm_id ?>
+                                @else
+                                    <strong>None</strong>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td valign="bottom" style="border-collapse:collapse;padding:20px 16px 12px;">
+                            <div style="text-align:center">
                                 Smart Member Url: <br /> <a href="<?= $sm_url ?>" target="_blank"><?= $sm_url ?></a>
                             </div>
                         </td>
