@@ -444,7 +444,8 @@ class SiteController extends SMController
 				{
 					$site_data = [
 						'sm_url' => 'http://' . $site->subdomain . '.smartmember.com',
-						'custom_url' => ( $site->domain ? 'http://' . $site->domain : false )
+						'custom_url' => ( $site->domain ? 'http://' . $site->domain : false ),
+						'sm_id' => $site->id
 					];
 				}
 			}
@@ -463,7 +464,8 @@ class SiteController extends SMController
 				{
 					$site_data = [
 						'sm_url' => 'http://' . $site->subdomain . '.smartmember.com',
-						'custom_url' => ( $site->domain ? 'http://' . $site->domain : false )
+						'custom_url' => ( $site->domain ? 'http://' . $site->domain : false ),
+						'sm_id' => $site->id
 					];
 				}
 			}
