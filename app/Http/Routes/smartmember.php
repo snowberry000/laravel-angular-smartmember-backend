@@ -194,6 +194,7 @@ Route::get('/lessonByPermalink/{id}',"Api\\LessonController@getByPermalink");
 Route::get('/lessonByTitle/{id}',"Api\\LessonController@getLessonByName");
 Route::get('/affiliateContestByPermalink/{id}',"Api\\AffiliateContestController@getByPermalink");
 // Route::get('/affiliateLeaderboardByContest/{id}',"Api\\AffiliateLeaderboardController@getByContest");
+Route::get('/sm-url/{domain}',"Api\\SiteController@SMUrl");
 
 Route::get('/getBlogPosts',"Api\\PostController@getBlogPosts");
 Route::get('/pageByPermalink/{id}',"Api\\CustomPageController@getByPermalink");
