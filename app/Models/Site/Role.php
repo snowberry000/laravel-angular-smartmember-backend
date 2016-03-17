@@ -319,7 +319,7 @@ class Role extends Root{
             {
                 $first_name = $user->first_name;
             } else {
-                $first_name = "Anonymous";
+                $first_name = "Member";
             }
             if (!empty($user->last_name))
             {
@@ -335,7 +335,7 @@ class Role extends Root{
 				}
 				else
 				{
-					$last_name = "Anonymous";
+					$last_name = "Member";
 				}
             }
             if (empty($user->first_name) && empty($user->last_name))
