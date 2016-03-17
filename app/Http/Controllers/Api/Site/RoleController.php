@@ -17,6 +17,7 @@ class RoleController extends SMController
         parent::__construct();
 
 		$this->middleware( 'admin', ['only' => array( 'removeUserFromCurrentSite' ) ] );
+		$this->middleware( 'auth', ['except' => array( 'getSMMembers' ) ] );
 
         $this->model = new Role();
     }
@@ -42,6 +43,11 @@ class RoleController extends SMController
 			return array( 'items' => [ ['user' => \Auth::user() ]], 'total_count' => 0 );
 		}
     }
+
+	public function getSMMembers()
+	{
+		return $this->model->getSMMembers();
+	}
 
     public function index(){
     	\Input::merge(['site_id'=>$this->site->id]);
