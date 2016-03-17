@@ -52,6 +52,31 @@ class Role extends Root{
         return array_unique($unique_access_levels);
     }
 
+	public function getSMMembers()
+	{
+		if( true )//$this->site && $this->site->subdomain == 'sm' && \Auth::user() && \SMRole::userHasAccess( $this->site->id, 'manage_members', \Auth::user()->id ) )
+		{
+			$required_level = \Config::get('vars.member_access_level', 1753);
+
+			$access_levels = \App\Models\AccessLevel\Pass::granted_by_levels( $required_level );
+
+			$users_with_name = User::whereHas('role', function($query) use ($access_levels) {
+					$query->whereIn( 'access_level_id', $access_levels );
+				})
+				->select(['email'])
+				->distinct()
+				->get();//->toSql();//->count();
+
+			$final_users = [];
+
+			foreach( $users_with_name as $user )
+				echo $user->email . "\n";
+				//$final_users[] = $user->email;
+
+			exit;
+			//return $final_users;
+		}
+	}
 
     public static function getAdminSites($user_id){
     	return self::whereUserId($user_id)->whereIn('type' , ['owner' , 'admin'])->with(['site' , 'site.meta_data'])->get();
@@ -332,6 +357,7 @@ class Role extends Root{
                     $last_name = "Annonymous";
                 }
             }
+
             \Log::info('Register for webinar' . $webinar_id);
             Curl::post('https://attendee.gotowebinar.com/registration.tmpl', array('registrant.source' => '', 'webinar' => $webinar_id,
                 'registrant.givenName' => $first_name, 'registrant.surname' => $last_name, 'registrant.email' => $user->email,
