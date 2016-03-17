@@ -294,13 +294,24 @@ class Role extends Root{
             {
                 $first_name = $user->first_name;
             } else {
-                $first_name = "Annonymous";
+                $first_name = "Anonymous";
             }
             if (!empty($user->last_name))
             {
                 $last_name = $user->last_name;
             } else {
-                $last_name = "Annonymous";
+				if( $first_name != 'Anonymous' && strpos( $first_name, ' ' ) !== false )
+				{
+					$name_bits = explode( " ", $first_name );
+
+					$last_name = array_pop( $name_bits );
+
+					$first_name = implode( " ", $name_bits );
+				}
+				else
+				{
+					$last_name = "Anonymous";
+				}
             }
             if (empty($user->first_name) && empty($user->last_name))
             {
