@@ -283,7 +283,7 @@ Route::post('/widget/updateOrder', "Api\\WidgetController@updateOrder");
 Route::get('/widget/locationOptions', "Api\\WidgetController@locationOptions");
 
 Route::get('/supportAgents', "Api\\Site\RoleController@getSupportAgent");
-Route::get('/getSMMembers', "Api\\Site\RoleController@getSMMembers");
+//Route::get('/getSMMembers', "Api\\Site\RoleController@getSMMembers");
 
 foreach ($resources as $res){
     $resource = ucwords(str_replace("-", " ", $res));
