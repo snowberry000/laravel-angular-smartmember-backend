@@ -45,6 +45,11 @@ class Site extends Root
         } 
     }
 
+    public function reviews()
+    {
+        return $this->hasMany('App\Models\Review');
+    }
+
     public function user()
     {
         return $this->belongsTo('App\Models\User');
