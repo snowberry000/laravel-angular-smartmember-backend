@@ -488,6 +488,43 @@ class SiteController extends SMController
     public function getBySubdomain(){
         $subdomain = \Input::get('subdomain');
 
-        return Site::where('subdomain' , $subdomain)->with(['owner' , 'reviews' , 'reviews.user'])->first();
+        return Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->first();
+    }
+
+    public function getBestSellingSites() {
+
+        $categories = \Input::get('categories');
+        $results = [];
+        
+        if(!empty($categories))
+            foreach ($categories as $key => $category) {
+                $results[] = Site::whereNull('deleted_at')->with(['owner','reviews','directory' , 'meta_data'])->whereHas('directory' , function($query) use($category){
+                        $query->where('category' , $category);
+                })->orderBy('total_revenue','desc')->take(4)->get();
+            }
+
+        return $results;
+    }
+
+    public function directory(){
+
+        $category = \Input::get('category');
+        $subcategory = \Input::get('sub_category');
+        $query =  Site::whereNull('deleted_at')->with(['owner','directory' , 'meta_data'])->whereHas('directory' , function(     $query) use($category , $subcategory){
+                    if($category)
+                        $query->where('category' , $category);
+                    if($subcategory)
+                        $query->where('sub_category' , $subcategory);
+                 });
+
+        $page = \Input::get('p');
+        if(empty($page)){
+            $page = 1;
+        }
+        $count = 0;
+        $results['total_count'] = $query->count();
+        $query = $query->orderBy('total_revenue' , 'desc')->limit(25)->offset(($page - 1) * 25);
+        $results['items'] = $query->get();
+        return $results;
     }
 }

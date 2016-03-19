@@ -74,6 +74,8 @@ $resources = array(
 //TODO: Don't use - in the URL. Use Camel cased syntax e.g. facebookLogin
 Route::get('/directory/all',"Api\\DirectoryController@getTopDirectories");
 Route::get('site/getBySubdomain',"Api\\SiteController@getBySubdomain");
+Route::get('/site/bestSelling',"Api\\SiteController@getBestSellingSites");
+Route::get('/site/directory',"Api\\SiteController@directory");
 
 Route::get("/auth/verify/{access_token}", "Auth\\AuthController@getVerify");
 Route::post("/auth/facebook-login", "Auth\\AuthController@postFacebookLogin");
