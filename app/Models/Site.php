@@ -55,6 +55,16 @@ class Site extends Root
         return $this->belongsTo('App\Models\User');
     }
 
+    public function directory()
+    {
+        return $this->hasOne('App\Models\Directory' , 'site_id');
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo('App\Models\User' , 'user_id');
+    }
+
     public function media(){
         return $this->hasMany('App\Models\Media');
     }

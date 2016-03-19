@@ -8,16 +8,20 @@ CREATE TABLE IF NOT EXISTS `reviews` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+alter table directory_listings add column `sub_category` VARCHAR( 255 ) NULL;
+alter table directory_listings add column `total_members` int(11) NULL;
+update directory_listings set category = 'Other' , sub_category = 'Other' where category is null;
 
-insert into directory_listings (site_id,title,category,description,subtitle,permalink,total_lessons,total_revenue,total_members,is_approved) 
-	select id, name, 'other',
+insert into directory_listings (site_id,title,category,sub_category,description,subtitle,permalink,total_lessons,total_revenue,total_members,is_approved,created_at) 
+	select id, name, 'Other','Other',
 	'this is dummy description',
 	'this is brief description',
-	CONCAT(REPLACE(' ','-'),'-',site_id),
+	CONCAT(REPLACE(name,' ','-'),'-',id),
 	total_lessons,
 	total_revenue,
 	total_members,
-	1
+	1,
+	CURRENT_TIMESTAMP
 	from sites c;
 
 
@@ -30,7 +34,7 @@ Update
     where `key` = "site_logo"
     group by site_id
   ) as smd on smd.site_id = d.site_id
-set d.image = smd.value
+set d.image = smd.value;
 
 
 -- total_downloads insert
@@ -43,7 +47,7 @@ Update
     where deleted_at is NULL
     group by site_id
   ) as dl on d.site_id = dl.site_id
-set d.total_downloads = dl.NumberOfDownloads
+set d.total_downloads = dl.NumberOfDownloads;
 
 -- pricing insert
 
@@ -52,6 +56,6 @@ Update
   inner join (
     SELECT site_id, min(price) as min_price, max(price) as max_price from access_levels group by site_id
   ) as a on d.site_id = a.site_id
-  set d.pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' ', a.max_price) end
+  set d.pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' ', a.max_price) end;
   
 -- where al.deleted_at is NULL and

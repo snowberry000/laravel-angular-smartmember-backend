@@ -29,7 +29,7 @@ class SiteController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth", ['except' => array('details', 'getLatestOfAllContent','getTicketCount','SMUrl')]);
+        $this->middleware("auth", ['except' => array('getAllSites', 'details', 'getLatestOfAllContent','getTicketCount','SMUrl')]);
         $this->middleware("smember", ['only' => array('store')]);
         $this->model = new Site();
 
@@ -199,9 +199,9 @@ class SiteController extends SMController
 
     public function details()
     {
-        if(!$this->site && \Domain::getSubdomain()!='my')
+        if(!$this->site && \Domain::getSubdomain()!='my' && \Domain::getSubdomain()!='app')
           \App::abort(406,'No such subdomain exists');
-        else if(\Domain::getSubdomain()=='my')
+        else if( \Domain::getSubdomain()=='my' || \Domain::getSubdomain() == 'app' )
         {
             return [];
         }
@@ -322,6 +322,12 @@ class SiteController extends SMController
         if(!\Auth::check())
             return [];
         $user_id = \Auth::user()->id;
+     
+        if(Input::has('p')){
+            $current_page = Input::get('p');
+        }else{
+            $current_page = 1;
+        }
 
 		if( $user_id == 1 )
 		{
@@ -333,10 +339,9 @@ class SiteController extends SMController
 		}
 
         $sites = Role::getSites($user_id);
-
         $data = [];
-
         $count = count($sites);
+
         for ($i = 0 ; $i < $count ; $i++) {
             $site = $sites[$i];
 
@@ -352,9 +357,12 @@ class SiteController extends SMController
                 $data[] = $site;  
 			}
         }
-        $data = array_pluck($data , 'site');
+        
+        $data['items'] = array_pluck($data , 'site');
+        $data['total_count'] = count($data['items']);
+        $data['items'] = array_slice($data['items'], (($current_page - 1)*25),25);
 
-        return $data;
+        return array('items'=> $data['items'], 'total_count' => $data['total_count']);
     }
     
     public function getSummary() 
@@ -476,4 +484,61 @@ class SiteController extends SMController
 		echo $view;
 		exit;
 	}
+
+    public function getAllSites() {
+        $result =[];
+
+        $sites = $this->model->with('user','reviews')->orderBy('total_members','desc')->take('12')->get();
+        $statistics['sites_count'] = $this->model->count();
+        $statistics['members_count'] = $this->model->sum('total_members');
+        $statistics['revenue_count'] = $this->model->sum('total_revenue');
+
+        $result['sites'] = $sites;
+        $result['statistics'] = $statistics;
+
+        return $result;
+    }
+
+    public function getBySubdomain(){
+        $subdomain = \Input::get('subdomain');
+
+        return Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->first();
+    }
+
+    public function getBestSellingSites() {
+
+        $categories = \Input::get('categories');
+        $results = [];
+        
+        if(!empty($categories))
+            foreach ($categories as $key => $category) {
+                $results[] = Site::whereNull('deleted_at')->with(['owner','reviews','directory' , 'meta_data'])->whereHas('directory' , function($query) use($category){
+                        $query->where('category' , $category);
+                })->orderBy('total_revenue','desc')->take(4)->get();
+            }
+
+        return $results;
+    }
+
+    public function directory(){
+
+        $category = \Input::get('category');
+        $subcategory = \Input::get('sub_category');
+        $query =  Site::whereNull('deleted_at')->with(['owner','directory' , 'meta_data'])->whereHas('directory' , function(     $query) use($category , $subcategory){
+                    if($category)
+                        $query->where('category' , $category);
+                    if($subcategory)
+                        $query->where('sub_category' , $subcategory);
+                 });
+
+        $page = \Input::get('p');
+        if(empty($page)){
+            $page = 1;
+        }
+        $count = 0;
+        $results['total_count'] = $query->count();
+        $query = $query->orderBy('total_revenue' , 'desc')->limit(25)->offset(($page - 1) * 25);
+        $results['items'] = $query->get();
+        return $results;
+    }
 }

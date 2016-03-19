@@ -52,13 +52,16 @@ class SupportTicket extends Root
 
 	public function applySearchQuery($query , $value)
 	{
-		return $query->where(function($q) use ($value){
-			$q->whereId( $value );
-			$q->orwhere( 'subject', 'like', '%' . $value . '%');
-			$q->orwhere( 'message', 'like', '%' . $value . '%');
-			$q->orwhere( 'user_email', 'like', '%' . $value . '%');
-			$q->orwhere( 'user_name', 'like', '%' . $value . '%');
-		});
+
+		 $query->where(function($query) use ($value){
+			// $q->whereId( $value );
+            $value = addcslashes ( $value , '+*?.,\\%^$\#[]{}()' );
+			$query->whereId( $value )->orWhere( 'subject', 'like', '%' . $value . '%')->orWhere( 'user_email', 'like', '%' . $value . '%')->orWhere( 'user_name', 'like', '%' . $value . '%');
+		      
+        });
+
+        return $query;
+
 	}
 }
 

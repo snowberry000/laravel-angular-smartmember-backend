@@ -84,9 +84,7 @@ return [
             'password'  => env('DB_PASSWORD', 'December2@@8'),
             'charset'  => 'utf8',
             'prefix'   => '',
-        ],
-
-
+        ]
     ],
 
     /*
