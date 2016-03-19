@@ -523,8 +523,12 @@ class SiteController extends SMController
     public function directory(){
 
         $category = \Input::get('category');
-        $query =  Site::whereNull('deleted_at')->with(['owner','directory' , 'meta_data'])->whereHas('directory' , function(     $query) use($category){
-                    $query->where('category' , $category);
+        $subcategory = \Input::get('sub_category');
+        $query =  Site::whereNull('deleted_at')->with(['owner','directory' , 'meta_data'])->whereHas('directory' , function(     $query) use($category , $subcategory){
+                    if($category)
+                        $query->where('category' , $category);
+                    if($subcategory)
+                        $query->where('sub_category' , $subcategory);
                  });
 
         $page = \Input::get('p');
@@ -534,7 +538,7 @@ class SiteController extends SMController
         $count = 0;
         $results['total_count'] = $query->count();
         $query = $query->orderBy('total_revenue' , 'desc')->limit(25)->offset(($page - 1) * 25);
-        $results['data'] = $query->get();
+        $results['items'] = $query->get();
         return $results;
     }
 }
