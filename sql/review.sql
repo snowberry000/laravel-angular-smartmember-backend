@@ -22,9 +22,11 @@ Update
   ) as smd on smd.id = d.site_id
 set d.total_members = smd.total_members;
 
-insert into directory_listings (site_id,title,category,sub_category,description,subtitle,permalink,total_lessons,total_revenue,total_members,is_approved,created_at) 
-	select id, name, 'Other','Other',
+insert into directory_listings (site_id,title,pending_title,category,sub_category,description,pending_description,subtitle,pending_subtitle,permalink,total_lessons,total_revenue,total_members,is_approved,created_at) 
+	select id, name,name, 'Other','Other',
 	'this is dummy description',
+	'this is dummy description',
+	'this is brief description',
 	'this is brief description',
 	CONCAT(REPLACE(name,' ','-'),'-',id),
 	total_lessons,
@@ -44,7 +46,7 @@ Update
     where `key` = "site_logo"
     group by site_id
   ) as smd on smd.site_id = d.site_id
-set d.image = smd.value;
+set d.image = smd.value, d.pending_image = smd.value ;
 
 
 -- total_downloads insert
@@ -66,7 +68,7 @@ Update
   inner join (
     SELECT site_id, min(price) as min_price, max(price) as max_price from access_levels group by site_id
   ) as a on d.site_id = a.site_id
-  set d.pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' ', a.max_price) end;
+  set d.pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' ', a.max_price) end, d.pending_pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' ', a.max_price) end;
   
 -- where al.deleted_at is NULL and
 
