@@ -7,3 +7,5 @@ CREATE TABLE IF NOT EXISTS `reviews` (
   `deleted_at` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+alter table directory_listings add column `sub_category` VARCHAR( 255 ) NULL;
