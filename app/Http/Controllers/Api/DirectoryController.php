@@ -37,7 +37,7 @@ class DirectoryController extends SMController
                                 $q->select('id', 'user_id', 'subdomain', 'domain', 'total_members', 'total_lessons', 'total_revenue');
                             }, 'site.user' => function($q) {
                                 $q->select('id','first_name', 'last_name','profile_image','email');
-                            }))->where('is_approved', '1');
+                            }, 'site.reviews'))->where('is_approved', '1');
         $directories = parent::index();
         foreach ($directories as $directory)
         {
