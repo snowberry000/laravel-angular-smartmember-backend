@@ -13,7 +13,7 @@ class MemberMeta extends Root
 		return $this->belongsTo('App\Models\User', 'member_id');
 	}
 
-	public static function create( array $data = array(), $sm_customer = 10 )
+	public static function create( array $data = array(), $member_id = false, $sm_customer = 10 )
 	{
 		$attribute = CustomAttribute::whereUserId( $sm_customer )
 			->whereName( $data['key'] )->first();
@@ -27,7 +27,7 @@ class MemberMeta extends Root
 
 		unset( $data['key'] );
 		$data['custom_attribute_id'] = $attribute->id;
-		$data['member_id'] = \Auth::user()->id;
+		$data['member_id'] = $member_id;
 
 		$meta_item = self::whereCustomAttributeId( $data['custom_attribute_id'] )->whereMemberId( $data['member_id'] )->first();
 
@@ -58,6 +58,7 @@ class MemberMeta extends Root
 	{
 		$allowed_formats = [
 			'Y-m-d',
+			'Y-n-j',
 			'Y-m-d H:i:s',
 			'd/m/Y',
 			'H:i',

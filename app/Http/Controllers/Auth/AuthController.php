@@ -163,6 +163,7 @@ class AuthController extends Controller
             }
 
 			$user->last_logged_in = date( 'Y-m-d H:i:s');
+            //$user->refreshAttributes();//not sure what this is supposed to do, but it causes log in to fail
 			$user->save();
 
             $data['sm_user'] = Role::whereUserId( $user->id )->whereSiteId(1)->first() ? true : false;
@@ -337,7 +338,7 @@ class AuthController extends Controller
             }
 
 			$user->last_logged_in = date( 'Y-m-d H:i:s');
-
+            //$user->refreshAttributes();//not sure what this is supposed to do, but it causes log in to fail
             $user->save();
             AppConfiguration::AddMemberToEmailListIntegrationForSite($this->site, $user);
             $user_data['access_token'] = $user->access_token;

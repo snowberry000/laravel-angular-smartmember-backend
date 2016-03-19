@@ -27,7 +27,16 @@ class SupportTicketController extends SMController
 
     public function index()
 	{
-
+         $urlValues= Input::all();
+        // dd($urlValues);
+         foreach( $urlValues as $key => $val )
+         {
+             if($val=='')
+             {
+                 return array("count" => 0,"tickets"=>[],"agents"=>[]);
+             }
+         }
+         
         if(Input::has('orderBy')){
             $dateOrder = Input::get('orderBy'); // Get search order.
             Input::merge(array('orderBy' => null)); // Replace Input::get('orderBy') with NULL.
@@ -81,10 +90,16 @@ class SupportTicketController extends SMController
 			} );
 		}
 
+
+
 		$p = \Input::get('p');
+        if(\Input::get('q') || \Input::get('q')==0)
+            $p=1;
 		if($p!=null)
 		{
 			$response['count'] = $query->whereParentId(0)->count();
+            if(\Input::get('q') || \Input::get('q')==0)
+                $response['items'] = $query->skip((Input::get('p')-1)*config("vars.default_page_size"))->with(array('agent'))->orderBy('created_at' , $dateOrder)->whereParentId(0)->get();
 			$response['tickets'] = $query->skip((Input::get('p')-1)*config("vars.default_page_size"))->with(array('agent'))->orderBy('created_at' , $dateOrder)->whereParentId(0)->get();
 			$response['agents'] = $query->with(array('agent'))->whereParentId(0)->groupBy('agent_id')->get(["agent_id"]);
             foreach ($response['tickets'] as $key => $value) {

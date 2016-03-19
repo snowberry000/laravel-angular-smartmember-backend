@@ -188,6 +188,7 @@ Route::get('/post/getMostUsed/{site_id}',"Api\\PostController@getMostUsed");
 Route::post('/jvzoo/{hash}',"Api\\AffiliateController@processJVZooData");
 
 Route::get('/permalink/{permalink}',"Api\\PermalinkController@getByPermalink");
+Route::post('/checkPermalink',"Api\\PermalinkController@checkPermalink");
 
 Route::get('/get/download/{id}',"Api\\DownloadController@getDownload");
 Route::get('/lessonByPermalink/{id}',"Api\\LessonController@getByPermalink");
@@ -211,6 +212,7 @@ Route::get('/sharedKey/associatedKey', "Api\\AccessLevelShareKeyController@getAs
 Route::get('/generateShareKey', "Api\\AccessLevelShareKeyController@generateShareKey");
 Route::get('/accessLevel/getGrantedShareAccessLevel', "Api\\AccessLevelShareKeyController@getGrantedShareAccessLevels");
 Route::post('/user/changePassword',"Api\\UserController@changePassword");
+Route::post('/user/verifyUser',"Api\\UserController@verifyUser");
 Route::post('/user/setCompany',"Api\\UserController@setCompany");
 Route::post('/user/resendVerification',"Api\\UserController@resendVerificationCode");
 Route::get('/user/transactionAccount/{id}',"Api\\UserController@transactionAccount");

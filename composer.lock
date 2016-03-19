@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "b4d556181bba333fa860c24539ca9ed9",
-    "content-hash": "718480e5fd2eaa5a62431a2fde3e25d4",
+    "hash": "d15dec6f992b7041ba2c3abd75318103",
+    "content-hash": "6329e7edad4811c14a10dcaedd733b83",
     "packages": [
         {
             "name": "airbrake/phpbrake",
@@ -17,7 +17,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/airbrake/phpbrake/zipball/6751241c01ea4b8b6b5241d3dad8c4b550246d6d",
+                "url": "https://api.github.com/repos/airbrake/phpbrake/zipball/1b008c97d7c8f6d50e08cba602501ded01105127",
                 "reference": "eb1cd6ce5142d1fad89987b5db8bbc3083ca8a59",
                 "shasum": ""
             },
@@ -114,7 +114,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "\\Aweber\\": "aweber_api/"
+                    "": "aweber_api/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -877,6 +877,65 @@
                 }
             ],
             "time": "2015-04-20 18:58:01"
+        },
+        {
+            "name": "jenssegers/mongodb",
+            "version": "v2.3.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jenssegers/laravel-mongodb.git",
+                "reference": "6e9b5f4fe5fa5044b7dea0db5576f7c21374c661"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jenssegers/laravel-mongodb/zipball/6e9b5f4fe5fa5044b7dea0db5576f7c21374c661",
+                "reference": "6e9b5f4fe5fa5044b7dea0db5576f7c21374c661",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/container": "^5.1",
+                "illuminate/database": "^5.1",
+                "illuminate/events": "^5.1",
+                "illuminate/support": "^5.1"
+            },
+            "require-dev": {
+                "mockery/mockery": "^0.9",
+                "orchestra/testbench": "^3.1",
+                "phpunit/phpunit": "^4.0|^5.0",
+                "satooshi/php-coveralls": "^0.6"
+            },
+            "suggest": {
+                "jenssegers/mongodb-sentry": "Add Sentry support to Laravel-MongoDB",
+                "jenssegers/mongodb-session": "Add MongoDB session support to Laravel-MongoDB"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Jenssegers\\Mongodb": "src/",
+                    "Jenssegers\\Eloquent": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jens Segers",
+                    "homepage": "https://jenssegers.com"
+                }
+            ],
+            "description": "A MongoDB based Eloquent model and Query builder for Laravel 4",
+            "homepage": "https://github.com/jenssegers/laravel-mongodb",
+            "keywords": [
+                "database",
+                "eloquent",
+                "laravel",
+                "model",
+                "mongo",
+                "mongodb"
+            ],
+            "time": "2016-02-12 18:42:59"
         },
         {
             "name": "jeremeamia/SuperClosure",
@@ -2609,12 +2668,12 @@
             "version": "v2.7.3",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/Routing.git",
+                "url": "https://github.com/symfony/routing.git",
                 "reference": "ea9134f277162b02e5f80ac058b75a77637b0d26"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Routing/zipball/ea9134f277162b02e5f80ac058b75a77637b0d26",
+                "url": "https://api.github.com/repos/symfony/routing/zipball/ea9134f277162b02e5f80ac058b75a77637b0d26",
                 "reference": "ea9134f277162b02e5f80ac058b75a77637b0d26",
                 "shasum": ""
             },
@@ -2805,7 +2864,7 @@
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vimeo/vimeo.php/zipball/db54ba48423d734643cb1c7a72135033a1c57fa3",
+                "url": "https://api.github.com/repos/vimeo/vimeo.php/zipball/c7d42db70a9550547f926719997d1aa5cc4fbddb",
                 "reference": "67111b5dc8c5ccc724ea7d93f6508ad874afcb35",
                 "shasum": ""
             },
