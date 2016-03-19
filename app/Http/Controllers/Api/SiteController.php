@@ -519,4 +519,22 @@ class SiteController extends SMController
 
         return $results;
     }
+
+    public function directory(){
+
+        $category = \Input::get('category');
+        $query =  Site::whereNull('deleted_at')->with(['owner','directory' , 'meta_data'])->whereHas('directory' , function(     $query) use($category){
+                    $query->where('category' , $category);
+                 });
+
+        $page = \Input::get('p');
+        if(empty($page)){
+            $page = 1;
+        }
+        $count = 0;
+        $results['total_count'] = $query->count();
+        $query = $query->orderBy('total_revenue' , 'desc')->limit(25)->offset(($page - 1) * 25);
+        $results['data'] = $query->get();
+        return $results;
+    }
 }
