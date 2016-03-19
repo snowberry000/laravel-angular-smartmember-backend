@@ -510,7 +510,7 @@ class SiteController extends SMController
 
         $category = \Input::get('category');
         $subcategory = \Input::get('sub_category');
-        $query =  Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data']);
+        $query =  Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data', 'site.reviews']);
 
         if(!empty($category)){
             $query->where('category' , $category)->orderBy('total_revenue','desc');
@@ -528,6 +528,7 @@ class SiteController extends SMController
         $results['total_count'] = $query->count();
         $query = $query->orderBy('total_revenue' , 'desc')->limit(25)->offset(($page - 1) * 25);
         $results['items'] = $query->get();
+        
         return $results;
     }
 }
