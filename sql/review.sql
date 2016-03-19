@@ -10,3 +10,5 @@ CREATE TABLE IF NOT EXISTS `reviews` (
 
 alter table directory_listings add column `sub_category` VARCHAR( 255 ) NULL;
 update directory_listings set category = 'Other' , sub_category = 'Other' where category is null;
+
+alter table reviews add column `user_id` bigint(22) NOT NULL;

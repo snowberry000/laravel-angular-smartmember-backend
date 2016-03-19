@@ -29,7 +29,7 @@ class SiteController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth", ['except' => array('getAllSites', 'details', 'getLatestOfAllContent','getTicketCount','SMUrl')]);
+        $this->middleware("auth", ['except' => array('getBySubdomain','getAllSites', 'details', 'getLatestOfAllContent','getTicketCount','SMUrl')]);
         $this->middleware("smember", ['only' => array('store')]);
         $this->model = new Site();
 
@@ -484,20 +484,6 @@ class SiteController extends SMController
 		echo $view;
 		exit;
 	}
-
-    public function getAllSites() {
-        $result =[];
-
-        $sites = $this->model->with('user','reviews')->orderBy('total_members','desc')->take('12')->get();
-        $statistics['sites_count'] = $this->model->count();
-        $statistics['members_count'] = $this->model->sum('total_members');
-        $statistics['revenue_count'] = $this->model->sum('total_revenue');
-
-        $result['sites'] = $sites;
-        $result['statistics'] = $statistics;
-
-        return $result;
-    }
 
     public function getBySubdomain(){
         $subdomain = \Input::get('subdomain');
