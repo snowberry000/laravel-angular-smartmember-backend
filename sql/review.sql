@@ -14,9 +14,9 @@ update directory_listings set category = 'Other' , sub_category = 'Other' where 
 Update
   directory_listings as d
   inner join (
-    select site_id,total_members
-    	from sites c;
-  ) as smd on smd.site_id = d.site_id
+    select id,total_members
+    	from sites c
+  ) as smd on smd.id = d.site_id
 set d.total_members = smd.total_members;
 
 insert into directory_listings (site_id,title,category,sub_category,description,subtitle,permalink,total_lessons,total_revenue,total_members,is_approved,created_at) 
