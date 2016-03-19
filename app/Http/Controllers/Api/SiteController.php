@@ -504,4 +504,19 @@ class SiteController extends SMController
 
         return Site::where('subdomain' , $subdomain)->with(['owner' , 'reviews' , 'reviews.user'])->first();
     }
+
+    public function getBestSellingSites() {
+
+        $categories = \Input::get('categories');
+        $results = [];
+        
+        if(!empty($categories))
+            foreach ($categories as $key => $category) {
+                $results[] = Site::whereNull('deleted_at')->with(['owner','reviews','directory'])->whereHas('directory' , function($query) use($category){
+                        $query->where('category' , $category);
+                })->orderBy('total_revenue','desc')->take(4)->get();
+            }
+
+        return $results;
+    }
 }
