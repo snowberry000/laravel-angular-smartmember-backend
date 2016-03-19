@@ -13,6 +13,8 @@ use App\Models\SupportTicket;
 use App\Models\EmailSetting;
 use App\Models\ContentStats;
 use App\Models\Lesson;
+use App\Models\Directory;
+
 use App\Models\Download;
 use App\Models\Livecast;
 use App\Models\Post;
@@ -512,9 +514,7 @@ class SiteController extends SMController
         
         if(!empty($categories))
             foreach ($categories as $key => $category) {
-                $results[] = Site::whereNull('deleted_at')->with(['owner','reviews','directory' , 'meta_data'])->whereHas('directory' , function($query) use($category){
-                        $query->where('category' , $category);
-                })->orderBy('total_revenue','desc')->take(4)->get();
+                $results = Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data' , 'site.reviews'])->where('category' , $category)->orderBy('total_revenue','desc')->take(4)->get();
             }
 
         return $results;
@@ -524,12 +524,15 @@ class SiteController extends SMController
 
         $category = \Input::get('category');
         $subcategory = \Input::get('sub_category');
-        $query =  Site::whereNull('deleted_at')->with(['owner','directory' , 'meta_data'])->whereHas('directory' , function(     $query) use($category , $subcategory){
-                    if($category)
-                        $query->where('category' , $category);
-                    if($subcategory)
-                        $query->where('sub_category' , $subcategory);
-                 });
+        $query =  Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data']);
+
+        if(!empty($category)){
+            $query->where('category' , $category)->orderBy('total_revenue','desc');
+        }
+
+        if(!empty($subcategory)){
+            $query->where('sub_category' , $subcategory)->orderBy('total_revenue','desc');
+        }          
 
         $page = \Input::get('p');
         if(empty($page)){

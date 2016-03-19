@@ -59,3 +59,8 @@ Update
   set d.pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' ', a.max_price) end;
   
 -- where al.deleted_at is NULL and
+
+update directory_listings set category = 'Development' , sub_category = 'Web Development' where category = 'Other' ORDER BY total_revenue DESC limit 25
+update directory_listings set category = 'Development' , sub_category = 'Mobile Apps' where category = 'Other' ORDER BY total_revenue DESC limit 25
+update directory_listings set category = 'Business' , sub_category = 'Finance' where category = 'Other' ORDER BY total_revenue DESC limit 25
+update directory_listings set category = 'Business' , sub_category = 'Entrepreneurship' where category = 'Other' ORDER BY total_revenue DESC limit 25
