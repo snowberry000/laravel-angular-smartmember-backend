@@ -17,11 +17,18 @@ class Directory extends Root
         $this->description = $this->pending_description;
     	$this->pricing = $this->pending_pricing;
     	$this->image = $this->pending_image;
-    	$this->save();
-
+    	parent::save();        
     	return true;
     }
 
+    public function save(array $options = array()){
+        // parent::save();
+        if(parent::save())
+        {
+            $this->approve();
+        }
+
+    }
 
     public static function getAllCategories(){
         $records = \DB::select('select distinct(category) from directory_listings');
@@ -43,4 +50,8 @@ Directory::creating(function($directory){
             \App::abort(402,"Permalink is already taken, please choose something else");
         }
     }
+});
+
+Directory::created(function($directory){
+    $directory->approve();
 });

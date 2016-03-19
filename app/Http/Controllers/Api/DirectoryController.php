@@ -39,6 +39,7 @@ class DirectoryController extends SMController
                                 $q->select('id','first_name', 'last_name','profile_image','email');
                             }))->where('is_approved', '1');
         $directories = parent::index();
+        return ($directories);
         foreach ($directories as $directory)
         {
             if (empty($directory->site->user->profile_image))
