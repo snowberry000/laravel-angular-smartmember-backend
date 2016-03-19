@@ -14,6 +14,13 @@ alter table reviews add column `user_id` bigint(22) NOT NULL;
 
 alter table directory_listings add column `total_members` int(11) NULL;
 update directory_listings set category = 'Other' , sub_category = 'Other' where category is null;
+Update
+  directory_listings as d
+  inner join (
+    select id,total_members
+    	from sites c
+  ) as smd on smd.id = d.site_id
+set d.total_members = smd.total_members;
 
 insert into directory_listings (site_id,title,category,sub_category,description,subtitle,permalink,total_lessons,total_revenue,total_members,is_approved,created_at) 
 	select id, name, 'Other','Other',
