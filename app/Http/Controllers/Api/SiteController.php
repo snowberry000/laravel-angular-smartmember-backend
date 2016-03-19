@@ -512,7 +512,7 @@ class SiteController extends SMController
         
         if(!empty($categories))
             foreach ($categories as $key => $category) {
-                $results[] = Site::whereNull('deleted_at')->with(['owner','reviews','directory'])->whereHas('directory' , function($query) use($category){
+                $results[] = Site::whereNull('deleted_at')->with(['owner','reviews','directory' , 'meta_data'])->whereHas('directory' , function($query) use($category){
                         $query->where('category' , $category);
                 })->orderBy('total_revenue','desc')->take(4)->get();
             }
