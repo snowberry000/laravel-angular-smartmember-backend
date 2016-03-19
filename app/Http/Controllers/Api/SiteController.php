@@ -498,4 +498,10 @@ class SiteController extends SMController
 
         return $result;
     }
+
+    public function getBySubdomain(){
+        $subdomain = \Input::get('subdomain');
+
+        return Site::where('subdomain' , $subdomain)->with(['owner' , 'reviews' , 'reviews.user'])->first();
+    }
 }
