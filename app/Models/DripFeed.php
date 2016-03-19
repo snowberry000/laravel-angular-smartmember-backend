@@ -27,6 +27,14 @@ class DripFeed extends Root
 
     }
 
+	public function getDurationAttribute( $value )
+	{
+		if( $value )
+			return intval( $value );
+		else
+			return 0;
+	}
+
 	public static function remove($model)
 	{
 		$dripfeed = self::whereSiteId($model->site_id)->whereTargetId($model->id)->whereType($model->getTable())->first();

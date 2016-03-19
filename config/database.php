@@ -84,33 +84,7 @@ return [
             'password'  => env('DB_PASSWORD', 'December2@@8'),
             'charset'  => 'utf8',
             'prefix'   => '',
-        ],
-
-        'old_sm' => [
-            'driver'    => 'mysql',
-            'unix_socket' => env('DB_SOCKET', ''),
-            'host'     => env('SMARTM_DB_HOST', 'localhost'),
-            'database'  => env('SMARTM_DB_DATABASE', 'smartmembers'),
-            'username'  => env('SMARTM_DB_USERNAME', 'root'),
-            'password'  => env('SMARTM_DB_PASSWORD', 'December2@@8'),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_unicode_ci',
-            'prefix'    => '',
-            'strict'    => false,
-        ],
-        'mongodb' => [
-            'driver'   => 'mongodb',
-            'host'     => env('MONGODB_HOST', 'localhost'),
-            'port'     => env('MONGODB_PORT', 27017),
-            'database' => env('MONGODB_DATABASE', ''),
-            'username' => env('MONGODB_USERNAME', ''),
-            'password' => env('MONGODB_PASSWORD', ''),
-            'options' => [
-                
-            ]
-        ],
-
-
+        ]
     ],
 
     /*

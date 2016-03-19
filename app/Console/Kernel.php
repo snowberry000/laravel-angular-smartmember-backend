@@ -14,8 +14,6 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\Inspire::class,
-        \App\Console\Commands\Seed::class,
-        \App\Console\Commands\SeedFull::class,
         \App\Console\Commands\SmartMailEngine::class,
         \App\Console\Commands\SmartMailSegmentEngine::class,
         \App\Console\Commands\SmartMailAutoresponder::class,

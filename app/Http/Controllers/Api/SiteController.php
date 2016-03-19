@@ -29,7 +29,7 @@ class SiteController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth", ['except' => array('details', 'getLatestOfAllContent','getTicketCount')]);
+        $this->middleware("auth", ['except' => array('details', 'getLatestOfAllContent','getTicketCount','SMUrl')]);
         $this->middleware("smember", ['only' => array('store')]);
         $this->model = new Site();
 
@@ -434,5 +434,54 @@ class SiteController extends SMController
 			$site->hash = md5( microtime() * rand() );
 			$site->save();
 		}
+	}
+
+	public function SMUrl( $domain )
+	{
+		$site_data = [];
+
+		if( preg_match( '/^(?:(?:http(?:s)?\:)?\/\/)?([a-z0-9]{1}(?:[a-z0-9\-]{0,61}[a-z0-9]{1})?)\.smartmember\.(?:com|dev|in)$/i', $domain, $matches ) )
+		{
+			if( !empty( $matches ) )
+			{
+				$subdomain = $matches[1];
+
+				$site = $this->model->whereSubdomain( $subdomain )->first();
+
+				if( $site )
+				{
+					$site_data = [
+						'sm_url' => 'http://' . $site->subdomain . '.smartmember.com',
+						'custom_url' => ( $site->domain ? 'http://' . $site->domain : false ),
+						'sm_id' => $site->id
+					];
+				}
+			}
+		}
+		else
+		{
+			preg_match( '/^(?<=^|\ |\n)(?:(?:(?:http(?:s)?\:)?(?:\/\/))|(?:\/\/))?((?:(?=[a-z0-9\-\.]{1,255}(?=\/|\ |$|\:|\?|\,|\!))(?:(?:(?:[a-z0-9]{1}(?:[a-z0-9\-]{1,62})?\.){1,127})[a-z]{2,}(?:\.[a-z]{2})?)))(?:[a-z0-9\/\-\_\%\?\&\!\$\'\,\(\)\*\.\+\=\;])*?(?=$|\.(?=\ |$)|\:|\n|\ |\?(?=\ |$)|\,|\!)$/i', $domain, $matches );
+
+			if( !empty( $matches ) )
+			{
+				$domain = $matches[1];
+
+				$site = $this->model->whereDomain( $domain )->first();
+
+				if( $site )
+				{
+					$site_data = [
+						'sm_url' => 'http://' . $site->subdomain . '.smartmember.com',
+						'custom_url' => ( $site->domain ? 'http://' . $site->domain : false ),
+						'sm_id' => $site->id
+					];
+				}
+			}
+		}
+
+		$view = \View::make("support.sm_url", $site_data)->render();
+
+		echo $view;
+		exit;
 	}
 }
