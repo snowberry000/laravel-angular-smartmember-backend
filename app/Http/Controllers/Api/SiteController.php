@@ -502,7 +502,7 @@ class SiteController extends SMController
     public function getBySubdomain(){
         $subdomain = \Input::get('subdomain');
 
-        return Site::where('subdomain' , $subdomain)->with(['owner' , 'reviews' , 'reviews.user'])->first();
+        return Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->first();
     }
 
     public function getBestSellingSites() {
