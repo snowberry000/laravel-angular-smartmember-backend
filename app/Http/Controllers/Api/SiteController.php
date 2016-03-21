@@ -529,11 +529,12 @@ class SiteController extends SMController
 
 	    if( isset($_GET['token']) && $_GET['token'] == 'pbLllwVETx8dxqb8nkiBWAEj' )
 	    {
-		    echo print_r( $_GET, true );
-		    return;
+		    $subdomain = $_GET['text'];
 	    }
-
-        $subdomain = \Input::get('subdomain');
+	    else
+	    {
+		    $subdomain = \Input::get('subdomain');
+	    }
 
         $site = Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user','directory'])->first();
         if(!empty($site)){
