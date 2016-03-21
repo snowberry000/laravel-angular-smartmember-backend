@@ -117,3 +117,6 @@ Update
   inner join users as u on u.id = a.user_id
   set d.owner = CONCAT(u.first_name,' ',u.last_name);
 alter table directory_listings add column `rating` int DEFAULT 0;
+
+insert into email_lists (site_id , account_id , name)
+values (6192 , 1 , 'Directory Leads');

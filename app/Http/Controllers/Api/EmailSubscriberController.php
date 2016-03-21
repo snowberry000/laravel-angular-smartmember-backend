@@ -152,6 +152,38 @@ class EmailSubscriberController extends SMController
         return array('record'=>$record,'total'=>1);
     }
 
+
+    public function directoryleads(){
+        $hash = EmailSubscriber::getHash(\Input::get("email"));
+        $account_id = \Auth::user()->id;
+        \Input::merge(array("hash"=>$hash,'account_id'=>$account_id));
+        $record = EmailSubscriber::where('email','=',\Input::get("email"))->whereAccountId($account_id)->whereNull('deleted_at')->first();
+        if (empty($record->id))
+        {
+            $record = $this->model->create(\Input::except('token'));
+        }
+        else
+        {
+            \Input::merge(array("id" => $record->id));
+            $record = $this->model->update(\Input::except('token', 'email_lists'));
+            return $record;
+        }
+        
+        if (!$record->id){
+            App::abort(401, "The operation requested couldn't be completed");
+        }
+
+        $list = EmailList::whereSiteId(6192)->whereName('Directory Leads')->first();
+        if($list){
+            $email_list_ledger = new EmailListLedger();
+            $email_list_ledger->list_id = $list->id;
+            $email_list_ledger->subscriber_id = $record->id;
+            $email_list_ledger->save();
+        }
+        return array('record'=>$record,'total'=>1);
+    }
+
+
     public function getUnsubscribeInfo()
     {
         $list_type = \Input::get('list_type', 'user');
