@@ -550,6 +550,17 @@ class SiteController extends SMController
 
     public function directory(){
 
+        if(\Input::has('featured')){
+            $sub_categories = \Input::get('sub_categories');
+            $results = [];
+            foreach ($sub_categories as $key => $value) {
+                $results[$value] = Directory::whereNull('deleted_at')->where('sub_category' , $value)->with(['site' , 'site.owner' , 'site.meta_data'])->orderBy('total_revenue','desc')->take(4)->get();
+            }
+
+            return $results;
+            
+        }
+
         $category = \Input::get('category');
         $subcategory = \Input::get('sub_category');
         $query =  Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data']);
