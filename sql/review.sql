@@ -1,3 +1,5 @@
+delete from directory_listings;
+  
 CREATE TABLE IF NOT EXISTS `reviews` (
   `id` bigint unsigned not null AUTO_INCREMENT primary key,
   `site_id` bigint unsigned NOT NULL,
@@ -81,7 +83,7 @@ alter table directory_listings
   add column `max_price` double(10,2) DEFAULT NULL,
   add column `min_price_interval` varchar(15) DEFAULT NULL, 
   add column `max_price_interval` varchar(15) DEFAULT NULL,
-  add column `is_paid` tinyint(1) DEFAULT '0'
+  add column `is_paid` tinyint(1) DEFAULT '0';
 
 
 -- insert pricing
@@ -109,7 +111,7 @@ alter table directory_listings
 
 
 alter table directory_listings
-  add column `owner` varchar(255) default null
+  add column `owner` varchar(255) default null;
 
 Update
   directory_listings as d
