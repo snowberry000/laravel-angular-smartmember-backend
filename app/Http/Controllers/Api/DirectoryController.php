@@ -17,7 +17,7 @@ class DirectoryController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth",['except' => array('set','index','show','approve','byPermalink','categories' , 'getTopDirectories')]);
+        $this->middleware("auth",['except' => array('set', 'visible', 'index','show','approve','byPermalink','categories' , 'getTopDirectories')]);
         $this->model = new Directory();
     }
 
@@ -247,15 +247,29 @@ class DirectoryController extends SMController
             $directory->sub_category = $subcategory;
             $directory->save();
 
-            return array('success' => true); 
+            return array('success' => true);
         }
 
         return array('success' => false);
     } 
 
     public function visible(){
-        $subdomain = \Input::get('subdomain');
-        $visible = \Input::get('visible');
+
+	    if( isset($_GET['token']) && $_GET['token'] == 'DGpmq5iZLyxcQfEPqnt32nxh' )
+	    {
+		    $text = $_GET['text'];
+
+		    $bits = explode( ',', $text );
+
+		    $subdomain = trim( $bits[0] );
+		    $visible = trim( $bits[1] ) == 'yes' ? 'true' : false;
+	    }
+	    else
+	    {
+		    $subdomain = \Input::get('subdomain');
+		    $visible = \Input::get('visible');
+	    }
+
 
         if(empty($subdomain)){
             \App::abort('403' , 'A required field is missing');
