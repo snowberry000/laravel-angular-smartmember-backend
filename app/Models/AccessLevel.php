@@ -178,8 +178,8 @@ AccessLevel::saved(function($access_level){
                 );
     $door['keys'][] = $access_level->id;
 
-    \DB::connection('mongodb')->collection('door')->where('_id', $access_level->id)
-                       ->update($door, ['upsert' => true]);
+    // \DB::connection('mongodb')->collection('door')->where('_id', $access_level->id)
+    //                    ->update($door, ['upsert' => true]);
 });
 
 /*AccessLevel::creating(function($access_level){

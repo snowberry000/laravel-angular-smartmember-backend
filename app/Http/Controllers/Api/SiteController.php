@@ -31,7 +31,7 @@ class SiteController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth", ['except' => array('getBestSellingSites','getBySubdomain','getAllSites', 'details', 'getLatestOfAllContent','getTicketCount','SMUrl' , 'directory')]);
+        $this->middleware("auth", ['except' => array('getBestSellingSites','getBySubdomain','getAllSites', 'details', 'getLatestOfAllContent','getTicketCount','SMUrl' , 'directory' , 'search')]);
         $this->middleware("smember", ['only' => array('store')]);
         $this->model = new Site();
 
@@ -134,22 +134,36 @@ class SiteController extends SMController
         $value = \Input::get('q');
         $page = \Input::get('p');
         $sort_by = \Input::get('sort_by');
+        $is_paid = \Input::get('is_paid');
+        $rating = \Input::get('rating');
         if(empty($sort_by))
         {
-            $sort_by='total_members';
+            $column='total_members';
+            $order = 'desc';
+        }else{
+            $column = explode(',', $sort_by)[0];
+            $order = explode(',', $sort_by)[1];
         }
 
         if(empty($page)){
             $page = 1;
         }
         $count = 0;
+        $query = Directory::whereNull('deleted_at')->where('is_visible' , true);
         
-        $query = Site::whereNull('deleted_at');
         $query = $query->where(function ($query) use($value) {
-            $query->where('name', 'like','%' . $value . "%")->orWhere('subdomain', 'like','%' . $value . "%");
+            $query->where('title', 'like','%' . $value . "%")->orWhere('description', 'like','%' . $value . "%");
         });
+        if(!empty($is_paid)){
+            $is_paid = $is_paid === 'true'? true: false;
+            $query = $query->where('is_paid' , '=', $is_paid);
+        }
+        if(!empty($rating)){
+            $query = $query->whereIn('rating' , $rating);
+        }
         $results['total_count'] = $query->count();
-        $query = $query->with('owner','reviews')->orderBy($sort_by , 'desc')->limit(25)->offset(($page - 1) * 25);
+        $query = $query->with('site','site.owner','site.reviews')->orderBy($column , $order)->limit(25)->offset(($page - 1) * 25);
+        //dd($query->toSql());
         $results['items'] = $query->get();
         return $results;
     }
@@ -514,7 +528,11 @@ class SiteController extends SMController
     public function getBySubdomain(){
         $subdomain = \Input::get('subdomain');
 
-        return Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->first();
+        $site = Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->first();
+        if(!empty($site)){
+            $site->other_sites = Site::with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->whereUserId($site->user_id)->where('id','!=',$site->id)->orderBy('total_revenue','desc')->get();
+        }
+        return $site;
     }
 
     public function getBestSellingSites() {
@@ -524,7 +542,7 @@ class SiteController extends SMController
         
         if(!empty($categories))
             foreach ($categories as $key => $category) {
-                $results[] = Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data' , 'site.reviews'])->where('category' , $category)->orderBy('total_revenue','desc')->take(4)->get();
+                $results[] = Directory::whereNull('deleted_at')->where('is_visible' , true)->with(['site' , 'site.owner' , 'site.meta_data' , 'site.reviews'])->where('category' , $category)->orderBy('total_revenue','desc')->take(4)->get();
             }
 
         return $results;
@@ -532,9 +550,20 @@ class SiteController extends SMController
 
     public function directory(){
 
+        if(\Input::has('featured')){
+            $sub_categories = \Input::get('sub_categories');
+            $results = [];
+            foreach ($sub_categories as $key => $value) {
+                $results[$value] = Directory::whereNull('deleted_at')->where('is_visible' , true)->where('sub_category' , $value)->with(['site' , 'site.owner' , 'site.meta_data'])->orderBy('total_revenue','desc')->take(4)->get();
+            }
+
+            return $results;
+            
+        }
+
         $category = \Input::get('category');
         $subcategory = \Input::get('sub_category');
-        $query =  Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data', 'site.reviews']);
+        $query =  Directory::whereNull('deleted_at')->where('is_visible' , true)->with(['site' , 'site.owner' , 'site.meta_data']);
 
         if(!empty($category)){
             $query->where('category' , $category)->orderBy('total_revenue','desc');

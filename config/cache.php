@@ -14,7 +14,7 @@ return [
     */
 
     'default' => env('CACHE_DRIVER', 'file'),
-    'actions' => ['site_details', 'module_home', 'siteNotice_getnotifications', 'user_[0-9]+' , 'affiliateLeaderboard_[0-9]+'],
+    'actions' => ['site_details', 'module_home', 'siteNotice_getnotifications', 'user_[0-9]+' , 'affiliateLeaderboard_[0-9]+','directory_all'],
 
     /*
     |--------------------------------------------------------------------------

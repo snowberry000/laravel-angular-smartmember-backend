@@ -17,7 +17,7 @@ class DirectoryController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth",['except' => array('index','show','approve','byPermalink','categories' , 'getTopDirectories')]);
+        $this->middleware("auth",['except' => array('set','index','show','approve','byPermalink','categories' , 'getTopDirectories')]);
         $this->model = new Directory();
     }
 
@@ -195,7 +195,7 @@ class DirectoryController extends SMController
     public function getTopDirectories() {
         $result =[];
 
-        $sites = $this->model->with(array('site' => function($q) {
+        $sites = $this->model->where('is_visible' , true)->with(array('site' => function($q) {
                                     $q->select('id', 'user_id', 'subdomain', 'domain', 'total_members', 'total_lessons', 'total_revenue');
                                 }, 'site.user' => function($q) {
                                     $q->select('id','first_name', 'last_name','profile_image','email');
@@ -208,6 +208,43 @@ class DirectoryController extends SMController
         $result['statistics'] = $statistics;
 
         return $result;
+    }
+
+    public function set(){
+        $subdomain = \Input::get('subdomain');
+        $category = \Input::get('category');
+        $subcategory = \Input::get('subcategory');
+
+        if(empty($subdomain) || empty($category) || empty($subcategory)){
+            \App::abort('403' , 'A required field is missing');
+        }
+
+        $site = Site::whereSubdomain($subdomain)->first();
+
+        if(empty($site)){
+             \App::abort('403' , 'No such subdomain exists');
+        }
+
+        $directory = Directory::whereSiteId($site->id)->first();
+        if(!empty($directory)){
+            $directory->category = $category;
+            $directory->sub_category = $subcategory;
+            $directory->save();
+
+            return array('success' => true); 
+        }
+
+        return array('success' => false);
+    } 
+    public function updateRating() {
+        $site_id = \Input::get('id');
+        $rating = \Input::get('rating');
+
+        if($site_id && $rating) {
+            
+            $this->model->fill(['site_id' => $site_id, 'rating' => $rating ]);
+            $this->model->save();
+        }
     }
 
 }

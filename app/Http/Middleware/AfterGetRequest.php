@@ -16,9 +16,10 @@ class AfterGetRequest
         if (!SMCache::shouldCache() || $_SERVER["REQUEST_METHOD"] != "GET"){
             return $response;
         }    	
+
+
         $key = SMCache::getKey();
 		$domain_key = SMCache::getDomainKey();
-
 		if( $domain_key )
 			PRedis::setex( $domain_key,30*60, json_encode($response->original));
 

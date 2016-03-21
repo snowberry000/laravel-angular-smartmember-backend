@@ -72,11 +72,14 @@ $resources = array(
 );
 
 //TODO: Don't use - in the URL. Use Camel cased syntax e.g. facebookLogin
+Route::put('/directory/updateRating',"Api\\DirectoryController@updateRating");
 Route::get('/directory/all',"Api\\DirectoryController@getTopDirectories");
 Route::get('site/getBySubdomain',"Api\\SiteController@getBySubdomain");
 Route::get('/site/bestSelling',"Api\\SiteController@getBestSellingSites");
 Route::get('/site/directory',"Api\\SiteController@directory");
 Route::get('/site/search',"Api\\SiteController@search");
+Route::get('/directory/set',"Api\\DirectoryController@set");
+Route::post('/emailSubscriber/directoryleads',"Api\\EmailSubscriberController@directoryleads");
 
 Route::get("/auth/verify/{access_token}", "Auth\\AuthController@getVerify");
 Route::post("/auth/facebook-login", "Auth\\AuthController@postFacebookLogin");

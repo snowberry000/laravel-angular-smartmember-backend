@@ -61,15 +61,7 @@ Update
   ) as dl on d.site_id = dl.site_id
 set d.total_downloads = dl.NumberOfDownloads;
 
--- pricing insert
 
-Update
-  directory_listings as d
-  inner join (
-    SELECT site_id, min(price) as min_price, max(price) as max_price from access_levels group by site_id
-  ) as a on d.site_id = a.site_id
-  set d.pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' to ', a.max_price) end, d.pending_pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' to ', a.max_price) end;
-  
 -- where al.deleted_at is NULL and
 
 
@@ -90,3 +82,41 @@ alter table directory_listings
   add column `min_price_interval` varchar(15) DEFAULT NULL, 
   add column `max_price_interval` varchar(15) DEFAULT NULL,
   add column `is_paid` tinyint(1) DEFAULT '0'
+
+
+-- insert pricing
+  Update
+  directory_listings as d
+  inner join (
+    SELECT site_id, min(price) as min_price, max(price) as max_price from access_levels group by site_id
+  ) as a on d.site_id = a.site_id
+  set d.pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' to ', a.max_price) end,
+   d.pending_pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' to ', a.max_price) end;
+
+  Update
+  directory_listings as d
+  inner join (
+    SELECT site_id, min(price) as min_price , payment_interval from access_levels group by site_id
+  ) as a on d.site_id = a.site_id
+  set d.min_price = a.min_price , d.min_price_interval = a.payment_interval;
+  
+  Update
+  directory_listings as d
+  inner join (
+    SELECT site_id, max(price) as max_price , payment_interval from access_levels group by site_id
+  ) as a on d.site_id = a.site_id
+  set d.max_price = a.max_price , d.max_price_interval = a.payment_interval, d.is_paid= case when a.max_price > 0 then 1 else 0 end;
+
+
+alter table directory_listings
+  add column `owner` varchar(255) default null
+
+Update
+  directory_listings as d
+  inner join sites as a on d.site_id = a.id
+  inner join users as u on u.id = a.user_id
+  set d.owner = CONCAT(u.first_name,' ',u.last_name);
+alter table directory_listings add column `rating` int DEFAULT 0;
+
+insert into email_lists (site_id , account_id , name)
+values (6192 , 1 , 'Directory Leads');
