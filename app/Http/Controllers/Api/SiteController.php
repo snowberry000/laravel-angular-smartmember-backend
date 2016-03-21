@@ -13,6 +13,8 @@ use App\Models\SupportTicket;
 use App\Models\EmailSetting;
 use App\Models\ContentStats;
 use App\Models\Lesson;
+use App\Models\Directory;
+
 use App\Models\Download;
 use App\Models\Livecast;
 use App\Models\Post;
@@ -29,7 +31,7 @@ class SiteController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth", ['except' => array('details', 'getLatestOfAllContent','getTicketCount','SMUrl')]);
+        $this->middleware("auth", ['except' => array('getBestSellingSites','getBySubdomain','getAllSites', 'details', 'getLatestOfAllContent','getTicketCount','SMUrl')]);
         $this->middleware("smember", ['only' => array('store')]);
         $this->model = new Site();
 
@@ -484,4 +486,49 @@ class SiteController extends SMController
 		echo $view;
 		exit;
 	}
+
+    public function getBySubdomain(){
+        $subdomain = \Input::get('subdomain');
+
+        return Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->first();
+    }
+
+    public function getBestSellingSites() {
+
+        $categories = \Input::get('categories');
+        $results = [];
+        
+        if(!empty($categories))
+            foreach ($categories as $key => $category) {
+                $results[] = Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data' , 'site.reviews'])->where('category' , $category)->orderBy('total_revenue','desc')->take(4)->get();
+            }
+
+        return $results;
+    }
+
+    public function directory(){
+
+        $category = \Input::get('category');
+        $subcategory = \Input::get('sub_category');
+        $query =  Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data', 'site.reviews']);
+
+        if(!empty($category)){
+            $query->where('category' , $category)->orderBy('total_revenue','desc');
+        }
+
+        if(!empty($subcategory)){
+            $query->where('sub_category' , $subcategory)->orderBy('total_revenue','desc');
+        }          
+
+        $page = \Input::get('p');
+        if(empty($page)){
+            $page = 1;
+        }
+        $count = 0;
+        $results['total_count'] = $query->count();
+        $query = $query->orderBy('total_revenue' , 'desc')->limit(25)->offset(($page - 1) * 25);
+        $results['items'] = $query->get();
+        
+        return $results;
+    }
 }

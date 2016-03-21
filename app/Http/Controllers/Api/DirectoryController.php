@@ -17,7 +17,7 @@ class DirectoryController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth",['except' => array('index','show','approve','byPermalink','categories')]);
+        $this->middleware("auth",['except' => array('index','show','approve','byPermalink','categories' , 'getTopDirectories')]);
         $this->model = new Directory();
     }
 
@@ -39,6 +39,7 @@ class DirectoryController extends SMController
                                 $q->select('id','first_name', 'last_name','profile_image','email');
                             }))->where('is_approved', '1');
         $directories = parent::index();
+        return ($directories);
         foreach ($directories as $directory)
         {
             if (empty($directory->site->user->profile_image))
@@ -191,6 +192,22 @@ class DirectoryController extends SMController
 
     }
 
+    public function getTopDirectories() {
+        $result =[];
 
+        $sites = $this->model->with(array('site' => function($q) {
+                                    $q->select('id', 'user_id', 'subdomain', 'domain', 'total_members', 'total_lessons', 'total_revenue');
+                                }, 'site.user' => function($q) {
+                                    $q->select('id','first_name', 'last_name','profile_image','email');
+                                },'site.reviews', 'site.reviews.user'))->orderBy('total_members','desc')->take('12')->get();
+        $statistics['sites_count'] = $this->model->count();
+        $statistics['members_count'] = $this->model->sum('total_members');
+        $statistics['revenue_count'] = $this->model->sum('total_revenue');
+
+        $result['sites'] = $sites;
+        $result['statistics'] = $statistics;
+
+        return $result;
+    }
 
 }
