@@ -80,3 +80,10 @@ update directory_listings set category = 'IT & Software' , sub_category = 'Netwo
 update directory_listings set category = 'IT & Software' , sub_category = 'Hardware' where category = 'Other' ORDER BY total_revenue DESC limit 25;
 update directory_listings set category = 'Marketing' , sub_category = 'Digital Marketing' where category = 'Other' ORDER BY total_revenue DESC limit 25;
 update directory_listings set category = 'Marketing' , sub_category = 'SEO' where category = 'Other' ORDER BY total_revenue DESC limit 25;
+
+alter table directory_listings 
+  add column `min_price` double(10,2) DEFAULT NULL, 
+  add column `max_price` double(10,2) DEFAULT NULL,
+  add column `min_price_interval` varchar(15) DEFAULT NULL, 
+  add column `max_price_interval` varchar(15) DEFAULT NULL,
+  add column `is_paid` tinyint(1) DEFAULT '0'

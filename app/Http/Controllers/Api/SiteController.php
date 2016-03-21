@@ -130,6 +130,30 @@ class SiteController extends SMController
         return parent::destroy($model);
     }
 
+    public function search(){
+        $value = \Input::get('q');
+        $page = \Input::get('p');
+        $sort_by = \Input::get('sort_by');
+        if(empty($sort_by))
+        {
+            $sort_by='total_members';
+        }
+
+        if(empty($page)){
+            $page = 1;
+        }
+        $count = 0;
+        
+        $query = Site::whereNull('deleted_at');
+        $query = $query->where(function ($query) use($value) {
+            $query->where('name', 'like','%' . $value . "%")->orWhere('subdomain', 'like','%' . $value . "%");
+        });
+        $results['total_count'] = $query->count();
+        $query = $query->with('owner','reviews')->orderBy($sort_by , 'desc')->limit(25)->offset(($page - 1) * 25);
+        $results['items'] = $query->get();
+        return $results;
+    }
+
 	public function update($model)
 	{
 		$model = parent::update( $model );
