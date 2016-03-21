@@ -72,7 +72,11 @@ Update
   
 -- where al.deleted_at is NULL and
 
-update directory_listings set category = 'Development' , sub_category = 'Web Development' where category = 'Other' ORDER BY total_revenue DESC limit 25
-update directory_listings set category = 'Development' , sub_category = 'Mobile Apps' where category = 'Other' ORDER BY total_revenue DESC limit 25
-update directory_listings set category = 'Business' , sub_category = 'Finance' where category = 'Other' ORDER BY total_revenue DESC limit 25
-update directory_listings set category = 'Business' , sub_category = 'Entrepreneurship' where category = 'Other' ORDER BY total_revenue DESC limit 25
+update directory_listings set category = 'Development' , sub_category = 'Web Development' where category = 'Other' ORDER BY total_revenue DESC limit 25;
+update directory_listings set category = 'Development' , sub_category = 'Mobile Apps' where category = 'Other' ORDER BY total_revenue DESC limit 25;
+update directory_listings set category = 'Business' , sub_category = 'Finance' where category = 'Other' ORDER BY total_revenue DESC limit 25;
+update directory_listings set category = 'Business' , sub_category = 'Entrepreneurship' where category = 'Other' ORDER BY total_revenue DESC limit 25;
+update directory_listings set category = 'IT & Software' , sub_category = 'Network & Security' where category = 'Other' ORDER BY total_revenue DESC limit 25;
+update directory_listings set category = 'IT & Software' , sub_category = 'Hardware' where category = 'Other' ORDER BY total_revenue DESC limit 25;
+update directory_listings set category = 'Marketing' , sub_category = 'Digital Marketing' where category = 'Other' ORDER BY total_revenue DESC limit 25;
+update directory_listings set category = 'Marketing' , sub_category = 'SEO' where category = 'Other' ORDER BY total_revenue DESC limit 25;
