@@ -528,7 +528,7 @@ class SiteController extends SMController
     public function getBySubdomain(){
         $subdomain = \Input::get('subdomain');
 
-        $site = Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->first();
+        $site = Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user','directory'])->first();
         if(!empty($site)){
             $site->other_sites = Site::with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->whereUserId($site->user_id)->where('id','!=',$site->id)->orderBy('total_revenue','desc')->get();
         }
