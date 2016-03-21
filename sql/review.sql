@@ -76,3 +76,10 @@ update directory_listings set category = 'Development' , sub_category = 'Web Dev
 update directory_listings set category = 'Development' , sub_category = 'Mobile Apps' where category = 'Other' ORDER BY total_revenue DESC limit 25
 update directory_listings set category = 'Business' , sub_category = 'Finance' where category = 'Other' ORDER BY total_revenue DESC limit 25
 update directory_listings set category = 'Business' , sub_category = 'Entrepreneurship' where category = 'Other' ORDER BY total_revenue DESC limit 25
+
+alter table directory_listings 
+  add column `min_price` double(10,2) DEFAULT NULL, 
+  add column `max_price` double(10,2) DEFAULT NULL,
+  add column `min_price_interval` varchar(15) DEFAULT NULL, 
+  add column `max_price_interval` varchar(15) DEFAULT NULL,
+  add column `is_paid` tinyint(1) DEFAULT '0'
