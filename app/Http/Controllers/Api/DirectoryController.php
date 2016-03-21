@@ -211,9 +211,25 @@ class DirectoryController extends SMController
     }
 
     public function set(){
-        $subdomain = \Input::get('subdomain');
-        $category = \Input::get('category');
-        $subcategory = \Input::get('subcategory');
+
+	    if( isset($_GET['token']) && $_GET['token'] == 'DGpmq5iZLyxcQfEPqnt32nxh' )
+	    {
+		    $text = $_GET['text'];
+
+		    $bits = explode( ',', $text );
+
+		    $subdomain = trim( $bits[0] );
+		    $category = trim( $bits[1] );
+
+		    if( isset($bits[2]) )
+		        $subcategory = trim( $bits[2] );
+	    }
+	    else
+	    {
+		    $subdomain = \Input::get('subdomain');
+		    $category = \Input::get('category');
+		    $subcategory = \Input::get('subcategory');
+	    }
 
         if(empty($subdomain) || empty($category) || empty($subcategory)){
             \App::abort('403' , 'A required field is missing');
