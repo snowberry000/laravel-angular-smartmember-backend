@@ -255,7 +255,7 @@ class DirectoryController extends SMController
 
     public function visible(){
 
-	    if( isset($_GET['token']) && $_GET['token'] == 'DGpmq5iZLyxcQfEPqnt32nxh' )
+	    if( isset($_GET['token']) && $_GET['token'] == 'CDf9NiWC3HTCoNgP0NOQUMWC' )
 	    {
 		    $text = $_GET['text'];
 
