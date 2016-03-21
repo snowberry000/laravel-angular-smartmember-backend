@@ -73,7 +73,7 @@ Update
 -- where al.deleted_at is NULL and
 
 
-ALTER TABLE `directory_listings` ADD `is_visible` VARCHAR(20) NOT NULL AFTER `is_free`;
+ALTER TABLE `directory_listings` ADD `is_visible` BOOLEAN DEFAULT 1 AFTER `is_free`;
 
 update directory_listings set category = 'Development' , sub_category = 'Web Development' where category = 'Other' ORDER BY total_revenue DESC limit 25;
 update directory_listings set category = 'Development' , sub_category = 'Mobile Apps' where category = 'Other' ORDER BY total_revenue DESC limit 25;
