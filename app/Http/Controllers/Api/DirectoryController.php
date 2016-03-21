@@ -234,7 +234,17 @@ class DirectoryController extends SMController
             return array('success' => true); 
         }
 
-        return array('success' => false); 
+        return array('success' => false);
+    } 
+    public function updateRating() {
+        $site_id = \Input::get('id');
+        $rating = \Input::get('rating');
+
+        if($site_id && $rating) {
+            
+            $this->model->fill(['site_id' => $site_id, 'rating' => $rating ]);
+            $this->model->save();
+        }
     }
 
 }
