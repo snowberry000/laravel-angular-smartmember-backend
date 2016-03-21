@@ -400,7 +400,7 @@ class SiteController extends SMController
         
         $data['items'] = array_pluck($data , 'site');
         $data['total_count'] = count($data['items']);
-        $data['items'] = array_slice($data['items'], (($current_page - 1)*25),25);
+        //$data['items'] = array_slice($data['items'], (($current_page - 1)*25),25);
 
         return array('items'=> $data['items'], 'total_count' => $data['total_count']);
     }
