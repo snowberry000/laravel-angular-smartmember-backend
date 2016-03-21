@@ -17,8 +17,10 @@ class BeforeGetRequest
        	$key = SMCache::getKey();     
     	$data = PRedis::get($key);
     	if ($data){
+
     		return response()->json(json_decode(PRedis::get($key)));
     	}
+        
     	return $next($request);
     }
 
