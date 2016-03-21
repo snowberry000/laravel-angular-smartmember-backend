@@ -526,6 +526,13 @@ class SiteController extends SMController
 	}
 
     public function getBySubdomain(){
+
+	    if( isset($_GET['token']) && $_GET['token'] == 'pbLllwVETx8dxqb8nkiBWAEj' )
+	    {
+		    echo print_r( $_GET, true );
+		    return;
+	    }
+
         $subdomain = \Input::get('subdomain');
 
         $site = Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user','directory'])->first();
