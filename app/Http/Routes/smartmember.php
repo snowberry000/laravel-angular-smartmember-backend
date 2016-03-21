@@ -77,6 +77,7 @@ Route::get('site/getBySubdomain',"Api\\SiteController@getBySubdomain");
 Route::get('/site/bestSelling',"Api\\SiteController@getBestSellingSites");
 Route::get('/site/directory',"Api\\SiteController@directory");
 Route::get('/site/search',"Api\\SiteController@search");
+Route::get('/directory/set',"Api\\DirectoryController@set");
 
 Route::get("/auth/verify/{access_token}", "Auth\\AuthController@getVerify");
 Route::post("/auth/facebook-login", "Auth\\AuthController@postFacebookLogin");
