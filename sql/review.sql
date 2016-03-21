@@ -83,7 +83,7 @@ alter table directory_listings
   add column `max_price_interval` varchar(15) DEFAULT NULL,
   add column `is_paid` tinyint(1) DEFAULT '0'
 
-  
+
 -- insert pricing
   Update
   directory_listings as d
@@ -108,4 +108,12 @@ alter table directory_listings
   set d.max_price = a.max_price , d.max_price_interval = a.payment_interval, d.is_paid= case when a.max_price > 0 then 1 else 0 end;
 
 
+alter table directory_listings
+  add column `owner` varchar(255) default null
+
+Update
+  directory_listings as d
+  inner join sites as a on d.site_id = a.id
+  inner join users as u on u.id = a.user_id
+  set d.owner = CONCAT(u.first_name,' ',u.last_name);
 alter table directory_listings add column `rating` int DEFAULT 0;
