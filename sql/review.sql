@@ -68,7 +68,7 @@ Update
   inner join (
     SELECT site_id, min(price) as min_price, max(price) as max_price from access_levels group by site_id
   ) as a on d.site_id = a.site_id
-  set d.pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' ', a.max_price) end, d.pending_pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' ', a.max_price) end;
+  set d.pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' to ', a.max_price) end, d.pending_pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' to ', a.max_price) end;
   
 -- where al.deleted_at is NULL and
 
