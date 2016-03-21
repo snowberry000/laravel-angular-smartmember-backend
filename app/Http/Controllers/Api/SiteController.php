@@ -526,7 +526,7 @@ class SiteController extends SMController
 
         $site = Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->first();
         if(!empty($site)){
-            $site->other_sites = Site::whereUserId($site->user_id)->where('id','!=',$site->id)->orderBy('total_revenue','desc')->get();
+            $site->other_sites = Site::with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->whereUserId($site->user_id)->where('id','!=',$site->id)->orderBy('total_revenue','desc')->get();
         }
         return $site;
     }
