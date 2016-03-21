@@ -17,7 +17,7 @@ class DirectoryController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth",['except' => array('index','show','approve','byPermalink','categories' , 'getTopDirectories')]);
+        $this->middleware("auth",['except' => array('set','index','show','approve','byPermalink','categories' , 'getTopDirectories')]);
         $this->model = new Directory();
     }
 
@@ -210,6 +210,32 @@ class DirectoryController extends SMController
         return $result;
     }
 
+    public function set(){
+        $subdomain = \Input::get('subdomain');
+        $category = \Input::get('category');
+        $subcategory = \Input::get('subcategory');
+
+        if(empty($subdomain) || empty($category) || empty($subcategory)){
+            \App::abort('403' , 'A required field is missing');
+        }
+
+        $site = Site::whereSubdomain($subdomain)->first();
+
+        if(empty($site)){
+             \App::abort('403' , 'No such subdomain exists');
+        }
+
+        $directory = Directory::whereSiteId($site->id)->first();
+        if(!empty($directory)){
+            $directory->category = $category;
+            $directory->sub_category = $subcategory;
+            $directory->save();
+
+            return array('success' => true); 
+        }
+
+        return array('success' => false);
+    } 
     public function updateRating() {
         $site_id = \Input::get('id');
         $rating = \Input::get('rating');

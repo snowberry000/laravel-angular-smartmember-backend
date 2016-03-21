@@ -138,7 +138,11 @@ class SiteController extends SMController
         $rating = \Input::get('rating');
         if(empty($sort_by))
         {
-            $sort_by='total_members';
+            $column='total_members';
+            $order = 'desc';
+        }else{
+            $column = explode(',', $sort_by)[0];
+            $order = explode(',', $sort_by)[1];
         }
 
         if(empty($page)){
@@ -158,7 +162,7 @@ class SiteController extends SMController
             $query = $query->whereIn('rating' , $rating);
         }
         $results['total_count'] = $query->count();
-        $query = $query->with('site','site.owner','site.reviews')->orderBy($sort_by , 'desc')->limit(25)->offset(($page - 1) * 25);
+        $query = $query->with('site','site.owner','site.reviews')->orderBy($column , $order)->limit(25)->offset(($page - 1) * 25);
         //dd($query->toSql());
         $results['items'] = $query->get();
         return $results;
