@@ -31,7 +31,7 @@ class SiteController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth", ['except' => array('getBestSellingSites','getBySubdomain','getAllSites', 'details', 'getLatestOfAllContent','getTicketCount','SMUrl' , 'directory')]);
+        $this->middleware("auth", ['except' => array('getBestSellingSites','getBySubdomain','getAllSites', 'details', 'getLatestOfAllContent','getTicketCount','SMUrl' , 'directory' , 'search')]);
         $this->middleware("smember", ['only' => array('store')]);
         $this->model = new Site();
 
@@ -524,7 +524,11 @@ class SiteController extends SMController
     public function getBySubdomain(){
         $subdomain = \Input::get('subdomain');
 
-        return Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->first();
+        $site = Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->first();
+        if(!empty($site)){
+            $site->other_sites = Site::whereUserId($site->user_id)->where('id','!=',$site->id)->orderBy('total_revenue','desc')->get();
+        }
+        return $site;
     }
 
     public function getBestSellingSites() {
@@ -544,7 +548,7 @@ class SiteController extends SMController
 
         $category = \Input::get('category');
         $subcategory = \Input::get('sub_category');
-        $query =  Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data', 'site.reviews']);
+        $query =  Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data']);
 
         if(!empty($category)){
             $query->where('category' , $category)->orderBy('total_revenue','desc');
