@@ -149,7 +149,7 @@ class SiteController extends SMController
             $page = 1;
         }
         $count = 0;
-        $query = Directory::whereNull('deleted_at');
+        $query = Directory::whereNull('deleted_at')->where('is_visible' , true);
         
         $query = $query->where(function ($query) use($value) {
             $query->where('title', 'like','%' . $value . "%")->orWhere('description', 'like','%' . $value . "%");
@@ -542,7 +542,7 @@ class SiteController extends SMController
         
         if(!empty($categories))
             foreach ($categories as $key => $category) {
-                $results[] = Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data' , 'site.reviews'])->where('category' , $category)->orderBy('total_revenue','desc')->take(4)->get();
+                $results[] = Directory::whereNull('deleted_at')->where('is_visible' , true)->with(['site' , 'site.owner' , 'site.meta_data' , 'site.reviews'])->where('category' , $category)->orderBy('total_revenue','desc')->take(4)->get();
             }
 
         return $results;
@@ -554,7 +554,7 @@ class SiteController extends SMController
             $sub_categories = \Input::get('sub_categories');
             $results = [];
             foreach ($sub_categories as $key => $value) {
-                $results[$value] = Directory::whereNull('deleted_at')->where('sub_category' , $value)->with(['site' , 'site.owner' , 'site.meta_data'])->orderBy('total_revenue','desc')->take(4)->get();
+                $results[$value] = Directory::whereNull('deleted_at')->where('is_visible' , true)->where('sub_category' , $value)->with(['site' , 'site.owner' , 'site.meta_data'])->orderBy('total_revenue','desc')->take(4)->get();
             }
 
             return $results;
@@ -563,7 +563,7 @@ class SiteController extends SMController
 
         $category = \Input::get('category');
         $subcategory = \Input::get('sub_category');
-        $query =  Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data']);
+        $query =  Directory::whereNull('deleted_at')->where('is_visible' , true)->with(['site' , 'site.owner' , 'site.meta_data']);
 
         if(!empty($category)){
             $query->where('category' , $category)->orderBy('total_revenue','desc');
