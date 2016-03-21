@@ -236,6 +236,31 @@ class DirectoryController extends SMController
 
         return array('success' => false);
     } 
+
+    public function visible(){
+        $subdomain = \Input::get('subdomain');
+        $visible = \Input::get('visible');
+
+        if(empty($subdomain)){
+            \App::abort('403' , 'A required field is missing');
+        }
+
+        $site = Site::whereSubdomain($subdomain)->first();
+
+        if(empty($site)){
+             \App::abort('403' , 'No such subdomain exists');
+        }
+
+        $directory = Directory::whereSiteId($site->id)->first();
+        if(!empty($directory)){
+            $directory->is_visible = isset($visible) ? ($visible === 'true' ? 1 : 0): 0;
+            $directory->save();
+
+            return array('success' => true); 
+        }
+
+        return array('success' => false);
+    } 
     public function updateRating() {
         $site_id = \Input::get('id');
         $rating = \Input::get('rating');
