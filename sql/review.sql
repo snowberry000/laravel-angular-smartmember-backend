@@ -91,7 +91,7 @@ alter table directory_listings
     SELECT site_id, min(price) as min_price, max(price) as max_price from access_levels group by site_id
   ) as a on d.site_id = a.site_id
   set d.pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' to ', a.max_price) end,
-   d.pending_pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' to ', a.max_price) end,
+   d.pending_pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' to ', a.max_price) end;
 
   Update
   directory_listings as d
@@ -108,3 +108,4 @@ alter table directory_listings
   set d.max_price = a.max_price , d.max_price_interval = a.payment_interval, d.is_paid= case when a.max_price > 0 then 1 else 0 end;
 
 
+alter table directory_listings add column `rating` int DEFAULT 0;

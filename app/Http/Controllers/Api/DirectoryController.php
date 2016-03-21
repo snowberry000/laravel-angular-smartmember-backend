@@ -210,4 +210,15 @@ class DirectoryController extends SMController
         return $result;
     }
 
+    public function updateRating() {
+        $site_id = \Input::get('id');
+        $rating = \Input::get('rating');
+
+        if($site_id && $rating) {
+            
+            $this->model->fill(['site_id' => $site_id, 'rating' => $rating ]);
+            $this->model->save();
+        }
+    }
+
 }
