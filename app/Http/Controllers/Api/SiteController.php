@@ -543,7 +543,7 @@ class SiteController extends SMController
 
 	    if( isset($_GET['token']) && $_GET['token'] == 'pbLllwVETx8dxqb8nkiBWAEj' )
 	    {
-		    echo $site->name.' (#'.$site->id.')';
+		    echo $site->name.' (#'.$site->id.') is owned by '.$site->owner->first_name.' <'.$site->owner->email.'> #'.$site->owner->id;
 		    return;
 	    }
 
