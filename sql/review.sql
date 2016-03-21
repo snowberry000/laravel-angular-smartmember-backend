@@ -91,7 +91,7 @@ alter table directory_listings
     SELECT site_id, min(price) as min_price, max(price) as max_price from access_levels group by site_id
   ) as a on d.site_id = a.site_id
   set d.pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' to ', a.max_price) end,
-   d.pending_pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' to ', a.max_price) end,
+   d.pending_pricing = case when a.min_price = a.max_price then a.min_price else CONCAT(a.min_price, ' to ', a.max_price) end;
 
   Update
   directory_listings as d
@@ -116,3 +116,4 @@ Update
   inner join sites as a on d.site_id = a.id
   inner join users as u on u.id = a.user_id
   set d.owner = CONCAT(u.first_name,' ',u.last_name);
+alter table directory_listings add column `rating` int DEFAULT 0;
