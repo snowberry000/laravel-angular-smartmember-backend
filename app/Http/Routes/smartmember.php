@@ -72,6 +72,14 @@ $resources = array(
 );
 
 //TODO: Don't use - in the URL. Use Camel cased syntax e.g. facebookLogin
+Route::put('/directory/updateRating',"Api\\DirectoryController@updateRating");
+Route::get('/directory/all',"Api\\DirectoryController@getTopDirectories");
+Route::get('site/getBySubdomain',"Api\\SiteController@getBySubdomain");
+Route::get('/site/bestSelling',"Api\\SiteController@getBestSellingSites");
+Route::get('/site/directory',"Api\\SiteController@directory");
+Route::get('/site/search',"Api\\SiteController@search");
+Route::get('/directory/set',"Api\\DirectoryController@set");
+Route::post('/emailSubscriber/directoryleads',"Api\\EmailSubscriberController@directoryleads");
 
 Route::get("/auth/verify/{access_token}", "Auth\\AuthController@getVerify");
 Route::post("/auth/facebook-login", "Auth\\AuthController@postFacebookLogin");
@@ -187,6 +195,7 @@ Route::get('/post/getMostUsed/{site_id}',"Api\\PostController@getMostUsed");
 Route::post('/jvzoo/{hash}',"Api\\AffiliateController@processJVZooData");
 
 Route::get('/permalink/{permalink}',"Api\\PermalinkController@getByPermalink");
+Route::post('/checkPermalink',"Api\\PermalinkController@checkPermalink");
 
 Route::get('/get/download/{id}',"Api\\DownloadController@getDownload");
 Route::get('/lessonByPermalink/{id}',"Api\\LessonController@getByPermalink");
@@ -210,6 +219,7 @@ Route::get('/sharedKey/associatedKey', "Api\\AccessLevelShareKeyController@getAs
 Route::get('/generateShareKey', "Api\\AccessLevelShareKeyController@generateShareKey");
 Route::get('/accessLevel/getGrantedShareAccessLevel', "Api\\AccessLevelShareKeyController@getGrantedShareAccessLevels");
 Route::post('/user/changePassword',"Api\\UserController@changePassword");
+Route::post('/user/verifyUser',"Api\\UserController@verifyUser");
 Route::post('/user/setCompany',"Api\\UserController@setCompany");
 Route::post('/user/resendVerification',"Api\\UserController@resendVerificationCode");
 Route::get('/user/transactionAccount/{id}',"Api\\UserController@transactionAccount");
@@ -307,6 +317,9 @@ Route::get('siteRole/passes','Api\Site\RoleController@passes');
 
 Route::model('siteRole','App\Models\Site\Role');
 Route::resource('siteRole','Api\Site\RoleController');
+
+Route::model('review','App\Models\Review');
+Route::resource('review','Api\ReviewController');
 
 Route::model('siteCustomRole','App\Models\Site\CustomRole');
 Route::resource('siteCustomRole','Api\Site\CustomRoleController');

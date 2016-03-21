@@ -189,6 +189,14 @@ class UserController extends SMController
         return \App::abort(403,"Wrong current password");
     }
 
+    public function verifyUser() {
+    	if (Auth::attempt(['email' => \Auth::user()->email, 'password' => \Input::get("current_password")]))
+        { 
+        	return array( 'success'=>true);
+        }
+        return array( 'success'=>false);
+    }
+
     public function linkAccount()
     {
         if (Auth::user())

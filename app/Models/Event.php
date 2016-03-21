@@ -122,6 +122,27 @@ class Event extends Root
 				$val->forceDelete();
 		}
 	}
+
+	public static function getDistinctEvents($site_ids){
+        $data = \DB::table('events')
+            ->distinct('event_name')
+            ->select(['event_name'])
+            ->whereIn('site_id',$site_ids)
+            ->get();
+
+        $keys = [];
+
+        foreach ($data as $datum){
+            $keys[] = [
+                'name' => $datum->event_name,
+                'attribute' => 'updated_at',
+                'type' => 'date',
+                'table' => 'events',
+            ];
+        }    
+
+        return $keys;
+    }
 }
 
 Event::saved( function( $model ) {

@@ -45,9 +45,24 @@ class Site extends Root
         } 
     }
 
+    public function reviews()
+    {
+        return $this->hasMany('App\Models\Review');
+    }
+
     public function user()
     {
         return $this->belongsTo('App\Models\User');
+    }
+
+    public function directory()
+    {
+        return $this->hasOne('App\Models\Directory' , 'site_id');
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo('App\Models\User' , 'user_id');
     }
 
     public function media(){
