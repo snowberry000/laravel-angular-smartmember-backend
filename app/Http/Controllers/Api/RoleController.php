@@ -11,6 +11,7 @@ use App\Models\Site;
 use App\Models\Company;
 use App\Models\AccessLevel;
 use App\Models\AccessLevel\Pass;
+use App\Models\ImportQueue;
 use Input;
 
 
@@ -233,18 +234,15 @@ class RoleController extends SMController
         }
 
         $users = [];
-        $users[] = $email;
+        $users[] = array( 'name' => '', 'email' => $email );
 
         $access_levels = [];
         $access_levels[] = $access_level;
         $expiry = '0';
 
-        $count = User::importUsers($users, $access_levels, $expiry, $site_data);
+        ImportQueue::enqueue($users, $access_levels, $expiry, $site_data, 1, 1);
 
-        if( $count )
-        {
-            echo "Successfully granted ".$email." access to ".$access_level_data->name." on ".$site_data->subdomain.".smartmember.com";
-        }
+        echo "Queued <".$email."> to receive [".$access_level_data->name."] on ".$site_data->subdomain.".smartmember.com";
 
         return;
     }
