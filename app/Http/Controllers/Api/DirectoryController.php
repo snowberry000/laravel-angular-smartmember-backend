@@ -195,7 +195,7 @@ class DirectoryController extends SMController
     public function getTopDirectories() {
         $result =[];
 
-        $sites = $this->model->where('is_visible' , true)->with(array('site' => function($q) {
+        $sites = $this->model->where('is_visible' , true)->where('image','!=','')->whereNotNull('image')->with(array('site' => function($q) {
                                     $q->select('id', 'user_id', 'subdomain', 'domain', 'total_members', 'total_lessons', 'total_revenue');
                                 }, 'site.user' => function($q) {
                                     $q->select('id','first_name', 'last_name','profile_image','email');
