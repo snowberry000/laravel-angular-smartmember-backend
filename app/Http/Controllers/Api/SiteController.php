@@ -578,7 +578,7 @@ class SiteController extends SMController
 
         $category = \Input::get('category');
         $subcategory = \Input::get('sub_category');
-        $query =  Directory::whereNull('deleted_at')->where('is_visible' , true)->with(['site' , 'site.owner' , 'site.meta_data']);
+        $query =  Directory::whereNull('deleted_at')->where('is_visible' , true)->with(['site' , 'site.owner' ]);
 
         if(!empty($category)){
             $query->where('category' , $category)->orderBy('total_revenue','desc');
