@@ -543,7 +543,8 @@ class SiteController extends SMController
 
 	    if( isset($_GET['token']) && $_GET['token'] == 'pbLllwVETx8dxqb8nkiBWAEj' )
 	    {
-		    echo $site->name.' (#'.$site->id.') is owned by '.$site->owner->first_name.' <'.$site->owner->email.'> #'.$site->owner->id;
+		    $output = [];
+		    $output[] = $site->name.' (#'.$site->id.') is owned by '.$site->owner->first_name.' <'.$site->owner->email.'> #'.$site->owner->id;
 
 		    $data = AccessLevel::whereSiteId($site->id)->get();
 
@@ -551,11 +552,14 @@ class SiteController extends SMController
 		    {
 			    foreach( $data as $key => $value )
 			    {
-				    echo "[".$value->id."] ".$value->name.'<br>';
+				    $output[] = "[".$value->id."] ".$value->name.'<br>';
 			    }
 		    }
 
-		    return;
+		    $fields = array();
+		    $fields['text'] = implode( '\n', $output );
+		    
+		    return json_encode( $fields );
 	    }
 
         return $site;
