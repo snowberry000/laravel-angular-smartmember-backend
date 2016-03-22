@@ -569,7 +569,7 @@ class SiteController extends SMController
             $sub_categories = \Input::get('sub_categories');
             $results = [];
             foreach ($sub_categories as $key => $value) {
-                $results[$value] = Directory::whereNull('deleted_at')->where('is_visible' , true)->where('sub_category' , $value)->with(['site' , 'site.owner' , 'site.meta_data'])->orderBy('total_revenue','desc')->take(4)->get();
+                $results[$value] = Directory::whereNull('deleted_at')->where('is_visible' , true)->where('sub_category' , $value)->with(['site' , 'site.owner' , 'site.meta_data' => function($query) { $query->where('key', '=', 'logo_url');}])->orderBy('total_revenue','desc')->take(4)->get();
             }
 
             return $results;
@@ -578,7 +578,7 @@ class SiteController extends SMController
 
         $category = \Input::get('category');
         $subcategory = \Input::get('sub_category');
-        $query =  Directory::whereNull('deleted_at')->where('is_visible' , true)->with(['site' , 'site.owner' ]);
+        $query =  Directory::whereNull('deleted_at')->where('is_visible' , true)->with(['site' , 'site.owner' , 'site.meta_data' => function($query) { $query->where('key', '=', 'logo_url');}]);
 
         if(!empty($category)){
             $query->where('category' , $category)->orderBy('total_revenue','desc');
