@@ -544,6 +544,17 @@ class SiteController extends SMController
 	    if( isset($_GET['token']) && $_GET['token'] == 'pbLllwVETx8dxqb8nkiBWAEj' )
 	    {
 		    echo $site->name.' (#'.$site->id.') is owned by '.$site->owner->first_name.' <'.$site->owner->email.'> #'.$site->owner->id;
+
+		    $data = AccessLevel::whereSiteId($site->id)->get();
+
+		    if( $data )
+		    {
+			    foreach( $data as $key => $value )
+			    {
+				    echo "[".$value->id."] ".$value->name.'\n';
+			    }
+		    }
+
 		    return;
 	    }
 
