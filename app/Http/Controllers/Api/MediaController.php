@@ -11,8 +11,13 @@ class MediaController extends SMController
     }
 
     public function index(){
-    	// Input::merge(['site_id' => $this->site->id]);
-    	return parent::paginateIndex();
+    	if(!empty($this->site->id))
+    	{
+    		Input::merge(['site_id' => $this->site->id]);
+    		return parent::paginateIndex();
+    	}
+    	return ['items' => [] , 'total_count' => 0];
+    	
     }
 
 }
