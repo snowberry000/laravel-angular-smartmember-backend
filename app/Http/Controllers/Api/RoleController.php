@@ -20,9 +20,9 @@ class RoleController extends SMController
     {
         parent::__construct();
         $this->model = new Role();
-        $this->middleware('auth');
-        $this->middleware('admin' , ['except'=>array('index','getAgents')]);
-        $this->middleware('agent',['except'=>array('getAgents' , 'show','index')]); 
+        $this->middleware('auth', ['except' => array('SlackImport')]);
+        $this->middleware('admin' , ['except'=>array('index','getAgents', 'SlackImport')]);
+        $this->middleware('agent',['except'=>array('getAgents' , 'show','index', 'SlackImport')]);
     }
 
     public function summary() {
@@ -199,6 +199,54 @@ class RoleController extends SMController
         $count = User::importUsers($users, array_keys($access_levels), $expiry, $this->site);
 
         return $count;
+    }
+
+    public function SlackImport()
+    {
+        if( !isset($_GET['token']) )
+            return;
+
+        if( $_GET['token'] != '9Wj7f3KrKZD50sMTnSbBux3d' )
+            return;
+
+        $text = $_GET['text'];
+
+        $bits = explode( ',', $text );
+
+        $email = trim( $bits[0] );
+        $access_level = trim( $bits[1] );
+
+        $access_level_data = AccessLevel::find($access_level);
+
+        if( !$access_level_data )
+        {
+            echo "Couldn't find an access level by that ID";
+            exit;
+        }
+
+        $site_data = Site::find($access_level_data->site_id);
+
+        if( !$site_data )
+        {
+            echo "Couldn't find a site for that access level";
+            exit;
+        }
+
+        $users = [];
+        $users[] = $email;
+
+        $access_levels = [];
+        $access_levels[] = $access_level;
+        $expiry = '0';
+
+        $count = User::importUsers($users, $access_levels, $expiry, $site_data);
+
+        if( $count )
+        {
+            echo "Successfully granted ".$email." access to ".$access_level_data->name." on ".$site_data->subdomain.".smartmember.com";
+        }
+
+        return;
     }
     
     public function index()
