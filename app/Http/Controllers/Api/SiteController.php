@@ -557,7 +557,7 @@ class SiteController extends SMController
         
         if(!empty($categories))
             foreach ($categories as $key => $category) {
-                $results[] = Directory::whereNull('deleted_at')->where('is_visible' , true)->with(['site' , 'site.owner' , 'site.meta_data' , 'site.reviews'])->where('category' , $category)->orderBy('total_revenue','desc')->take(4)->get();
+                $results[] = Directory::whereNull('deleted_at')->whereNotNull('image')->where('is_visible' , true)->with(['site' , 'site.owner' , 'site.meta_data' , 'site.reviews'])->where('category' , $category)->orderBy('total_revenue','desc')->take(4)->get();
             }
 
         return $results;
