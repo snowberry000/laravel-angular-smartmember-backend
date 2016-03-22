@@ -551,7 +551,7 @@ class SiteController extends SMController
 		    {
 			    foreach( $data as $key => $value )
 			    {
-				    echo "[".$value->id."] ".$value->name.'\n';
+				    echo "[".$value->id."] ".$value->name.'<br>';
 			    }
 		    }
 
