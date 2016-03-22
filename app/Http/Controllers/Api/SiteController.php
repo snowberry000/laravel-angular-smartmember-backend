@@ -569,7 +569,7 @@ class SiteController extends SMController
             $sub_categories = \Input::get('sub_categories');
             $results = [];
             foreach ($sub_categories as $key => $value) {
-                $results[$value] = Directory::whereNull('deleted_at')->where('is_visible' , true)->where('sub_category' , $value)->with(['site' , 'site.owner' , 'site.meta_data'])->orderBy('total_revenue','desc')->take(4)->get();
+                $results[$value] = Directory::whereNull('deleted_at')->whereNotNull('image')->where('is_visible' , true)->where('sub_category' , $value)->with(['site' , 'site.owner' , 'site.meta_data'])->orderBy('total_revenue','desc')->take(4)->get();
             }
 
             return $results;
@@ -595,7 +595,13 @@ class SiteController extends SMController
         $count = 0;
         $results['total_count'] = $query->count();
         $query = $query->orderBy('total_revenue' , 'desc')->limit(25)->offset(($page - 1) * 25);
-        $results['items'] = $query->get();
+        $result = $query->get();
+        $results['items'] = [];
+
+        foreach ($result as $key => $value) {
+            if(!empty($value['site']))
+                $results['items'] [] = $value ;
+        }
         
         return $results;
     }
