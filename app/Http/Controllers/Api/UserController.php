@@ -124,20 +124,12 @@ class UserController extends SMController
 		$text = "[".$user_data->id."] ".$user_data->first_name." ".$user_data->last_name." <".$user_data->email.">";
 
 		$extra_fields = array();
-		$fields = array();
-		$fields['text'] = 'First created on '.$user_data->created_at;
-		$extra_fields[] = $fields;
+		$extra_fields[] = 'First created on '.$user_data->created_at;
+		$extra_fields[] = 'Last logged in on '.$user_data->last_logged_in;
+		$extra_fields[] = 'Password reset token: '.$user_data->reset_token;
 
 		$fields = array();
-		$fields['text'] = 'Last logged in on '.$user_data->last_logged_in;
-		$extra_fields[] = $fields;
-
-		$fields = array();
-		$fields['text'] = 'Password reset token: '.$user_data->reset_token;
-		$extra_fields[] = $fields;
-
-		$fields = array();
-		$fields['text'] = "*General Info*\n".implode( "\n", $extra_fields );
+		$fields['text'] = "*General Info*".(implode( "\n", $extra_fields ));
 		$fields['color'] = '#36a64f';
 
 		$attachments[] = $fields;
@@ -166,7 +158,14 @@ class UserController extends SMController
 			$extra_fields = array();
 			foreach( $transaction_data as $key => $value )
 			{
-				$extra_fields[] = "[".$value->id."] $".$value->price." ".$value->source." ".$value->type." for product ".$value->product_id." (".$value->transaction_id.")";
+				$product_info = AccessLevel::find( $value->product_id );
+
+				$product_bit = '';
+
+				if( $product_info )
+					$product_bit = " for product *".$product_info->name."* {".$product_info->id."}";
+				
+				$extra_fields[] = "[".$value->id."] $".$value->price." ".$value->source." ".$value->type."".$product_bit." (#".$value->transaction_id.")";
 			}
 
 			$fields = array();
