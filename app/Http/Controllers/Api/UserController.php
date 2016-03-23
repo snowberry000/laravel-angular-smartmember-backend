@@ -153,7 +153,7 @@ class UserController extends SMController
 			}
 
 			$fields = array();
-			$fields['text'] = implode( '\n', $site_fields );
+			$fields['text'] = implode( "\n", $site_fields );
 			$fields['color'] = '#36a64f';
 
 			$attachments[] = $fields;
@@ -170,7 +170,7 @@ class UserController extends SMController
 			}
 
 			$fields = array();
-			$fields['text'] = implode( '\n', $extra_fields );
+			$fields['text'] = implode( "\n", $extra_fields );
 			$fields['color'] = '#36a64f';
 
 			$attachments[] = $fields;
