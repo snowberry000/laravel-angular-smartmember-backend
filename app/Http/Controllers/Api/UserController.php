@@ -129,7 +129,7 @@ class UserController extends SMController
 		$extra_fields[] = 'Password reset token: '.$user_data->reset_token;
 
 		$fields = array();
-		$fields['text'] = "*General Info*".(implode( "\n", $extra_fields ));
+		$fields['text'] = "*General Info*\n".(implode( "\n", $extra_fields ));
 		$fields['color'] = '#36a64f';
 
 		$attachments[] = $fields;
@@ -158,13 +158,16 @@ class UserController extends SMController
 			$extra_fields = array();
 			foreach( $transaction_data as $key => $value )
 			{
-				$product_info = AccessLevel::find( $value->product_id );
+				$product_info = AccessLevel::where('product_id', $value->product_id )->first();
 
 				$product_bit = '';
 
 				if( $product_info )
-					$product_bit = " for product *".$product_info->name."* {".$product_info->id."}";
-				
+				{
+					$site_info = Site::find( $product_info->site_id );
+					$product_bit = " for product *".$product_info->name."* {".$product_info->id."} at ".$site_info->subdomain.".smartmember.com";
+				}
+
 				$extra_fields[] = "[".$value->id."] $".$value->price." ".$value->source." ".$value->type."".$product_bit." (#".$value->transaction_id.")";
 			}
 
@@ -175,7 +178,7 @@ class UserController extends SMController
 			$attachments[] = $fields;
 		}
 
-		//echo "here <pre>".print_r( $transaction_data, true )."</pre>";exit;
+		//echo "here <pre>".print_r( $attachments, true )."</pre>";exit;
 
 		$fields = array();
 		$fields['text'] = $text;
