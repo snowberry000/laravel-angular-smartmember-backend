@@ -139,19 +139,44 @@ class UserController extends SMController
 
 		if( $sites_data )
 		{
+			$site_fields = array();
 			foreach( $sites_data as $key => $value )
 			{
+				$site_fields[] = "[".$value->id."] ".$value->name." (".$value->subdomain.".smartmember.com)";
+
+				continue;
 				$fields = array();
 				$fields['text'] = "[".$value->id."] ".$value->name." (".$value->subdomain.".smartmember.com)";
 				$fields['color'] = '#36a64f';
 
 				$attachments[] = $fields;
 			}
+
+			$fields = array();
+			$fields['text'] = implode( '\n', $site_fields );
+			$fields['color'] = '#36a64f';
+
+			$attachments[] = $fields;
 		}
 
-		//$transaction_data = Transaction::where('email', $user_data->email);
+		$transaction_data = $user_data->transactions;
 
-		//echo "<pre>".print_r( $transaction_data, true )."</pre>";exit;
+		if( $transaction_data )
+		{
+			$extra_fields = array();
+			foreach( $transaction_data as $key => $value )
+			{
+				$extra_fields[] = "[".$value->id."] $".$value->price." ".$value->source." ".$value->type." for product ".$value->product_id." (".$value->transaction_id.")";
+			}
+
+			$fields = array();
+			$fields['text'] = implode( '\n', $extra_fields );
+			$fields['color'] = '#36a64f';
+
+			$attachments[] = $fields;
+		}
+
+		//echo "here <pre>".print_r( $transaction_data, true )."</pre>";exit;
 
 		$fields = array();
 		$fields['text'] = $text;
