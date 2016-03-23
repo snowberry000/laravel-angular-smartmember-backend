@@ -543,12 +543,18 @@ class SiteController extends SMController
 
 	    if( isset($_GET['token']) && $_GET['token'] == 'pbLllwVETx8dxqb8nkiBWAEj' )
 	    {
+		    if( !$site )
+		    {
+			    echo "No site was found";
+			    return;
+		    }
+
 		    $text = $site->name.' (#'.$site->id.') is owned by '.$site->owner->first_name.' <'.$site->owner->email.'> #'.$site->owner->id;
 
 		    $data = AccessLevel::whereSiteId($site->id)->get();
 
 		    $attachments = array();
-		    
+
 		    if( $data )
 		    {
 			    foreach( $data as $key => $value )
