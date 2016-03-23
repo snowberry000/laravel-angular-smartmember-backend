@@ -547,6 +547,8 @@ class SiteController extends SMController
 
 		    $data = AccessLevel::whereSiteId($site->id)->get();
 
+		    $attachments = array();
+		    
 		    if( $data )
 		    {
 			    foreach( $data as $key => $value )
