@@ -27,7 +27,7 @@ class UserController extends SMController
         parent::__construct();
         $this->model = new User();
 
-		$this->middleware('auth',['except' => array('transactionAccount','saveTransactionAccount','registerTransactionAccount','associateTransactionAccount','sendVerificationCode') ] );
+		$this->middleware('auth',['except' => array('transactionAccount','GetInfo','saveTransactionAccount','registerTransactionAccount','associateTransactionAccount','sendVerificationCode') ] );
     }
 
     public function index(){
@@ -101,6 +101,66 @@ class UserController extends SMController
         }    	
     	\App::abort('401',"You don't have access to this resource");
     }
+
+	public function GetInfo()
+	{
+		if( !isset($_GET['token']) )
+			return;
+
+		if( $_GET['token'] != 'MSh4lTwDi95TKuNBGgpM6mU8' )
+			return;
+
+		$email = $_GET['text'];
+
+		$user_data = User::whereEmail( $email )->first();
+
+		if( !$user_data )
+		{
+			echo "No user found for <".$email.">";
+			exit;
+		}
+
+		$attachments = array();
+		$text = "[".$user_data->id."] ".$user_data->first_name." ".$user_data->last_name." <".$user_data->email.">";
+
+		$fields = array();
+		$fields['text'] = 'First created on '.$user_data->created_at;
+		$attachments[] = $fields;
+
+		$fields = array();
+		$fields['text'] = 'Last logged in on '.$user_data->last_logged_in;
+		$attachments[] = $fields;
+
+		$fields = array();
+		$fields['text'] = 'Password reset token: '.$user_data->reset_token;
+		$attachments[] = $fields;
+
+		$sites_data = Site::whereUserId($user_data->id)->get();
+
+		if( $sites_data )
+		{
+			foreach( $sites_data as $key => $value )
+			{
+				$fields = array();
+				$fields['text'] = "[".$value->id."] ".$value->name." (".$value->subdomain.".smartmember.com)";
+				$fields['color'] = '#36a64f';
+
+				$attachments[] = $fields;
+			}
+		}
+
+		//$transaction_data = Transaction::where('email', $user_data->email);
+
+		//echo "<pre>".print_r( $transaction_data, true )."</pre>";exit;
+
+		$fields = array();
+		$fields['text'] = $text;
+
+		if( $attachments )
+			$fields['attachments'] = $attachments;
+
+		return $fields;
+	}
 
     public function saveFacebookGroupOption()
     {

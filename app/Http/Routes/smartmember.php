@@ -154,6 +154,7 @@ Route::get('/role/getlist',"Api\\RoleController@getlist");
 Route::get('/role/SlackImport',"Api\\RoleController@SlackImport");
 
 // Route::get('/user/getCSV',"Api\\UserController@getCSV");
+Route::get('/user/GetInfo',"Api\\UserController@GetInfo");
 Route::get('/siteRole/getCSV',"Api\\Site\\RoleController@getCSV");
 Route::get('/role/agents',"Api\\RoleController@getAgents");
 
