@@ -123,37 +123,37 @@ class UserController extends SMController
 		$attachments = array();
 		$text = "[".$user_data->id."] ".$user_data->first_name." ".$user_data->last_name." <".$user_data->email.">";
 
+		$extra_fields = array();
 		$fields = array();
 		$fields['text'] = 'First created on '.$user_data->created_at;
-		$attachments[] = $fields;
+		$extra_fields[] = $fields;
 
 		$fields = array();
 		$fields['text'] = 'Last logged in on '.$user_data->last_logged_in;
-		$attachments[] = $fields;
+		$extra_fields[] = $fields;
 
 		$fields = array();
 		$fields['text'] = 'Password reset token: '.$user_data->reset_token;
+		$extra_fields[] = $fields;
+
+		$fields = array();
+		$fields['text'] = "*General Info*\n".implode( "\n", $extra_fields );
+		$fields['color'] = '#36a64f';
+
 		$attachments[] = $fields;
 
 		$sites_data = Site::whereUserId($user_data->id)->get();
 
 		if( $sites_data )
 		{
-			$site_fields = array();
+			$extra_fields = array();
 			foreach( $sites_data as $key => $value )
 			{
-				$site_fields[] = "[".$value->id."] ".$value->name." (".$value->subdomain.".smartmember.com)";
-
-				continue;
-				$fields = array();
-				$fields['text'] = "[".$value->id."] ".$value->name." (".$value->subdomain.".smartmember.com)";
-				$fields['color'] = '#36a64f';
-
-				$attachments[] = $fields;
+				$extra_fields[] = "[".$value->id."] ".$value->name." (".$value->subdomain.".smartmember.com)";
 			}
 
 			$fields = array();
-			$fields['text'] = implode( "\n", $site_fields );
+			$fields['text'] = "*Sites*\n".implode( "\n", $extra_fields );
 			$fields['color'] = '#36a64f';
 
 			$attachments[] = $fields;
@@ -170,7 +170,7 @@ class UserController extends SMController
 			}
 
 			$fields = array();
-			$fields['text'] = implode( "\n", $extra_fields );
+			$fields['text'] = "*Transactions*\n".implode( "\n", $extra_fields );
 			$fields['color'] = '#36a64f';
 
 			$attachments[] = $fields;
