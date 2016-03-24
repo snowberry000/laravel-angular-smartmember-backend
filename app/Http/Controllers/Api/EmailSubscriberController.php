@@ -680,7 +680,7 @@ class EmailSubscriberController extends SMController
         } else if( $list ) {
             $emailList = EmailList::firstOrNew(['name' => $list, 'account_id' => $account_id]);
         }
-        if ( $list && !$emailList->id )
+        if ( $list && (!$emailList || !$emailList->id) )
 	        $emailList->save();
 
 	    if( $list )
