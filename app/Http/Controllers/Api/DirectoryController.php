@@ -17,7 +17,7 @@ class DirectoryController extends SMController
     public function __construct()
     {
         parent::__construct();
-        $this->middleware("auth",['except' => array('set', 'visible', 'index','show','approve','byPermalink','categories' , 'getTopDirectories')]);
+        $this->middleware("auth",['except' => array('set', 'visible', 'index','show','approve','byPermalink','categories' , 'getTopDirectories' , 'directoryCategories')]);
         $this->model = new Directory();
     }
 
