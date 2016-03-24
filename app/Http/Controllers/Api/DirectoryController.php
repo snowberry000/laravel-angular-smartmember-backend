@@ -302,4 +302,9 @@ class DirectoryController extends SMController
         }
     }
 
+    public function directoryCategories(){
+        $categories = Directory::whereNotNull('category')->whereNotNull('sub_category')->groupBy(['category' , 'sub_category'])->get(['category' , 'sub_category']);
+        return $categories;
+    }
+
 }
