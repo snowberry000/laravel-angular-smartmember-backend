@@ -149,7 +149,7 @@ class SiteController extends SMController
             $page = 1;
         }
         $count = 0;
-        $query = Directory::whereNull('deleted_at');
+        $query = Directory::whereNull('deleted_at')->where('is_visible' , true);
         
         $query = $query->where(function ($query) use($value) {
             $query->where('title', 'like','%' . $value . "%")->orWhere('description', 'like','%' . $value . "%");
@@ -400,7 +400,7 @@ class SiteController extends SMController
         
         $data['items'] = array_pluck($data , 'site');
         $data['total_count'] = count($data['items']);
-        $data['items'] = array_slice($data['items'], (($current_page - 1)*25),25);
+        //$data['items'] = array_slice($data['items'], (($current_page - 1)*25),25);
 
         return array('items'=> $data['items'], 'total_count' => $data['total_count']);
     }
@@ -526,12 +526,56 @@ class SiteController extends SMController
 	}
 
     public function getBySubdomain(){
-        $subdomain = \Input::get('subdomain');
 
-        $site = Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->first();
+	    if( isset($_GET['token']) && $_GET['token'] == 'pbLllwVETx8dxqb8nkiBWAEj' )
+	    {
+		    $subdomain = $_GET['text'];
+	    }
+	    else
+	    {
+		    $subdomain = \Input::get('subdomain');
+	    }
+
+        $site = Site::where('subdomain' , $subdomain)->with(['owner' ,'meta_data', 'reviews' , 'reviews.user','directory'])->first();
         if(!empty($site)){
             $site->other_sites = Site::with(['owner' ,'meta_data', 'reviews' , 'reviews.user'])->whereUserId($site->user_id)->where('id','!=',$site->id)->orderBy('total_revenue','desc')->get();
         }
+
+	    if( isset($_GET['token']) && $_GET['token'] == 'pbLllwVETx8dxqb8nkiBWAEj' )
+	    {
+		    if( !$site )
+		    {
+			    echo "No site was found";
+			    return;
+		    }
+
+		    $text = $site->name.' (#'.$site->id.') is owned by '.$site->owner->first_name.' <'.$site->owner->email.'> #'.$site->owner->id;
+
+		    $data = AccessLevel::whereSiteId($site->id)->get();
+
+		    $attachments = array();
+
+		    if( $data )
+		    {
+			    foreach( $data as $key => $value )
+			    {
+				    $fields = array();
+				    $fields['text'] = "[".$value->id."] ".$value->name;
+				    $fields['color'] = '#36a64f';
+
+				    $attachments[] = $fields;
+			    }
+		    }
+
+		    $fields = array();
+		    $fields['text'] = $text;
+
+		    if( $attachments )
+		        $fields['attachments'] = $attachments;
+
+		    return $fields;
+	    }
+
         return $site;
     }
 
@@ -542,7 +586,7 @@ class SiteController extends SMController
         
         if(!empty($categories))
             foreach ($categories as $key => $category) {
-                $results[] = Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data' , 'site.reviews'])->where('category' , $category)->orderBy('total_revenue','desc')->take(4)->get();
+                $results[] = Directory::whereNull('deleted_at')->whereNotNull('image')->where('is_visible' , true)->with(['site' , 'site.owner' , 'site.meta_data' , 'site.reviews'])->where('category' , $category)->orderBy('total_revenue','desc')->take(4)->get();
             }
 
         return $results;
@@ -554,7 +598,7 @@ class SiteController extends SMController
             $sub_categories = \Input::get('sub_categories');
             $results = [];
             foreach ($sub_categories as $key => $value) {
-                $results[$value] = Directory::whereNull('deleted_at')->where('sub_category' , $value)->with(['site' , 'site.owner' , 'site.meta_data'])->orderBy('total_revenue','desc')->take(4)->get();
+                $results[$value] = Directory::whereNull('deleted_at')->whereNotNull('image')->where('image','!=','')->where('is_visible' , true)->where('sub_category' , $value)->with(['site' , 'site.owner' , 'site.meta_data' => function($query) { $query->where('key', '=', 'logo_url');}])->orderBy('total_revenue','desc')->take(4)->get();
             }
 
             return $results;
@@ -563,7 +607,7 @@ class SiteController extends SMController
 
         $category = \Input::get('category');
         $subcategory = \Input::get('sub_category');
-        $query =  Directory::whereNull('deleted_at')->with(['site' , 'site.owner' , 'site.meta_data']);
+        $query =  Directory::whereNull('deleted_at')->whereNotNull('image')->where('image','!=','')->where('is_visible' , true)->with(['site' , 'site.owner' , 'site.meta_data' => function($query) { $query->where('key', '=', 'logo_url');}]);
 
         if(!empty($category)){
             $query->where('category' , $category)->orderBy('total_revenue','desc');
@@ -580,7 +624,13 @@ class SiteController extends SMController
         $count = 0;
         $results['total_count'] = $query->count();
         $query = $query->orderBy('total_revenue' , 'desc')->limit(25)->offset(($page - 1) * 25);
-        $results['items'] = $query->get();
+        $result = $query->get();
+        $results['items'] = [];
+
+        foreach ($result as $key => $value) {
+            if(!empty($value['site']))
+                $results['items'] [] = $value ;
+        }
         
         return $results;
     }

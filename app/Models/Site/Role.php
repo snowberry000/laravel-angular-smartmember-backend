@@ -675,15 +675,20 @@ Role::saved(function($role){
     $company_id = \Auth::id();
     if(isset($role->access_level_id)){
         $access_level = AccessLevel::find($role->access_level_id);
-        $grants = $access_level->grants;
-        $keys = array_pluck($grants , 'grant_id');
-        $keys[] = strval($role->access_level_id);
 
-        foreach ($keys as $i => $key) {
-            $key_data = array('key_id' => $key , 'user_id' => $role->user_id , 'company_id' => $company_id);
-        //     \DB::connection('mongodb')->collection('key_member')->where('key_id', $key)->where('company_id' , $company_id)->where('user_id' , $role->user_id)->update($key_data, ['upsert' => true]);
-        // }
-        }
+	    if( $access_level )
+	    {
+		    $grants = $access_level->grants;
+		    $keys = array_pluck($grants , 'grant_id');
+		    $keys[] = strval($role->access_level_id);
+
+		    foreach ($keys as $i => $key) {
+			    $key_data = array('key_id' => $key , 'user_id' => $role->user_id , 'company_id' => $company_id);
+			    //     \DB::connection('mongodb')->collection('key_member')->where('key_id', $key)->where('company_id' , $company_id)->where('user_id' , $role->user_id)->update($key_data, ['upsert' => true]);
+			    // }
+		    }
+
+	    }
     }
 
     $query = array('user_id' => strval($role->user_id) , 'company_id' => strval($company_id));

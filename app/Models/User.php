@@ -29,6 +29,11 @@ class User extends Root implements AuthenticatableContract
         return $this->hasMany("App\\Models\\Page", "user_id");
     }
 
+    public function transactions()
+    {
+        return $this->hasMany("App\\Models\\Transaction", "user_id");
+    }
+
     public function sites()
 	{
         return $this->belongsToMany("App\Models\Site",'sites_roles','user_id','site_id');
