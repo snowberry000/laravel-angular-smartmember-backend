@@ -32,3 +32,19 @@ Category::created(function($model){
 	$model->save();
 	return $model;
 });
+
+
+Category::updating(function($model){
+	\App\Models\Permalink::handleReservedWords($model);
+});
+
+
+Category::updated(function($model){
+	$model->permalink = \App\Models\Permalink::set($model);
+
+	\App\Models\Permalink::where('target_id', $model->id)
+          ->where('type', $model->getTable())
+          ->update(['permalink' => $model->permalink ]);
+
+	return $model;
+});
