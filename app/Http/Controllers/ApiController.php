@@ -83,7 +83,8 @@ class ApiController extends Controller
 
 		if( Input::has('p') )
 			$query->skip((Input::get('p')-1)*$page_size);
-
+        if(isset($params['with']) && $params['with'])
+            $query = $query->with($params['with']);
 		$return['items'] = $query->get();
 
 		return $return;

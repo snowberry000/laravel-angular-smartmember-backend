@@ -81,6 +81,7 @@ Route::get('/site/search',"Api\\SiteController@search");
 Route::get('/directory/set',"Api\\DirectoryController@set");
 Route::get('/directory/visible',"Api\\DirectoryController@visible");
 Route::post('/emailSubscriber/directoryleads',"Api\\EmailSubscriberController@directoryleads");
+Route::get('/directory/categories',"Api\\DirectoryController@directoryCategories");
 
 Route::get("/auth/verify/{access_token}", "Auth\\AuthController@getVerify");
 Route::post("/auth/facebook-login", "Auth\\AuthController@postFacebookLogin");
@@ -154,6 +155,7 @@ Route::get('/role/getlist',"Api\\RoleController@getlist");
 Route::get('/role/SlackImport',"Api\\RoleController@SlackImport");
 
 // Route::get('/user/getCSV',"Api\\UserController@getCSV");
+Route::get('/user/GetInfo',"Api\\UserController@GetInfo");
 Route::get('/siteRole/getCSV',"Api\\Site\\RoleController@getCSV");
 Route::get('/role/agents',"Api\\RoleController@getAgents");
 
