@@ -20,9 +20,12 @@ class CommentController extends SMController
 			return response()->json($error)->setStatusCode(500);
 		}
 
-        \Input::merge(array('parent_id'=>0 , 'site_id'=>$this->site->id));
-    	$comments = Comment::with(['user' , 'reply','reply.user'])->whereSiteId($this->site->id)->whereTargetId(\Input::get('target_id'))->whereType(\Input::get('type'))->whereParentId(0)->get();
-    	foreach ($comments as $i=>$comment) {
+        \Input::merge(array('parent_id'=>0 , 'site_id'=>$this->site->id , 'target_id' =>\Input::get('target_id') , 'type' => \Input::get('type') ));
+
+        $comments = parent::paginateIndex(['with' => ['user' , 'reply' , 'reply.user']]);
+
+    	// $comments = Comment::with(['user' , 'reply','reply.user'])->whereSiteId($this->site->id)->whereTargetId(\Input::get('target_id'))->whereType(\Input::get('type'))->whereParentId(0)->get();
+    	foreach ($comments['items'] as $i=>$comment) {
             if(!$comment->public){
                 if (!SMAuthenticate::set()){
                     unset($comments[$i]);
@@ -39,7 +42,7 @@ class CommentController extends SMController
                 }
             }
     	}
-    	return array('comments'=>$comments);
+    	return $comments;
     }
 
     public function store(){
