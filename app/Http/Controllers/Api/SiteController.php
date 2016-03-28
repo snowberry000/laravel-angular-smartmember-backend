@@ -301,7 +301,10 @@ class SiteController extends SMController
         }
 
         $data->is_admin = $this->is_admin;
-        $data->total_lessons = Lesson::whereSiteId($site_id)->where('access_level_type','!=',4)->whereNull('deleted_at')->count();
+        if($this->is_admin)
+            $data->total_lessons = Lesson::whereSiteId($site_id)->whereNull('deleted_at')->count();
+        else
+            $data->total_lessons = Lesson::whereSiteId($site_id)->where('access_level_type','!=',4)->whereNull('deleted_at')->count();
         return $data;
     }
 
