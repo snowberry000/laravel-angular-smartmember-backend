@@ -296,6 +296,18 @@ class SiteController extends SMController
            	$data->can_create_sites = !empty($role);
         }
 
+	    // Security issue
+	    if( $data->app_configuration )
+	    {
+		    foreach( $data->app_configuration as $key => $value )
+		    {
+			    if( property_exists( $value, 'password' ) )
+			    {
+				    $data->app_configuration[ $key ]->password = null;
+			    }
+		    }
+	    }
+
 		$data->is_member = \App\Helpers\SMAuthenticate::isMember($this->site->id);
 
         if(\Auth::check()){
