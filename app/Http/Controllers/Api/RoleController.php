@@ -174,7 +174,8 @@ class RoleController extends SMController
             $emails = \Input::get('emails');
 
             $bits = preg_split('/[\ \n\,]+/', $emails );
-            
+echo 'bits';
+            echo "<pre>".print_r( $bits, true )."</pre>";exit;
             if( $bits )
             {
                 $import_count = 0;
@@ -190,6 +191,10 @@ class RoleController extends SMController
                 }
             }   
         }
+
+        echo 'the users';
+
+        echo "<pre>".print_r( $users, true )."</pre>";exit;
 
         $access_levels = [];
         if (\Input::has('access_levels'))
