@@ -1130,6 +1130,31 @@ class SendGridEmail {
 			'verification-code' => $verification_code
 		) );
 	}
+
+     public static function sendCommentReplyEmail($user , $site) 
+    {
+        $email = new \SendGrid\Email();
+        if (isset($site))
+        {
+            $site_logo = $site->meta_data()->where('key', 'site_logo')->select(['value'])->first();
+            $header_bg_color = $site->getHeaderBackgroundColor();
+        }
+        $view = \View::make("email.support.comment_reply", [
+                'name' =>  $user['name'],
+                'site_logo' => isset($site_logo) ? $site_logo->value : '',
+                'subdomain' => $site->subdomain,
+                'header_bg_color' => !empty( $header_bg_color ) ? $header_bg_color : ''
+            ])->render();
+
+        $from = "noreply@" . ( !empty( $site ) ? ( !empty( $site->domain ) ? $site->domain : $site->subdomain . '.smartmember.com' ) : 'smartmember.com' );
+
+        $email->addTo($user['email'])
+            ->setFrom( $from )
+            ->setSubject( ( $site ? '[' . $site->name . '] ' : '' ) . 'NEW REPLY TO YOUR COMMENT ' )
+            ->setHtml($view);
+
+        self::sendEmail($email, true, $site);
+    }
 }
 
 ?>

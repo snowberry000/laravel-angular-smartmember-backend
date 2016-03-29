@@ -64,7 +64,6 @@ class LessonController extends SMController
 			}
 			$lesson->access_level = AccessLevel::find($lesson->access_level_id);
 		}
-		$return['total_count'] = count($return['items']);
 
 		return $return;
 	}

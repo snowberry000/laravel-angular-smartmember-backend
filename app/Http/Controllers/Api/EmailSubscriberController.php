@@ -477,10 +477,9 @@ class EmailSubscriberController extends SMController
             $segment_query = \Input::get('segment_query');
 
             $segment = new SegmentTool($segment_query, $site_ids);
-
+            //dd($segment);
             $subscribers = $segment->getUsers();
         }
-
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=subscriber.csv');
         header( "Pragma: no-cache" );
@@ -502,6 +501,7 @@ class EmailSubscriberController extends SMController
             }*/
             // \Log::info(array_pluck($email_subscriber['emailLists'],'name'));
             // \Log::info($email_subscriber['emailLists'],'name'));
+            \Log::info($user);
             if($user && ( !empty( $user->first_name ) || !empty( $user->last_name ) ) )
 			{
                 $subscriber['name'] = $user->first_name . ' ' . $user->last_name;
