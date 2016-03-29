@@ -3,7 +3,10 @@
 use App\Models\Comment;
 use App\Models\User;
 use App\Helpers\SMAuthenticate;
+use App\Models\AppConfiguration\SendGridEmail;
 use Auth;
+use SendGrid;
+
 class CommentController extends SMController
 {
     public function __construct(){
@@ -24,7 +27,6 @@ class CommentController extends SMController
 
         $comments = parent::paginateIndex(['with' => ['user' , 'reply' , 'reply.user']]);
 
-    	// $comments = Comment::with(['user' , 'reply','reply.user'])->whereSiteId($this->site->id)->whereTargetId(\Input::get('target_id'))->whereType(\Input::get('type'))->whereParentId(0)->get();
     	foreach ($comments['items'] as $i=>$comment) {
             if(!$comment->public){
                 if (!SMAuthenticate::set()){
@@ -47,6 +49,16 @@ class CommentController extends SMController
 
     public function store(){
         \Input::merge(array('site_id'=>$this->site->id ));
+
+        if(\Input::has('parent_id')){
+            $parent = Comment::whereId(\Input::get('parent_id'))->with('user')->first();
+
+            if(isset($parent->id) && !empty($parent->user) && !empty($parent->user->email)){
+                $user = array('email' => $parent->user->email , 'name' => isset($parent->user->first_name) ? $parent->user->first_name : '');
+                SendGridEmail::sendCommentReplyEmail($user, $this->site);
+            }
+        }
+
     	$comment = parent::store();
     	$comment->user = User::find($comment->user_id);
         $comment->reply = Comment::whereParentId($comment->id)->with('user')->get();
