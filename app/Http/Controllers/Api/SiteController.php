@@ -21,6 +21,7 @@ use App\Models\Post;
 use App\Models\Comment;
 use App\Models\Wizard;
 use App\Models\MemberMeta;
+use App\Models\SiteMetaData;
 use Auth;
 use Input;
 use PRedis;
@@ -248,9 +249,9 @@ class SiteController extends SMController
 
 		$site_id    = $this->site->id;
 
-		$data = Site::with(
-			"menu_items", "footer_menu_items", "meta_data", "ad", "widgets", "widgets.meta_data", "widgets.banner"
-		)->whereId( $site_id )->first();
+		//$data = Site::with(			"menu_items", "footer_menu_items", "meta_data", "ad", "widgets", "widgets.meta_data", "widgets.banner"		)->whereId( $site_id )->first();
+	    $data = Site::with(			"menu_items", "footer_menu_items", "ad", "widgets", "widgets.meta_data", "widgets.banner"		)->whereId( $site_id )->first();
+
         foreach ($data->widgets as $widget)
         {
             foreach ($widget->meta_data as $single_meta_data)
@@ -261,6 +262,13 @@ class SiteController extends SMController
                 }
             }
         }
+
+	    $meta_data = SiteMetaData::whereSiteId($site_id)->where('key', '!=', 'email_queue_locked')->get();
+	    $data->meta_data = $meta_data;
+	    //$meta_data = $data->meta_data();
+
+	    //echo "<pre>".print_r( $meta_data, true )."</pre>";
+	    //exit;
 
 		$data->header_background_color = $this->site->getHeaderBackgroundColor();
 
