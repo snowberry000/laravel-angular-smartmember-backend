@@ -219,7 +219,7 @@ Route::get('/livecastByPermalink/{id}',"Api\\LivecastController@getByPermalink")
 Route::get('/articleByPermalink/{id}',"Api\\SupportArticleController@getByPermalink");
 Route::get('/migrateToArticles',"Api\\SupportCategoryController@migrateToArticles");
 Route::get('/importJob/active', "Api\\ImportJobController@countActiveJob");
-//Route::get('/regenerateToken',"Auth\\AuthController@regenerateAccessToken");
+Route::get('/regenerateToken',"Auth\\AuthController@regenerateAccessToken");
 Route::get('/sharedKey/associatedKey', "Api\\AccessLevelShareKeyController@getAssociatedKey");
 Route::get('/generateShareKey', "Api\\AccessLevelShareKeyController@generateShareKey");
 Route::get('/accessLevel/getGrantedShareAccessLevel', "Api\\AccessLevelShareKeyController@getGrantedShareAccessLevels");
