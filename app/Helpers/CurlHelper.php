@@ -82,7 +82,7 @@ class CurlHelper{
 
         // TODO: Additional error handling
 
-
+        //dd($headers);
         $resp = json_decode(curl_exec($req), true);
         $respCode = curl_getinfo($req);
         //\Log::info("Posting to webinar" . json_encode($respCode));
