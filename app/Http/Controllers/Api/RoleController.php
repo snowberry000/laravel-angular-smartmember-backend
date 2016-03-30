@@ -174,7 +174,7 @@ class RoleController extends SMController
             $emails = \Input::get('emails');
 
             $bits = preg_split('/[\ \n\,]+/', $emails );
-            
+
             if( $bits )
             {
                 $import_count = 0;

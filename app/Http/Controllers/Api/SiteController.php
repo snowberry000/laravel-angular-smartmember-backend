@@ -296,6 +296,21 @@ class SiteController extends SMController
            	$data->can_create_sites = !empty($role);
         }
 
+	    // SECURITY ISSUES
+	    $data->facebook_secret_key = null;
+
+	    // Security issue
+	    if( $data->app_configuration )
+	    {
+		    foreach( $data->app_configuration as $key => $value )
+		    {
+			    if( $value->password )
+			    {
+				    $data->app_configuration[ $key ]->password = null;
+			    }
+		    }
+	    }
+
 		$data->is_member = \App\Helpers\SMAuthenticate::isMember($this->site->id);
 
         if(\Auth::check()){

@@ -43,7 +43,6 @@ class Role extends Root{
                 ->orWhere('expired_at', '=', '0000-00-00 00:00:00')
                 ->orWhereNull('expired_at');
         })->get();
-        \Log::info($access_levels);
         foreach ($access_levels as $access_level)
         {
             $unique_access_levels = array_merge($unique_access_levels, Pass::access_levels($access_level->access_level_id));
