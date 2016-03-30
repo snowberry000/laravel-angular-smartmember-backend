@@ -152,7 +152,7 @@ class User extends Root implements AuthenticatableContract
         $this->access_token_expired = date("Y-m-d H:i:s", strtotime(date("Y-m-d H:i:s") . " + 3 months"));;
         $this->access_token = md5($this->email . $this->access_token_expired . rand(10000, 99999));
 
-        $resp = Curl::post("http://api-3.smartmember.dev/user/updateAccessToken",array(
+        $resp = Curl::post("http://api-3.smartmember.com/user/updateAccessToken",array(
             "prevAccesstoken" => $prevToken,
             "newAccesstoken" => $this->access_token
         ),array('Content-Type' => 'application/json'));
