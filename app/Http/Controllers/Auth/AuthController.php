@@ -174,15 +174,10 @@ class AuthController extends Controller
 
     public function regenerateAccessToken()
     {
-        $users = User::get();
-        foreach ($users as $user)
-        {
-            if ($user->access_token == "" or $user->access_token == null)
-            {
-                $user->refreshToken();
-                echo $user->email;
-            }
-        }
+       $user =  User::where('access_token' , \Input::get('access_token'))->first();
+       $resp = $user->refreshToken();
+       $user->save();
+       return $resp;
     }
 
     public function postUsercheck()
