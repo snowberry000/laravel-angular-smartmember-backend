@@ -16,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "OPTIONS"){
 	exit;
 }
 
-include_once "cache.php";
+//include_once "cache.php";
 
 require __DIR__.'/../bootstrap/autoload.php';
 
