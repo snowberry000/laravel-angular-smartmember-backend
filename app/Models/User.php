@@ -13,6 +13,7 @@ use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Carbon\Carbon;
 use SMCache;
+use Curl;
 use Config;
 
 class User extends Root implements AuthenticatableContract
@@ -147,8 +148,16 @@ class User extends Root implements AuthenticatableContract
 
     public function refreshToken()
     {
+        $prevToken = $this->access_token;
         $this->access_token_expired = date("Y-m-d H:i:s", strtotime(date("Y-m-d H:i:s") . " + 3 months"));;
         $this->access_token = md5($this->email . $this->access_token_expired . rand(10000, 99999));
+
+        $resp = Curl::post("http://api-3.smartmember.com/user/updateAccessToken",array(
+            "prevAccesstoken" => $prevToken,
+            "newAccesstoken" => $this->access_token
+        ),array('Content-Type' => 'application/json'));
+
+        return $resp ;
     }
 
     public function createAccessPass($access_hash, $site, $cbreceipt = '')

@@ -296,12 +296,15 @@ class SiteController extends SMController
            	$data->can_create_sites = !empty($role);
         }
 
+	    // SECURITY ISSUES
+	    $data->facebook_secret_key = null;
+
 	    // Security issue
 	    if( $data->app_configuration )
 	    {
 		    foreach( $data->app_configuration as $key => $value )
 		    {
-			    if( property_exists( $value, 'password' ) )
+			    if( $value->password )
 			    {
 				    $data->app_configuration[ $key ]->password = null;
 			    }
