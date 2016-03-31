@@ -73,6 +73,10 @@ class SmartMailEngine extends Command
 
         // \Config::set('smartmail.debug', true);
 
+		// FORCE CHRIS
+		$sites = array();
+		$sites[] = 6325;
+
         foreach ($sites as $site)
         {
 			PRedis::setex('last_site_email_queued_for', 24 * 60 * 60, $site);
