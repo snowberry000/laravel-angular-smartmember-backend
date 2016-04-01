@@ -242,6 +242,8 @@ class Transaction extends Root
         if( !empty( $transaction->user_id ) )
         {
             //first let's see if the pass already exists
+
+            
             $access_pass = Role::where('access_level_id', $access_level->id)->where('user_id',$transaction->user_id)->where('site_id',$transaction->site_id)->first();
 
 
