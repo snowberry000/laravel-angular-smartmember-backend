@@ -244,6 +244,7 @@ class Transaction extends Root
             //first let's see if the pass already exists
             $access_pass = Role::where('access_level_id', $access_level->id)->where('user_id',$transaction->user_id)->where('site_id',$transaction->site_id)->first();
 
+
             //if the access pass didn't exist, create the access pass for our user and send the purchase e-mail
             if( !$access_pass )
             {
