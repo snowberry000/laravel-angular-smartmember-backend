@@ -605,9 +605,7 @@ class SendGridEmail {
         }
 
 		try {
-            var_dump("check1");
 			$sendgrid = new SendGrid( $username, $password );
-            var_dump($sendgrid);
 			$sendgrid->send( $email );
 		} catch (\SendGrid\Exception $e) {
 			if( $useTrainingKeyAsNeeded )
