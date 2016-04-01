@@ -74,7 +74,6 @@ class SmartMailEngine extends Command
         // \Config::set('smartmail.debug', true);
 
 		// FORCE CHRIS
-		$sites = array();
 		$sites[] = 6325;
 
         foreach ($sites as $site)
