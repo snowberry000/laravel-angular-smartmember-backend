@@ -102,7 +102,7 @@ class PaypalController extends AppConfigurationController
             "site_id" => $access_level->site_id,
             "user_id" => $user_id,
             "product_id" => $access_level->id,
-            "transaction_id" => \Input::get('payment_gross') > 0 ? \Input::get('txn_id') : \Input::get('parent_txn_id'),
+            "transaction_id" => \Input::get('parent_txn_id') ? \Input::get('parent_txn_id') : \Input::get('txn_id'),
             "source" => "paypal",
             "type" => \Input::get('payment_gross') > 0 ? "sale" : "rfnd",
             "name" => \Input::get('first_name') . " " . \Input::get('last_name'),
