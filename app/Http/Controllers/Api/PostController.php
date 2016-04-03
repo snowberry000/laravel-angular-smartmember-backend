@@ -35,11 +35,15 @@ class PostController extends SMController
 			{
 				$category = Category::whereSiteId( $this->site->id )->wherePermalink( \Input::get('permalink') )->first();
 
-				$this->model = Post::whereHas('categories', function( $q ) use ( $category ) {
-					$q->where( 'categories.id', $category->id );
-				});
+				// https://smartmember.airbrake.io/projects/116683/groups/1653082575767124611/notices/1655999080149039237
+				if( $category )
+				{
+					$this->model = Post::whereHas('categories', function( $q ) use ( $category ) {
+						$q->where( 'categories.id', $category->id );
+					});
 
-				\Input::merge( [ 'permalink' => null ] );
+					\Input::merge( [ 'permalink' => null ] );
+				}
 			}
 
 			$posts = parent::paginateIndex();
