@@ -274,6 +274,11 @@ class SMAuthenticate
     public static function checkAccessLevel($model){
         $logged_in = SMAuthenticate::set();
 
+	    // not sure why we wouldn't be getting a model?
+	    // https://smartmember.airbrake.io/projects/116683/groups/1653175360734146926/notices/1655980223102378378
+	    if( !$model )
+		    return false;
+
         if($model->access_level_type <= 1)
             return SMAuthenticate::checkScheduleAvailability($model);
 
