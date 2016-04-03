@@ -24,7 +24,7 @@ class AfterGetRequest
 			PRedis::setex( $domain_key,30*60, json_encode($response->original));
 
         //TODO: FOr access token store for just 15 minutes, else 24 hours
-        PRedis::setex($key,30*60, json_encode($response->original));
+        PRedis::setex($key,30*60, json_encode(isset($response->original) ? $response->original : ''));
         return $response;
     }
 
