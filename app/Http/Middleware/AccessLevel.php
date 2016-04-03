@@ -24,7 +24,9 @@ class AccessLevel
     public function handle($request, Closure $next)
     {
         $model = $next($request);
-        $model = $model->original;
+
+	    if( isset($model->original) )
+            $model = $model->original;
 
         $model->access = SMAuthenticate::checkAccessLevel($model);
         if($model->access){
