@@ -383,6 +383,11 @@ class EmailQueue extends Root
 	 */
 	public static function checkIfUnsubscribed( $segment, $recipient, $type, $site_id )
 	{
+		$unsubscribed = UnsubscriberSegment::whereEmail( $recipient->email )->whereSiteId( $site_id )->first();
+
+		if( $unsubscribed )
+			return true;
+
 		switch( $type )
 		{
 			case 'segment':
