@@ -15,7 +15,7 @@ return [
 	),
 	
 	"sendgrid" => array(
-		"api_user" => "smartmember",
-		"api_pass" => "UAPjRkWj1nhxB9vhnz8V",
+		"api_user" => env('SENDGRID_USERNAME'),
+		"api_pass" => env('SENDGRID_PASSWORD'),
 	),
 ];
