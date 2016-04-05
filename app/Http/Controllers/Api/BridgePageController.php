@@ -26,7 +26,10 @@ class BridgePageController extends SMController
 
     public function index()
     {
-        \Input::merge(array('site_id' => $this->site->id));
+	    // new BP doesn't get called from a site
+	    if( $this->site )
+            \Input::merge(array('site_id' => $this->site->id));
+
         $index = parent::paginateIndex();
 
 		foreach( $index['items'] as $key => $item )
