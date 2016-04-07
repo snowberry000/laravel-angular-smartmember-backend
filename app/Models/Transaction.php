@@ -257,7 +257,7 @@ class Transaction extends Root
 
 			if( $transaction->source == 'jvzoo' )
 				$cbreceipt = $transaction->transaction_id;
-            var_dump("check0");
+            
 			SendGridEmail::sendPurchaseEmail($transaction, $access_pass, $cbreceipt);
 
             //use the updatePass function to set the initial expiration date in case this was a subscription, if its not it won't do anything to it
