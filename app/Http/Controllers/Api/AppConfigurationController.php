@@ -30,7 +30,7 @@ class AppConfigurationController extends SMController
 
 		$accounts = $this->model->where(function($query) use ( $site_id ){
 			$query->where('site_id', $site_id );
-		})->with(['site','account','meta_data'])->whereIn('type',['facebook_group','sendgrid','vimeo','intercom','youzign','paypal'])->get();
+		})->with(['site','account','meta_data'])->whereIn('type',['facebook_group','sendgrid','vimeo','intercom','youzign','paypal','clickbank'])->get();
 	
 		return $accounts;
     }
